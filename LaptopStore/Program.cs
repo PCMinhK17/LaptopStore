@@ -1,7 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using LaptopStore.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<LaptopStoreDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+builder.Services.AddSignalR();
 
 // Add DbContext
 builder.Services.AddDbContext<LaptopStore.Models.LaptopStoreDbContext>();
@@ -25,6 +31,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Product}/{action=Index}/{id?}");
 
 app.Run();
