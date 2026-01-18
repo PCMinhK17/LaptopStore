@@ -4,8 +4,8 @@ namespace LaptopStore.Models.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập Email hoặc Tên đăng nhập")]
-        [Display(Name = "Email hoặc Tên đăng nhập")]
+        [Required(ErrorMessage = "Vui lòng nhập Email hoặc Số điện thoại")]
+        [Display(Name = "Email hoặc Số điện thoại")]
         public string Input { get; set; } = null!;
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]

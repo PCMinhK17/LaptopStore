@@ -18,6 +18,10 @@ namespace LaptopStore.Models.ViewModels
         [Display(Name = "Số điện thoại")]
         public string PhoneNumber { get; set; } = null!;
 
+        [Required(ErrorMessage = "Vui lòng chọn Tỉnh/Thành phố")]
+        [Display(Name = "Tỉnh/Thành phố")]
+        public string Address { get; set; } = null!;
+
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [StringLength(100, ErrorMessage = "{0} phải dài ít nhất {2} ký tự.", MinimumLength = 6)]
         [DataType(DataType.Password)]

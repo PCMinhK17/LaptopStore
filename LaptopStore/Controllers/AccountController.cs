@@ -6,123 +6,214 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace LaptopStore.Controllers
 {
     public class AccountController : Controller
     {
         private readonly LaptopStoreDbContext _context;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(LaptopStoreDbContext context)
+        public AccountController(LaptopStoreDbContext context, ILogger<AccountController> logger)
         {
             _context = context;
+            _logger = logger;
         }
+
+        // ========== LOGIN ==========
 
         [HttpGet]
         public IActionResult Login()
         {
-            if (User.Identity!.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Index", "Home");
             }
-            return View(new AuthViewModel());
+
+            return View(new LoginViewModel());
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([Bind(Prefix = "Login")] LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
+                return View(model);
             }
 
-            // Tìm user theo Email hoặc Số điện thoại (tùy bạn đang cho nhập gì trong Input)
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == model.Input || u.PhoneNumber == model.Input);
-
-            if (user == null)
-            {
-                ModelState.AddModelError(string.Empty, "Tài khoản không tồn tại.");
-                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
-            }
-
-            bool isPasswordValid = false;
             try
             {
-                // Nếu trong DB đang lưu password dạng hash BCrypt
-                isPasswordValid = BCrypt.Net.BCrypt.Verify(model.Password, user.Password);
-            }
-            catch
-            {
-                // Trường hợp password trong DB là plain text (cho data cũ)
-                if (user.Password == model.Password)
-                    isPasswordValid = true;
-            }
+                var identifier = model.Input?.Trim();
+                if (string.IsNullOrWhiteSpace(identifier))
+                {
+                    ModelState.AddModelError(string.Empty, "Vui lòng nhập Email hoặc Số điện thoại.");
+                    return View(model);
+                }
 
-            if (!isPasswordValid)
-            {
-                ModelState.AddModelError(string.Empty, "Mật khẩu không chính xác.");
-                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
-            }
+                User? user;
 
-            if (user.Status != "active")
-            {
-                ModelState.AddModelError(string.Empty, "Tài khoản đã bị khóa.");
-                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
-            }
+                if (identifier.Contains("@"))
+                {
+                    user = await _context.Users.SingleOrDefaultAsync(u => u.Email == identifier);
+                }
+                else
+                {
+                    user = await _context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == identifier);
+                }
 
-            await SignInUser(user, model.RememberMe);
-            return RedirectToAction("Index", "Home");
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Tài khoản không tồn tại.");
+                    TempData["ToastMessage"] = "Tài khoản không tồn tại.";
+                    TempData["ToastType"] = "error";
+                    return View(model);
+                }
+
+                bool isPasswordValid = false;
+                try
+                {
+                    isPasswordValid = BCryptNet.Verify(model.Password, user.Password);
+                }
+                catch
+                {
+                    if (user.Password == model.Password) isPasswordValid = true;
+                }
+
+                if (!isPasswordValid)
+                {
+                    ModelState.AddModelError(string.Empty, "Mật khẩu không chính xác.");
+                    TempData["ToastMessage"] = "Mật khẩu không chính xác.";
+                    TempData["ToastType"] = "error";
+                    return View(model);
+                }
+
+                if (!string.Equals(user.Status, "active", StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelState.AddModelError(string.Empty, "Tài khoản đã bị khóa.");
+                    TempData["ToastMessage"] = "Tài khoản đã bị khóa.";
+                    TempData["ToastType"] = "error";
+                    return View(model);
+                }
+
+                await SignInUser(user, model.RememberMe);
+
+                TempData["ToastMessage"] = $"Đăng nhập thành công! Chào {user.FullName ?? user.Email}";
+                TempData["ToastType"] = "success";
+
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi đăng nhập");
+
+                TempData["ToastMessage"] = "Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.";
+                TempData["ToastType"] = "error";
+
+                ModelState.AddModelError(string.Empty, "Đã xảy ra lỗi hệ thống.");
+                return View(model);
+            }
         }
 
+        // ========== REGISTER ==========
 
         [HttpGet]
-        public async Task<IActionResult> CheckEmail(string email)
+        public IActionResult Register()
         {
-            if (string.IsNullOrEmpty(email)) return Json(new { exists = false });
-            
-            var exists = await _context.Users.AnyAsync(u => u.Email == email);
-            return Json(new { exists = exists });
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(new RegisterViewModel());
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register([Bind(Prefix = "Register")] RegisterViewModel model)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+                return View(model);
+            }
+
+            try
+            {
+                var email = model.Email?.Trim() ?? string.Empty;
+                var phone = model.PhoneNumber?.Trim() ?? string.Empty;
+
+                if (await _context.Users.AnyAsync(u => u.Email == email))
                 {
-                    ModelState.AddModelError("Register.Email", "Email này đã được sử dụng.");
-                    return View("Login", new AuthViewModel { Register = model, ActiveTab = "register" });
+                    ModelState.AddModelError(nameof(RegisterViewModel.Email), "Email này đã được sử dụng.");
+                    TempData["ToastMessage"] = "Email đã tồn tại.";
+                    TempData["ToastType"] = "error";
+                    return View(model);
                 }
 
-                 if (await _context.Users.AnyAsync(u => u.PhoneNumber == model.PhoneNumber))
+                if (await _context.Users.AnyAsync(u => u.PhoneNumber == phone))
                 {
-                    ModelState.AddModelError("Register.PhoneNumber", "Số điện thoại này đã được sử dụng.");
-                    return View("Login", new AuthViewModel { Register = model, ActiveTab = "register" });
+                    ModelState.AddModelError(nameof(RegisterViewModel.PhoneNumber), "Số điện thoại này đã được sử dụng.");
+                    TempData["ToastMessage"] = "Số điện thoại đã tồn tại.";
+                    TempData["ToastType"] = "error";
+                    return View(model);
                 }
+
+                var now = DateTime.Now;
 
                 var user = new User
                 {
                     FullName = model.FullName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    Password = global::BCrypt.Net.BCrypt.HashPassword(model.Password),
+                    Email = email,
+                    PhoneNumber = phone,
+                    Address = model.Address,
+                    Password = BCryptNet.HashPassword(model.Password),
                     Role = "customer",
                     Status = "active",
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = now,
+                    UpdatedAt = now
                 };
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
                 await SignInUser(user, false);
+
+                TempData["ToastMessage"] = "Đăng ký và đăng nhập thành công!";
+                TempData["ToastType"] = "success";
+
                 return RedirectToAction("Index", "Home");
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi đăng ký");
 
-            return View("Login", new AuthViewModel { Register = model, ActiveTab = "register" });
+                TempData["ToastMessage"] = "Có lỗi xảy ra khi đăng ký. Vui lòng thử lại.";
+                TempData["ToastType"] = "error";
+
+                ModelState.AddModelError(string.Empty, "Đã xảy ra lỗi hệ thống.");
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return Json(new { exists = false });
+
+            var normalized = email.Trim();
+            var exists = await _context.Users.AnyAsync(u => u.Email == normalized);
+            return Json(new { exists });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckPhone(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return Json(new { exists = false });
+
+            var normalized = phoneNumber.Trim();
+            var exists = await _context.Users.AnyAsync(u => u.PhoneNumber == normalized);
+            return Json(new { exists });
         }
 
         private async Task SignInUser(User user, bool isPersistent)
@@ -135,32 +226,49 @@ namespace LaptopStore.Controllers
                 new Claim("UserId", user.Id.ToString())
             };
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = isPersistent
             };
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                authProperties);
         }
 
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất.";
+            TempData["ToastType"] = "success";
+
             return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
         public IActionResult GoogleLogin()
         {
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse") };
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("GoogleResponse")
+            };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
         public async Task<IActionResult> GoogleResponse()
         {
             var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
-            if (result.Principal == null) return RedirectToAction("Login");
+            if (result.Principal == null)
+            {
+                TempData["ToastMessage"] = "Không xác thực được với Google.";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Login");
+            }
 
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
             var name = result.Principal.FindFirstValue(ClaimTypes.Name);
@@ -170,22 +278,31 @@ namespace LaptopStore.Controllers
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (user == null)
                 {
+                    var now = DateTime.Now;
                     user = new User
                     {
                         Email = email,
                         FullName = name,
-                        Password = "",
+                        Password = string.Empty,
                         Role = "customer",
                         Status = "active",
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = now,
+                        UpdatedAt = now
                     };
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
                 }
+
                 await SignInUser(user, false);
+
+                TempData["ToastMessage"] = "Đăng nhập bằng Google thành công!";
+                TempData["ToastType"] = "success";
+
                 return RedirectToAction("Index", "Home");
             }
+
+            TempData["ToastMessage"] = "Không lấy được thông tin Google.";
+            TempData["ToastType"] = "error";
             return RedirectToAction("Login");
         }
 
