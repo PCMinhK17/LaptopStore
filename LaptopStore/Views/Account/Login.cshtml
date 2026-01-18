@@ -1,0 +1,161 @@
+@model LaptopStore.Models.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = null; // Striving for a standalone clean look or use Layout if needed. Let's use basic HTML structure for a full page design or inherit.
+                   // User asked for "Tone màu xanh dương nhạt".
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LaptopStore</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        body {
+            background-color: #e3f2fd; /* Light Blue 50 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+            border-top: 5px solid #2196f3; /* Blue 500 */
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-header h2 {
+            color: #1976d2; /* Blue 700 */
+            font-weight: 700;
+        }
+        .form-control:focus {
+            border-color: #64b5f6;
+            box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+        }
+        .btn-primary {
+            background-color: #2196f3;
+            border-color: #2196f3;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #1976d2;
+            border-color: #1565c0;
+        }
+        .btn-google {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .btn-google:hover {
+            background-color: #f8f9fa;
+            border-color: #ccc;
+        }
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #757575;
+        }
+        .links a {
+            color: #1e88e5;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Đăng Nhập</h2>
+            <p class="text-muted">Chào mừng bạn quay trở lại LaptopStore</p>
+        </div>
+
+        <form asp-action="Login" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input" class="form-label fw-bold text-secondary"></label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-user-circle"></i></span>
+                    <input asp-for="Input" class="form-control border-start-0 ps-0" placeholder="Email hoặc số điện thoại" />
+                </div>
+                <span asp-validation-for="Input" class="text-danger text-small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label fw-bold text-secondary"></label>
+                <div class="password-container input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock"></i></span>
+                    <input asp-for="Password" type="password" class="form-control border-start-0 ps-0" id="passwordInput" placeholder="Nhập mật khẩu" />
+                    <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                </div>
+                <span asp-validation-for="Password" class="text-danger text-small"></span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label text-secondary"></label>
+                </div>
+                <div class="links">
+                    <a asp-action="ForgotPassword">Quên mật khẩu?</a>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 mb-3">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold">ĐĂNG NHẬP</button>
+            </div>
+            
+            <div class="text-center text-muted mb-3">HOẶC</div>
+
+            <div class="d-grid">
+                <a asp-action="GoogleLogin" class="btn btn-google btn-lg">
+                    <img src="https://www.google.com/favicon.ico" alt="Google" width="20" height="20">
+                    Đăng nhập với Google
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#passwordInput');
+
+        togglePassword.addEventListener('click', function (e) {
+            // toggle the type attribute
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            // toggle the eye slash icon
+            this.classList.toggle('fa-eye-slash');
+            this.classList.toggle('fa-eye');
+        });
+    </script>
+</body>
+</html>
