@@ -1,161 +1,396 @@
-@model LaptopStore.Models.ViewModels.LoginViewModel
-
+@model LaptopStore.Models.ViewModels.AuthViewModel
 @{
-    ViewData["Title"] = "Đăng nhập";
-    Layout = null; // Striving for a standalone clean look or use Layout if needed. Let's use basic HTML structure for a full page design or inherit.
-                   // User asked for "Tone màu xanh dương nhạt".
+    ViewData["Title"] = "Đăng nhập / Đăng ký";
+    Layout = null;
+    var activeTab = Model?.ActiveTab ?? "login";
+    var loginActive = activeTab == "login" ? "active" : "";
+    var registerActive = activeTab == "register" ? "active" : "";
 }
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - LaptopStore</title>
+    <title>@ViewData["Title"]</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            --secondary-color: #64748b;
+            --bg-base: #f8fafc;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
         body {
-            background-color: #e3f2fd; /* Light Blue 50 */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #eef2f6 url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
             margin: 0;
         }
-        .login-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.4); /* Dark overlay */
+            backdrop-filter: blur(8px);
+        }
+
+        .auth-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: var(--glass-border);
+            border-radius: 30px;
+            box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 450px;
-            padding: 2rem;
-            border-top: 5px solid #2196f3; /* Blue 500 */
-        }
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .login-header h2 {
-            color: #1976d2; /* Blue 700 */
-            font-weight: 700;
-        }
-        .form-control:focus {
-            border-color: #64b5f6;
-            box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
-        }
-        .btn-primary {
-            background-color: #2196f3;
-            border-color: #2196f3;
-            transition: all 0.3s;
-        }
-        .btn-primary:hover {
-            background-color: #1976d2;
-            border-color: #1565c0;
-        }
-        .btn-google {
-            background-color: white;
-            color: #333;
-            border: 1px solid #ddd;
+            max-width: 1000px;
+            height: 650px;
             display: flex;
-            align-items: center;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .auth-visual {
+            width: 45%;
+            background: var(--primary-gradient);
+            position: relative;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
+            align-items: center;
+            color: white;
+            padding: 40px;
+            text-align: center;
+            overflow: hidden;
         }
-        .btn-google:hover {
-            background-color: #f8f9fa;
-            border-color: #ccc;
+
+        /* Decorative circles */
+        .auth-visual::before, .auth-visual::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
         }
-        .password-container {
+        .auth-visual::before { width: 300px; height: 300px; top: -50px; left: -50px; }
+        .auth-visual::after { width: 200px; height: 200px; bottom: -30px; right: -30px; }
+
+        .laptop-icon-large {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .auth-form-container {
+            width: 55%;
+            padding: 50px 60px;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-switcher {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 16px;
+            margin-bottom: 30px;
             position: relative;
         }
-        .toggle-password {
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control-custom {
+            width: 100%;
+            height: 52px;
+            padding: 12px 15px 12px 50px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .form-control-custom:focus {
+            background: white;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        .form-floating-custom {
+             position: relative;
+             margin-bottom: 20px;
+        }
+
+        .input-icon {
             position: absolute;
-            right: 15px;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            transition: color 0.3s;
+        }
+        
+        .form-control-custom:focus + .input-icon {
+            color: #3b82f6;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #757575;
+            color: #94a3b8;
+            z-index: 10;
+            padding: 5px; /* Increase hit area */
         }
-        .links a {
-            color: #1e88e5;
-            text-decoration: none;
-            font-size: 0.9rem;
+        .password-toggle:hover { color: #64748b; }
+
+        .btn-primary-custom {
+            width: 100%;
+            height: 52px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
         }
-        .links a:hover {
-            text-decoration: underline;
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
         }
+
+        .btn-primary-custom:active { transform: translateY(0); }
+
+        .form-section { 
+            display: none; 
+            animation: fadeIn 0.4s ease-out;
+        }
+        .form-section.active { display: block; }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .divider span { padding: 0 10px; }
+
+        @@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        @@keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .validation-message { color: #ef4444; font-size: 0.8rem; margin: 4px 0 0 4px; display: block; }
+        .validation-success { color: #10b981; font-size: 0.8rem; margin: 4px 0 0 4px; display: block; }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="login-header">
-            <h2>Đăng Nhập</h2>
-            <p class="text-muted">Chào mừng bạn quay trở lại LaptopStore</p>
+    <div class="auth-wrapper">
+        <div class="auth-visual">
+            <i class="fas fa-desktop laptop-icon-large"></i>
+            <h2>LaptopStore</h2>
+            <p>Trải nghiệm công nghệ đỉnh cao</p>
         </div>
 
-        <form asp-action="Login" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="auth-form-container">
+            <div class="tab-switcher">
+                <button type="button" class="tab-btn @loginActive" onclick="switchTab('login')">Đăng Nhập</button>
+                <button type="button" class="tab-btn @registerActive" onclick="switchTab('register')">Đăng Ký</button>
+            </div>
 
-            <div class="mb-3">
-                <label asp-for="Input" class="form-label fw-bold text-secondary"></label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-user-circle"></i></span>
-                    <input asp-for="Input" class="form-control border-start-0 ps-0" placeholder="Email hoặc số điện thoại" />
+            <!-- LOGIN -->
+            <div id="login-form" class="form-section @loginActive">
+                <form asp-action="Login" method="post">
+                    @if (!ViewData.ModelState.IsValid && activeTab == "login")
+                    {
+                        <div class="alert alert-danger">@Html.ValidationSummary(false)</div>
+                    }
+
+                    <div class="form-floating-custom">
+                        <input asp-for="Login.Input" class="form-control-custom" placeholder="Email hoặc Tên đăng nhập" required />
+                        <i class="fas fa-envelope input-icon"></i>
+                        <span asp-validation-for="Login.Input" class="validation-message"></span>
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <input asp-for="Login.Password" type="password" id="loginPass" class="form-control-custom" placeholder="Mật khẩu" required />
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye password-toggle" onclick="togglePass('loginPass', this)"></i>
+                        <span asp-validation-for="Login.Password" class="validation-message"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" asp-for="Login.RememberMe" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Ghi nhớ</label>
+                        </div>
+                        <a href="/Account/ForgotPassword">Quên mật khẩu?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary-custom">Đăng Nhập</button>
+                </form>
+                
+                <div class="divider">
+                    <span>Hoặc tiếp tục với</span>
                 </div>
-                <span asp-validation-for="Input" class="text-danger text-small"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label fw-bold text-secondary"></label>
-                <div class="password-container input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock"></i></span>
-                    <input asp-for="Password" type="password" class="form-control border-start-0 ps-0" id="passwordInput" placeholder="Nhập mật khẩu" />
-                    <i class="fas fa-eye toggle-password" id="togglePassword"></i>
-                </div>
-                <span asp-validation-for="Password" class="text-danger text-small"></span>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="form-check">
-                    <input asp-for="RememberMe" class="form-check-input" />
-                    <label asp-for="RememberMe" class="form-check-label text-secondary"></label>
-                </div>
-                <div class="links">
-                    <a asp-action="ForgotPassword">Quên mật khẩu?</a>
+                <div class="text-center">
+                    <a asp-action="GoogleLogin" class="btn btn-outline-secondary d-block" style="border-radius: 16px; padding: 12px;"><i class="fab fa-google"></i> Google</a>
                 </div>
             </div>
 
-            <div class="d-grid gap-2 mb-3">
-                <button type="submit" class="btn btn-primary btn-lg fw-bold">ĐĂNG NHẬP</button>
-            </div>
-            
-            <div class="text-center text-muted mb-3">HOẶC</div>
+            <!-- REGISTER -->
+            <div id="register-form" class="form-section @registerActive">
+                <form asp-action="Register" method="post">
+                     @if (!ViewData.ModelState.IsValid && activeTab == "register")
+                    {
+                        <div class="alert alert-danger">@Html.ValidationSummary(false)</div>
+                    }
 
-            <div class="d-grid">
-                <a asp-action="GoogleLogin" class="btn btn-google btn-lg">
-                    <img src="https://www.google.com/favicon.ico" alt="Google" width="20" height="20">
-                    Đăng nhập với Google
-                </a>
+                    <div class="form-floating-custom">
+                        <input asp-for="Register.FullName" class="form-control-custom" placeholder="Họ và tên" required />
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <input asp-for="Register.Email" id="regEmail" class="form-control-custom" placeholder="Email" required onblur="checkEmail()" />
+                        <i class="fas fa-envelope input-icon"></i>
+                        <span id="email-feedback" class="validation-message" style="display:none;"></span>
+                        <span asp-validation-for="Register.Email" class="validation-message"></span>
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <input asp-for="Register.PhoneNumber" class="form-control-custom" placeholder="Số điện thoại" required />
+                        <i class="fas fa-phone input-icon"></i>
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <input asp-for="Register.Password" type="password" id="regPass" class="form-control-custom" placeholder="Mật khẩu" required />
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye password-toggle" onclick="togglePass('regPass', this)"></i>
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <input asp-for="Register.ConfirmPassword" type="password" id="regConfirm" class="form-control-custom" placeholder="Nhập lại mật khẩu" required />
+                        <i class="fas fa-check-circle input-icon"></i>
+                    </div>
+
+                    <button type="submit" class="btn-primary-custom" id="btnRegister">Đăng Ký</button>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script>
-        const togglePassword = document.querySelector('#togglePassword');
-        const passwordInput = document.querySelector('#passwordInput');
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // This is simple DOM based
+            const btns = document.querySelectorAll('.tab-btn');
+            if(tab === 'login') btns[0].classList.add('active');
+            else btns[1].classList.add('active');
 
-        togglePassword.addEventListener('click', function (e) {
-            // toggle the type attribute
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            // toggle the eye slash icon
-            this.classList.toggle('fa-eye-slash');
-            this.classList.toggle('fa-eye');
-        });
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            document.getElementById(tab + '-form').classList.add('active');
+        }
+
+        function togglePass(inputId, icon) {
+            const input = document.getElementById(inputId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        async function checkEmail() {
+            const emailInput = document.getElementById('regEmail');
+            const feedback = document.getElementById('email-feedback');
+            const email = emailInput.value;
+            const btn = document.getElementById('btnRegister');
+            var atSymbol = '@Html.Raw("@")';
+
+            if (!email || !email.includes(atSymbol)) {
+                feedback.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Account/CheckEmail?email=${encodeURIComponent(email)}`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    feedback.textContent = 'Email này đã được sử dụng.';
+                    feedback.className = 'validation-message';
+                    feedback.style.display = 'block';
+                    btn.disabled = true;
+                } else {
+                    feedback.textContent = 'Email hợp lệ.';
+                    feedback.className = 'validation-success';
+                    feedback.style.display = 'block';
+                    btn.disabled = false;
+                }
+            } catch (err) { console.error(err); }
+        }
     </script>
 </body>
 </html>

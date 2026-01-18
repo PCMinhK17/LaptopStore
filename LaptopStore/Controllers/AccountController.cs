@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BCrypt.Net;
 
 namespace LaptopStore.Controllers
 {
@@ -25,54 +26,122 @@ namespace LaptopStore.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-            return View();
+            return View(new AuthViewModel());
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login([Bind(Prefix = "Login")] LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
+            }
+
+            // Tìm user theo Email hoặc Số điện thoại (tùy bạn đang cho nhập gì trong Input)
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == model.Input || u.PhoneNumber == model.Input);
+
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Tài khoản không tồn tại.");
+                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
+            }
+
+            bool isPasswordValid = false;
+            try
+            {
+                // Nếu trong DB đang lưu password dạng hash BCrypt
+                isPasswordValid = BCrypt.Net.BCrypt.Verify(model.Password, user.Password);
+            }
+            catch
+            {
+                // Trường hợp password trong DB là plain text (cho data cũ)
+                if (user.Password == model.Password)
+                    isPasswordValid = true;
+            }
+
+            if (!isPasswordValid)
+            {
+                ModelState.AddModelError(string.Empty, "Mật khẩu không chính xác.");
+                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
+            }
+
+            if (user.Status != "active")
+            {
+                ModelState.AddModelError(string.Empty, "Tài khoản đã bị khóa.");
+                return View("Login", new AuthViewModel { Login = model, ActiveTab = "login" });
+            }
+
+            await SignInUser(user, model.RememberMe);
+            return RedirectToAction("Index", "Home");
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> CheckEmail(string email)
+        {
+            if (string.IsNullOrEmpty(email)) return Json(new { exists = false });
+            
+            var exists = await _context.Users.AnyAsync(u => u.Email == email);
+            return Json(new { exists = exists });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register([Bind(Prefix = "Register")] RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Find user by Email or Phone
-                // Note: Existing passwords in DB are simple strings or placeholders (e.g. hash_admin_123).
-                // For this implementation, we will do a direct comparison or simple check.
-                // In production, USE PROPER HASHING (BCrypt/Argon2).
-                
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => (u.Email == model.Input || u.PhoneNumber == model.Input));
-
-                if (user != null)
+                if (await _context.Users.AnyAsync(u => u.Email == model.Email))
                 {
-                    // WARNING: Simple comparison for demonstration/existing seed data compatibility.
-                    // Replace with PasswordHasher verification in production.
-                    bool isPasswordValid = user.Password == model.Password; 
-
-                    if (isPasswordValid)
-                    {
-                        var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, user.FullName ?? user.Email),
-                            new Claim(ClaimTypes.Email, user.Email),
-                            new Claim(ClaimTypes.Role, user.Role ?? "customer"),
-                            new Claim("UserId", user.Id.ToString())
-                        };
-
-                        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        var authProperties = new AuthenticationProperties
-                        {
-                            IsPersistent = model.RememberMe
-                        };
-
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-
-                        return RedirectToAction("Index", "Home");
-                    }
+                    ModelState.AddModelError("Register.Email", "Email này đã được sử dụng.");
+                    return View("Login", new AuthViewModel { Register = model, ActiveTab = "register" });
                 }
-                
-                ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc mật khẩu không đúng.");
+
+                 if (await _context.Users.AnyAsync(u => u.PhoneNumber == model.PhoneNumber))
+                {
+                    ModelState.AddModelError("Register.PhoneNumber", "Số điện thoại này đã được sử dụng.");
+                    return View("Login", new AuthViewModel { Register = model, ActiveTab = "register" });
+                }
+
+                var user = new User
+                {
+                    FullName = model.FullName,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    Password = global::BCrypt.Net.BCrypt.HashPassword(model.Password),
+                    Role = "customer",
+                    Status = "active",
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                await SignInUser(user, false);
+                return RedirectToAction("Index", "Home");
             }
 
-            return View(model);
+            return View("Login", new AuthViewModel { Register = model, ActiveTab = "register" });
+        }
+
+        private async Task SignInUser(User user, bool isPersistent)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.FullName ?? user.Email),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role ?? "customer"),
+                new Claim("UserId", user.Id.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = isPersistent
+            };
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
         }
 
         public async Task<IActionResult> Logout()
@@ -91,44 +160,21 @@ namespace LaptopStore.Controllers
         public async Task<IActionResult> GoogleResponse()
         {
             var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
-            // If using the default flow where Google signs into a separate cookie, reading it here might need 'External' scheme.
-            // But if we just Challenge GoogleDefaults, it will try to sign in.
-            // Actually, usually we configure AddGoogle to signin to an 'External' cookie scheme first because the main scheme is Application Cookie.
-            // However, with minimal config, `AuthenticateAsync(GoogleDefaults.AuthenticationScheme)` might not return the user if the middleware handled it and signed in the default scheme?
-            // Wait, AddAuthentication().AddCookie() sets the default scheme to Cookie.
-            // Challenge(Google) -> Redirects to Google -> Redirects back to /signin-google.
-            // The GoogleHandler handles the callback. It constructs a ticket. It calls `SignInAsync` on the `SignInScheme`.
-            // By default `SignInScheme` falls back to `DefaultSignInScheme` which is Cookie.
-            // So the user MIGHT be already signed in after the callback?
-            // BUT, usually we want to intercept to link users.
-            
-            // Standard flow:
-            // 1. User is signed in via Cookie (as a result of Google Handler).
-            // 2. We verify if the email exists in our DB.
-            
-            // Let's check if User is authenticated.
-            if (result.Principal == null && !User.Identity!.IsAuthenticated)
-            {
-               // Failed
-               return RedirectToAction("Login");
-            }
+            if (result.Principal == null) return RedirectToAction("Login");
 
-            // Get claims from the authenticated user (either from result or User)
-            var claimsPrincipal = result.Principal ?? User;
-            var email = claimsPrincipal.FindFirstValue(ClaimTypes.Email);
-            var name = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
 
             if (email != null)
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (user == null)
                 {
-                    // Create new user if not exists (Optional feature, let's just create for convenience)
                     user = new User
                     {
                         Email = email,
                         FullName = name,
-                        Password = "", // No password for Google users
+                        Password = "",
                         Role = "customer",
                         Status = "active",
                         CreatedAt = DateTime.Now,
@@ -137,24 +183,9 @@ namespace LaptopStore.Controllers
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
                 }
-
-                // Sign in with our Application Claims (if different or enriched)
-                // If Google already signed in, we are good, but we might want to ensure roles are present.
-                // Re-issuing the cookie with our DB roles:
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.FullName ?? email),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Role, user.Role ?? "customer"),
-                    new Claim("UserId", user.Id.ToString())
-                };
-
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-
+                await SignInUser(user, false);
                 return RedirectToAction("Index", "Home");
             }
-
             return RedirectToAction("Login");
         }
 
