@@ -14,7 +14,7 @@ CREATE TABLE Users (
     full_name NVARCHAR(100),
     phone_number VARCHAR(15) UNIQUE,
     address NVARCHAR(255),
-    role VARCHAR(20) DEFAULT 'customer' CHECK (role IN ('admin', 'customer')),
+    role VARCHAR(20) DEFAULT 'customer' CHECK (role IN ('admin', 'staff', 'customer')),
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'banned')),
     created_at DATETIME DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE()
@@ -185,7 +185,7 @@ GO
 -- Users (1 Admin, 9 Customers)
 INSERT INTO Users (email, password, full_name, phone_number, address, role) VALUES 
 ('admin@store.com', 'hash_admin_123', N'Nguyễn Văn Quản Lý', '0909000001', N'Hà Nội', 'admin'),
-('user1@gmail.com', 'hash_pass_1', N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'customer'),
+('user1@gmail.com', 'hash_pass_1', N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'staff'),
 ('user2@gmail.com', 'hash_pass_2', N'Lê Văn Khách 2', '0912000002', N'Đà Nẵng', 'customer'),
 ('user3@gmail.com', 'hash_pass_3', N'Phạm Thị C', '0912000003', N'Cần Thơ', 'customer'),
 ('user4@gmail.com', 'hash_pass_4', N'Hoàng Văn D', '0912000004', N'Hải Phòng', 'customer'),
@@ -250,14 +250,14 @@ INSERT INTO Coupons (code, discount_type, discount_value, min_order_value, usage
 -- Orders (Đơn hàng)
 -- Lưu ý: total_money tự tính = subtotal + shipping - discount
 INSERT INTO Orders (user_id, subtotal, shipping_fee, total_money, full_name, phone_number, address, status, payment_method, payment_status) VALUES 
-(2, 25000000, 0, 25000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'completed', 'vietqr', 'paid'),
+(4, 25000000, 0, 25000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'completed', 'vietqr', 'paid'),
 (3, 32000000, 50000, 32050000, N'Lê Văn Khách 2', '0912000002', N'Đà Nẵng', 'pending', 'cod', 'unpaid'),
 (NULL, 18000000, 100000, 18100000, N'Nguyễn Văn Vãng Lai', '0988888888', N'Hà Giang', 'shipping', 'cod', 'unpaid'), -- Khách vãng lai
 (4, 29000000, 0, 28000000, N'Phạm Thị C', '0912000003', N'Cần Thơ', 'completed', 'vietqr', 'paid'),
 (5, 27500000, 0, 27500000, N'Hoàng Văn D', '0912000004', N'Hải Phòng', 'cancelled', 'cod', 'unpaid'),
 (6, 19000000, 30000, 18530000, N'Đặng Văn F', '0912000006', N'Nghệ An', 'confirmed', 'vietqr', 'paid'),
 (7, 14000000, 0, 14000000, N'Bùi Thị G', '0912000007', N'Thanh Hóa', 'pending', 'cod', 'unpaid'),
-(2, 35000000, 0, 35000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'pending', 'vietqr', 'unpaid'), -- User 2 mua lần 2
+(5, 35000000, 0, 35000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'pending', 'vietqr', 'unpaid'), -- User 2 mua lần 2
 (8, 21000000, 50000, 21050000, N'Đỗ Văn H', '0912000008', N'Quảng Ninh', 'shipping', 'cod', 'unpaid'),
 (9, 45000000, 0, 45000000, N'Ngô Thị I', '0912000009', N'Huế', 'completed', 'vnpay', 'paid');
 
@@ -276,16 +276,16 @@ INSERT INTO Order_Details (order_id, product_id, quantity, price) VALUES
 
 -- Import Receipts (Phiếu nhập kho)
 INSERT INTO Import_Receipts (admin_id, supplier_name, total_cost) VALUES 
-(1, N'FPT Trading', 500000000),
-(1, N'Digiworld', 300000000),
-(1, N'Viễn Sơn', 150000000),
-(1, N'Petrosetco', 200000000),
-(1, N'FPT Trading', 100000000),
-(1, N'Synnex FPT', 400000000),
-(1, N'Nhà Phân Phối A', 50000000),
-(1, N'Nhà Phân Phối B', 80000000),
-(1, N'Samsung Vina', 120000000),
-(1, N'LG VN', 150000000);
+(2, N'FPT Trading', 500000000),
+(2, N'Digiworld', 300000000),
+(2, N'Viễn Sơn', 150000000),
+(2, N'Petrosetco', 200000000),
+(2, N'FPT Trading', 100000000),
+(2, N'Synnex FPT', 400000000),
+(2, N'Nhà Phân Phối A', 50000000),
+(2, N'Nhà Phân Phối B', 80000000),
+(2, N'Samsung Vina', 120000000),
+(2, N'LG VN', 150000000);
 
 -- Import Details
 INSERT INTO Import_Details (receipt_id, product_id, quantity, import_price) VALUES 
@@ -302,7 +302,7 @@ INSERT INTO Import_Details (receipt_id, product_id, quantity, import_price) VALU
 
 -- Reviews
 INSERT INTO Reviews (user_id, product_id, rating, comment, is_approved) VALUES 
-(2, 1, 5, N'Máy rất đẹp, mỏng nhẹ, đáng tiền!', 1),
+(4, 1, 5, N'Máy rất đẹp, mỏng nhẹ, đáng tiền!', 1),
 (3, 2, 4, N'Máy mạnh nhưng quạt hơi ồn khi chơi game nặng.', 1),
 (4, 3, 5, N'Pin trâu dã man, dùng cả ngày không hết.', 1),
 (5, 4, 5, N'Màn hình cảm ứng mượt, xoay gập tiện lợi.', 1),
@@ -310,14 +310,14 @@ INSERT INTO Reviews (user_id, product_id, rating, comment, is_approved) VALUES
 (7, 6, 4, N'Giá rẻ cấu hình ngon, sinh viên nên mua.', 1),
 (8, 7, 5, N'Rất nhẹ, mang đi học tiện.', 1),
 (9, 8, 5, N'Màn 17 inch to đã mắt nhưng máy vẫn nhẹ.', 1),
-(2, 9, 4, N'Hiệu năng tốt trong tầm giá.', 1),
+(7, 9, 4, N'Hiệu năng tốt trong tầm giá.', 1),
 (3, 10, 5, N'Đỉnh cao của MacBook, màn hình quá đẹp.', 1);
 
 
 -- --- DỮ LIỆU MẪU CHO CART ---
 
 -- 1. Tạo giỏ hàng cho User 2 và User 3 (đã login)
-INSERT INTO Carts (user_id) VALUES (2), (3), (4);
+INSERT INTO Carts (user_id) VALUES (5), (3), (4);
 
 -- 2. Thêm sản phẩm vào giỏ hàng
 -- Giỏ của User 2: Đang để sẵn 1 con Dell XPS và 2 con chuột
