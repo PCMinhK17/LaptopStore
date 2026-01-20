@@ -29,10 +29,47 @@ namespace LaptopStore.Controllers
             return View("~/Views/Store/Product.cshtml", allProducts);
         }
 
+        public IActionResult SearchByCategoryAndBrand(int? brandId, int? categoryId)
+        {
+            // Lấy danh sách Categories và Brands để hiển thị sidebar
+            ViewBag.Categories = _context.Categories.ToList();
+            ViewBag.Brands = _context.Brands.ToList();
+
+            // Gán giá trị SelectedCategory và SelectedBrand để hiển thị trạng thái active
+            ViewBag.SelectedCategory = categoryId.HasValue
+                ? _context.Categories.FirstOrDefault(c => c.Id == categoryId)?.Name
+                : null;
+
+            ViewBag.SelectedBrand = brandId.HasValue
+                ? _context.Brands.FirstOrDefault(b => b.Id == brandId)?.Name
+                : null;
+
+            // Truy vấn sản phẩm theo brandId và categoryId
+            var productsQuery = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.ProductImages)
+                .AsQueryable();
+
+            if (brandId.HasValue)
+            {
+                productsQuery = productsQuery.Where(p => p.BrandId == brandId.Value);
+            }
+
+            if (categoryId.HasValue)
+            {
+                productsQuery = productsQuery.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            var products = productsQuery.ToList();
+
+            return View("~/Views/Store/Product.cshtml", products);
+        }
+
         public IActionResult FilterByCategory(int categoryId)
         {
-            var categories = _context.Categories.OrderBy(c => c.Name).ToList();
-            ViewBag.Categories = categories;
+            ViewBag.Brands = _context.Brands.OrderBy(b => b.Name).ToList();
+            ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
 
             var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
             ViewBag.SelectedCategory = category?.Name;
@@ -44,13 +81,13 @@ namespace LaptopStore.Controllers
                 .Include(p => p.ProductImages)
                 .ToList();
 
-            return View("Index", products);
+            return View("~/Views/Store/Product.cshtml", products);
         }
 
         public IActionResult FilterByBrand(int brandId)
         {
-            var brands = _context.Brands.OrderBy(b => b.Name).ToList();
-            ViewBag.Brands = brands;
+            ViewBag.Categories = _context.Categories.OrderBy(c => c.Name).ToList();
+            ViewBag.Brands = _context.Brands.OrderBy(b => b.Name).ToList();
 
             var brand = _context.Brands.FirstOrDefault(b => b.Id == brandId);
             ViewBag.SelectedBrand = brand?.Name;
@@ -62,7 +99,7 @@ namespace LaptopStore.Controllers
                 .Include(p => p.ProductImages)
                 .ToList();
 
-            return View("Index", products);
+            return View("~/Views/Store/Product.cshtml", products);
         }
 
         public IActionResult Search(string searchTerm)
@@ -89,7 +126,7 @@ namespace LaptopStore.Controllers
             ViewBag.Brands = _context.Brands.ToList();
 
 
-            return View("Index", searchResults);
+            return View("~/Views/Store/Product.cshtml", searchResults);
         }
 
         public IActionResult FilterByPrice(decimal? minPrice, decimal? maxPrice)
@@ -116,7 +153,7 @@ namespace LaptopStore.Controllers
             ViewBag.Categories = _context.Categories.ToList();
             ViewBag.Brands = _context.Brands.ToList();
 
-            return View("Index", products);
+            return View("~/Views/Store/Product.cshtml", products);
         }
     }
 }
