@@ -1,87 +1,115 @@
-﻿@model Product;
+﻿@model AddNewProductRequest;
 
 <html>
 <body>
-    <h2>Thêm sản phẩm mới</h2>
-    <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post">
-        <div>
-            <label for="Name">Tên sản phẩm:</label>
-            <input asp-for="Name" type="text" id="Name" />
-            <span asp-validation-for="Name" class="text-danger"></span>
+    <div class="container mt-4 mb-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Thêm sản phẩm mới</h4>
+            </div>
+            <div class="card-body">
+                <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post" enctype="multipart/form-data">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm</label>
+                            <input asp-for="Name" class="form-control" placeholder="Nhập tên máy tính..." />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Sku" class="form-label fw-bold">Mã SKU</label>
+                            <input asp-for="Sku" class="form-control" placeholder="Ví dụ: LPT-A102" />
+                            <span asp-validation-for="Sku" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="BrandId" class="form-label fw-bold">Thương hiệu</label>
+                            <select asp-for="BrandId" class="form-select">
+                                <option value="" selected disabled>-- Chọn thương hiệu --</option>
+                                @foreach (var brand in ViewBag.Brands)
+                                {
+                                    <option value="@brand.Id">@brand.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="BrandId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label fw-bold">Phân loại</label>
+                            <select asp-for="CategoryId" class="form-select">
+                                <option value="" selected disabled>-- Chọn phân loại --</option>
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="Price" class="form-label fw-bold">Giá bán (VNĐ)</label>
+                            <input asp-for="Price" class="form-control" type="number" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Cpu" class="form-label fw-bold">CPU</label>
+                            <input asp-for="Cpu" class="form-control" placeholder="i7-13700H..." />
+                            <span asp-validation-for="Cpu" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Ram" class="form-label fw-bold">RAM</label>
+                            <input asp-for="Ram" class="form-control" placeholder="16GB DDR5..." />
+                            <span asp-validation-for="Ram" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="HardDrive" class="form-label fw-bold">Ổ cứng</label>
+                            <input asp-for="HardDrive" class="form-control" placeholder="SSD 512GB..." />
+                            <span asp-validation-for="HardDrive" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Gpu" class="form-label fw-bold">GPU</label>
+                            <input asp-for="Gpu" class="form-control" placeholder="RTX 4060..." />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ScreenSize" class="form-label fw-bold">Màn hình</label>
+                            <input asp-for="ScreenSize" class="form-control" placeholder="15.6 inch..." />
+                            <span asp-validation-for="ScreenSize" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Weight" class="form-label fw-bold">Trọng lượng (kg)</label>
+                            <input asp-for="Weight" class="form-control" type="number" />
+                            <span asp-validation-for="Weight" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ShortDescription" class="form-label fw-bold">Tóm tắt ngắn</label>
+                            <textarea asp-for="ShortDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Description" class="form-label fw-bold">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Hình ảnh sản phẩm</label>
+                            <div class="input-group">
+                                <input asp-for="ImageFile" type="file" class="form-control" id="uploadImg" accept="image/*">
+                                <label class="input-group-text" for="uploadImg">Tải lên</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4 text-end">
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary me-2">Hủy</a>
+                            <button type="submit" class="btn btn-primary px-5">Lưu sản phẩm</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div>
-            <label for="Sku">Mã SKU:</label>
-            <input asp-for="Sku" type="text" id="Sku" />
-            <span asp-validation-for="Sku" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="Brand">Thương hiệu:</label>
-            <select id="Brand" asp-for="BrandId">
-                <option value="" selected disabled>-- Chọn thương hiệu --</option>
-                @foreach (var brand in ViewBag.Brands)
-                {
-                    <option value="@brand.Id">@brand.Name</option>
-                }
-            </select>
-            <span asp-validation-for="BrandId" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="Category">Phân loại:</label>
-            <select id="Category" asp-for="CategoryId">
-                <option value="" selected disabled>-- Chọn phân loại --</option>
-                @foreach (var category in ViewBag.Categories)
-                {
-                    <option value="@category.Id">@category.Name</option>
-                }
-            </select>
-            <span asp-validation-for="CategoryId" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="Price">Giá bán:</label>
-            <input asp-for="Price" type="number" id="Price" />
-            <span asp-validation-for="Price" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="Description">Thông tin chi tiết:</label>
-            <textarea asp-for="Description" type="text" id="Description"> </textarea>
-        </div>
-        <div>
-            <label for="ShortDescription">Tóm tắt chi tiết:</label>
-            <textarea asp-for="ShortDescription" type="text" id="ShortDescription"></textarea>
-        </div>
-        <div>
-            <label for="Cpu">Cpu:</label>
-            <input asp-for="Cpu" type="text" id="Cpu" />
-            <span asp-validation-for="Cpu" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="Ram">Ram:</label>
-            <input asp-for="Ram" type="text" id="Ram" />
-            <span asp-validation-for="Ram" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="HardDrive">HardDrive:</label>
-            <input asp-for="HardDrive" type="text" id="HardDrive" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="Gpu">Gpu:</label>
-            <input asp-for="Gpu" type="text" id="Gpu" />
-            <span asp-validation-for="Gpu" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="ScreenSize">Kích cỡ màn hình:</label>
-            <input asp-for="ScreenSize" type="text" id="ScreenSize" />
-            <span asp-validation-for="ScreenSize" class="text-danger"></span>
-        </div>
-        <div>
-            <label for="Weight">Cân nặng (kg):</label>
-            <input asp-for="Weight" type="text" id="Weight" />
-        </div>
-        <div>
-            <button type="submit">Thêm</button>
-        </div>
-    </form>
+    </div>
 
 </body>
 </html>
