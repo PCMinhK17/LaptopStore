@@ -1,0 +1,245 @@
+﻿@model Product;
+
+<html>
+<body>
+    <h2>Thêm sản phẩm mới</h2>
+    <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post">
+        <div>
+            <label for="Name">Tên sản phẩm:</label>
+            <input asp-for="Name" type="text" id="Name" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Sku">Mã SKU:</label>
+            <input asp-for="Sku" type="text" id="Sku" />
+            <span asp-validation-for="Sku" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Brand">Thương hiệu:</label>
+            <select id="Brand" asp-for="BrandId">
+                <option value="" selected disabled>-- Chọn thương hiệu --</option>
+                @foreach (var brand in ViewBag.Brands)
+                {
+                    <option value="@brand.Id">@brand.Name</option>
+                }
+            </select>
+            <span asp-validation-for="BrandId" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Category">Phân loại:</label>
+            <select id="Category" asp-for="CategoryId">
+                <option value="" selected disabled>-- Chọn phân loại --</option>
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Price">Giá bán:</label>
+            <input asp-for="Price" type="number" id="Price" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Description">Thông tin chi tiết:</label>
+            <textarea asp-for="Description" type="text" id="Description"> </textarea>
+        </div>
+        <div>
+            <label for="ShortDescription">Tóm tắt chi tiết:</label>
+            <textarea asp-for="ShortDescription" type="text" id="ShortDescription"></textarea>
+        </div>
+        <div>
+            <label for="Cpu">Cpu:</label>
+            <input asp-for="Cpu" type="text" id="Cpu" />
+            <span asp-validation-for="Cpu" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Ram">Ram:</label>
+            <input asp-for="Ram" type="text" id="Ram" />
+            <span asp-validation-for="Ram" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="HardDrive">HardDrive:</label>
+            <input asp-for="HardDrive" type="text" id="HardDrive" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Gpu">Gpu:</label>
+            <input asp-for="Gpu" type="text" id="Gpu" />
+            <span asp-validation-for="Gpu" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="ScreenSize">Kích cỡ màn hình:</label>
+            <input asp-for="ScreenSize" type="text" id="ScreenSize" />
+            <span asp-validation-for="ScreenSize" class="text-danger"></span>
+        </div>
+        <div>
+            <label for="Weight">Cân nặng (kg):</label>
+            <input asp-for="Weight" type="text" id="Weight" />
+        </div>
+        <div>
+            <button type="submit">Thêm</button>
+        </div>
+    </form>
+
+</body>
+</html>
+
+@* @model Product;
+
+<html>
+<head>
+    <style>
+        .form-inline-block {
+            display: inline-block;
+            margin-right: 1rem
+        }
+        .form-small {
+            height: 2rem;
+            margin-top: 0.2rem
+        }
+        .form-big {
+            height: 4rem;
+            margin-top: 0.2rem
+        }
+        .form-label {
+            width: 8rem;
+        }
+        .form-field {
+            width: 10rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Thêm sản phẩm mới</h2>
+    <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post">
+        <div style="display: inline-block">
+            <div class="form-inline-block">
+                <div class="form-inline-block">
+                    <div class="form-label form-small">
+                        <label for="Name">Tên sản phẩm:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Brand">Thương hiệu:</label>
+                    </div>
+                    <div class="form-label form-big">
+                        <label for="Description">Thông tin chi tiết:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Cpu">Cpu:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="HardDrive">HardDrive:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="ScreenSize">Kích cỡ màn hình:</label>
+                    </div>
+
+                </div>
+                <div class="form-inline-block">
+                    <div class="form-small">
+                        <input class="form-field" asp-for="Name" type="text" id="Name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <select id="Brand" asp-for="BrandId">
+                            <option value="" selected disabled>-- Chọn thương hiệu --</option>
+                            @foreach (var brand in ViewBag.Brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="BrandId" class="text-danger"></span>
+                    </div>
+                    <div class="form-big">
+                        <textarea asp-for="Description" type="text" id="Description"> </textarea>
+                    </div>
+                    <div style="height:2rem; margin-top:0.5rem">
+                        <input asp-for="Cpu" type="text" id="Cpu" />
+                        <span asp-validation-for="Cpu" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="HardDrive" type="text" id="HardDrive" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="ScreenSize" type="text" id="ScreenSize" />
+                        <span asp-validation-for="ScreenSize" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-inline-block">
+                <div class="form-inline-block">
+                    <div class="form-label form-small">
+                        <label for="Sku">Mã SKU:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Category">Phân loại:</label>
+                    </div>
+                    <div class="form-label form-big">
+                        <label for="ShortDescription">Tóm tắt chi tiết:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Ram">Ram:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Gpu">Gpu:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Weight">Cân nặng (kg):</label>
+                    </div>
+
+                </div>
+                <div class="form-inline-block">
+                    <div class="form-small">
+                        <input asp-for="Sku" type="text" id="Sku" />
+                        <span asp-validation-for="Sku" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <select id="Category" asp-for="CategoryId">
+                            <option value="" selected disabled>-- Chọn phân loại --</option>
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                    <div class="form-big">
+                        <textarea asp-for="ShortDescription" type="text" id="ShortDescription"></textarea>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="Ram" type="text" id="Ram" />
+                        <span asp-validation-for="Ram" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="Gpu" type="text" id="Gpu" />
+                        <span asp-validation-for="Gpu" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="Weight" type="text" id="Weight" />
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+        <div>
+            <div class="form-small">
+                <label for="Price">Giá bán:</label>
+            </div>
+            <div class="form-small">
+                <input asp-for="Price" type="number" id="Price" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+        </div>
+        <div>
+            <button type="submit">Thêm</button>
+        </div>
+    </form>
+
+</body>
+</html> *@
