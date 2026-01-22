@@ -51,6 +51,7 @@ https://github.com/PCMinhK17/LaptopStore/pull/2/conflict?name=LaptopStore%252FMo
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Brand>(entity =>
