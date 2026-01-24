@@ -29,22 +29,16 @@ namespace LaptopStore.Controllers
             return View("~/Views/Store/Product.cshtml", allProducts);
         }
 
-        public IActionResult SearchByCategoryAndBrand(int? brandId, int? categoryId)
+        public IActionResult SearchByCategoryAndBrand(int? brandId, int? categoryId, int? priceRange)
         {
-            // Lấy danh sách Categories và Brands để hiển thị sidebar
             ViewBag.Categories = _context.Categories.ToList();
             ViewBag.Brands = _context.Brands.ToList();
 
-            // Gán giá trị SelectedCategory và SelectedBrand để hiển thị trạng thái active
-            ViewBag.SelectedCategory = categoryId.HasValue
-                ? _context.Categories.FirstOrDefault(c => c.Id == categoryId)?.Name
-                : null;
+            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SelectedBrandId = brandId;
+            ViewBag.SelectedPriceRange = priceRange;
 
-            ViewBag.SelectedBrand = brandId.HasValue
-                ? _context.Brands.FirstOrDefault(b => b.Id == brandId)?.Name
-                : null;
 
-            // Truy vấn sản phẩm theo brandId và categoryId
             var productsQuery = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
@@ -52,13 +46,27 @@ namespace LaptopStore.Controllers
                 .AsQueryable();
 
             if (brandId.HasValue)
-            {
                 productsQuery = productsQuery.Where(p => p.BrandId == brandId.Value);
-            }
 
             if (categoryId.HasValue)
-            {
                 productsQuery = productsQuery.Where(p => p.CategoryId == categoryId.Value);
+            if (priceRange.HasValue)
+            {
+                switch (priceRange.Value)
+                {
+                    case 1:
+                        productsQuery = productsQuery.Where(p => p.Price < 10000000);
+                        break;
+                    case 2:
+                        productsQuery = productsQuery.Where(p => p.Price >= 10000000 && p.Price <= 20000000);
+                        break;
+                    case 3:
+                        productsQuery = productsQuery.Where(p => p.Price > 20000000 && p.Price <= 50000000);
+                        break;
+                    case 4:
+                        productsQuery = productsQuery.Where(p => p.Price > 50000000);
+                        break;
+                }
             }
 
             var products = productsQuery.ToList();
@@ -104,7 +112,7 @@ namespace LaptopStore.Controllers
 
         public IActionResult Search(string searchTerm)
         {
-            searchTerm = searchTerm.Trim();// Loại bỏ khoảng trắng thừa
+            searchTerm = searchTerm?.Trim();// Loại bỏ khoảng trắng thừa
 
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -112,12 +120,12 @@ namespace LaptopStore.Controllers
             }
 
             var searchResults = _context.Products
-                .Include(p => p.Category != null && p.Category.Name.Contains(searchTerm))
+                .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.ProductImages)
                 .Where(p => EF.Functions.Like(p.Name, $"%{searchTerm}%") ||
                             EF.Functions.Like(p.Description, $"%{searchTerm}%") ||
-                            EF.Functions.Like(p.Category.Name, $"%{searchTerm}%") ||
+                            (p.Category != null && EF.Functions.Like(p.Category.Name, $"%{searchTerm}%")) ||
                             EF.Functions.Like(p.Brand.Name, $"%{searchTerm}%"))
                 .ToList();
 
@@ -128,32 +136,25 @@ namespace LaptopStore.Controllers
 
             return View("~/Views/Store/Product.cshtml", searchResults);
         }
-
-        public IActionResult FilterByPrice(decimal? minPrice, decimal? maxPrice)
+        public IActionResult Detail(int id)
         {
-            var productsQuery = _context.Products
+            if(id == null)
+            {
+                return NotFound();
+            }
+
+            var productDetail = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.ProductImages)
-                .AsQueryable();
+                .FirstOrDefault(p => p.Id == id);
 
-            if (minPrice.HasValue)
+            if(productDetail == null)
             {
-                productsQuery = productsQuery.Where(p => p.Price >= minPrice.Value);
-            }
-            if (maxPrice.HasValue)
-            {
-                productsQuery = productsQuery.Where(p => p.Price <= maxPrice.Value);
+                return NotFound();
             }
 
-            var products = productsQuery.ToList();
-
-            ViewBag.MinPrice = minPrice;
-            ViewBag.MaxPrice = maxPrice;
-            ViewBag.Categories = _context.Categories.ToList();
-            ViewBag.Brands = _context.Brands.ToList();
-
-            return View("~/Views/Store/Product.cshtml", products);
+            return View("~/Views/Store/Detail.cshtml", productDetail);
         }
     }
 }
