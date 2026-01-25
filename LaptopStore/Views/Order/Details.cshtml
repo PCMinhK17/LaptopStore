@@ -1,0 +1,78 @@
+﻿@* Views/Order/Details.cshtml *@
+@model LaptopStore.Models.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    var estFrom = (DateTime?)ViewBag.EstFrom;
+    var estTo = (DateTime?)ViewBag.EstTo;
+}
+
+<link rel="stylesheet" href="~/css/checkout.css" />
+
+<div class="container py-5">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="mb-0">Đơn hàng #@Model.Id</h3>
+                <small class="text-muted">Trạng thái: @Model.Status</small>
+            </div>
+            <div class="text-end">
+                <small>Ngày đặt: @Model.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <strong>Người nhận:</strong> @Model.FullName<br />
+                <strong>Điện thoại:</strong> @Model.PhoneNumber<br />
+                <strong>Địa chỉ:</strong> @Model.Address
+            </div>
+
+            <div class="mb-3">
+                <strong>Phương thức thanh toán:</strong> @Model.PaymentMethod<br />
+            </div>
+
+            <div class="mb-3">
+                <strong>Dự kiến giao hàng:</strong>
+                @if (estFrom.HasValue && estTo.HasValue)
+                {
+                    <span class="text-success">@estFrom.Value.ToString("dd.MM.yyyy") - @estTo.Value.ToString("dd.MM.yyyy")</span>
+                }
+            </div>
+
+            <h5>Sản phẩm</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Giá</th>
+                        <th>Tổng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var od in Model.OrderDetails)
+                    {
+                        <tr>
+                            <td>
+                                @od.Product?.Name
+                            </td>
+                            <td>@od.Quantity</td>
+                            <td>@od.Price.ToString("N0") đ</td>
+                            <td>@((od.Quantity * od.Price).ToString("N0")) đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="text-end">
+                <p>Tạm tính: <strong>@Model.Subtotal?.ToString("N0") đ</strong></p>
+                <p>Phí vận chuyển: <strong>@(Model.ShippingFee.HasValue && Model.ShippingFee.Value > 0 ? Model.ShippingFee.Value.ToString("N0") + " đ" : "Miễn phí")</strong></p>
+                <h4>Tổng thanh toán: <strong>@Model.TotalMoney.ToString("N0") đ</strong></h4>
+            </div>
+
+            <div class="mt-4">
+                <a href="/" class="btn btn-secondary">Quay về trang chủ</a>
+                <a href="/Order/Details/@Model.Id" class="btn btn-primary">Xem lại đơn hàng</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -8,6 +8,14 @@
     {
         totalAmount = cartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
     }
+
+    // Estimated delivery: hôm nay + processing + 3-5 ngày
+    var processingDays = 1;
+    var shippingMinDays = 3;
+    var shippingMaxDays = 5;
+    var today = DateTime.Now.Date;
+    var estFrom = today.AddDays(processingDays + shippingMinDays);
+    var estTo = today.AddDays(processingDays + shippingMaxDays);
 }
 
 <link rel="stylesheet" href="~/css/cart.css" />
@@ -144,7 +152,7 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <p><strong>Dự kiến giao hàng</strong></p>
-                        <p class="mb-0 text-success"><i class="fas fa-truck me-2"></i>18.01.2026 - 20.01.2026 (Miễn phí vận chuyển)</p>
+                        <p class="mb-0 text-success"><i class="fas fa-truck me-2"></i>@estFrom.ToString("dd.MM.yyyy") - @estTo.ToString("dd.MM.yyyy") (Miễn phí vận chuyển)</p>
                     </div>
                 </div>
 
@@ -183,7 +191,8 @@
 
                         @if (cartItems.Any())
                         {
-                            <a href="/Cart/Checkout@(Model?.UserId.HasValue == true ? "?userId=" + Model.UserId : "")" class="btn btn-primary btn-checkout btn-lg btn-block w-100 text-decoration-none">
+                            <!-- trỏ tới OrderController -->
+                            <a href="/Order/Checkout@(Model?.UserId.HasValue == true ? "?userId=" + Model.UserId : "")" class="btn btn-primary btn-checkout btn-lg btn-block w-100 text-decoration-none">
                                 TIẾN HÀNH THANH TOÁN
                             </a>
                         }
