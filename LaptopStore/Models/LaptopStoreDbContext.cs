@@ -24,7 +24,6 @@ public partial class LaptopStoreDbContext : DbContext
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Coupon> Coupons { get; set; }
-https://github.com/PCMinhK17/LaptopStore/pull/2/conflict?name=LaptopStore%252FModels%252FLaptopStoreDbContext.cs&ancestor_oid=9c1aaffc07944ee7ffaf016c15999eb28599edcd&base_oid=7dd12068f2bf771e906edc24942e6c70e632733e&head_oid=1bcc0ed54102da4b310b0ed3a41dce443bd24f24
     public virtual DbSet<ImportDetail> ImportDetails { get; set; }
 
     public virtual DbSet<ImportReceipt> ImportReceipts { get; set; }
