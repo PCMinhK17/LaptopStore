@@ -21,6 +21,12 @@
                     <th>Thương hiệu</th>
                     <th>Giá bán</th>
                     <th>Số lượng</th>
+                    <th>Cpu</th>
+                    <th>Ram</th>
+                    <th>Ổ cứng</th>
+                    <th>Gpu</th>
+                    <th>Kích cỡ màn</th>
+                    <th>Cân nặng</th>
                     <th>Trạng thái</th>
                 </tr>
             </thead>
@@ -34,6 +40,12 @@
                         <td>@product.BrandName</td>
                         <td>@product.Price.ToString("C")</td>
                         <td>@product.StockQuantity</td>
+                        <td>@(product.Cpu ?? "Không có")</td>
+                        <td>@(product.Ram ?? "Không có")</td>
+                        <td>@(product.HardDrive ?? "Không có")</td>
+                        <td>@(product.Gpu ?? "Không có")</td>
+                        <td>@(product.ScreenSize ?? "Không có")</td>
+                        <td>@(product.Weight ?? "Không có")</td>
                         <td>@(product.IsActive.Value ? "Hiện" : "Ẩn")</td>
                     </tr>
                 }

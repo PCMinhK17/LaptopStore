@@ -28,6 +28,12 @@ public class ProductManagementController : Controller
                 CategoryName = p.Category.Name,
                 Price = p.Price,
                 StockQuantity = p.StockQuantity,
+                Cpu = p.Cpu,
+                Ram = p.Ram,
+                HardDrive = p.HardDrive,
+                Gpu = p.Gpu,
+                ScreenSize = p.ScreenSize,
+                Weight = p.Weight,
                 ProductImages = p.ProductImages,
                 IsActive = p.IsActive
             }).ToList();
