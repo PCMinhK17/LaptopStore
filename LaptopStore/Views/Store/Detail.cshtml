@@ -1,0 +1,77 @@
+﻿@model LaptopStore.Models.Product
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+    var mainImage = Model.ProductImages?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card shadow-lg p-4">
+                <div class="row g-4">
+                    <!-- Thumbnails bên trái -->
+                    <div class="col-md-1 d-flex flex-column align-items-center">
+                        @if (Model.ProductImages != null && Model.ProductImages.Any())
+                        {
+                            foreach (var img in Model.ProductImages)
+                            {
+                                <img src="@img.ImageUrl"
+                                     class="img-thumbnail mb-3 product-thumb"
+                                     style="cursor:pointer; max-width:100px; max-height:70px;"
+                                     onclick="showMainImage('@img.ImageUrl')" />
+                            }
+                        }
+                    </div>
+                    <!-- Ảnh lớn bên phải -->
+                    <div class="col-md-6 d-flex align-items-center justify-content-center">
+                        <img id="mainProductImage" src="@mainImage" alt="@Model.Name"
+                             class="img-fluid rounded shadow"
+                             style="max-height: 320px; object-fit: contain;" />
+                    </div>
+                    <!-- Thông tin sản phẩm bên phải -->
+                    <div class="col-md-5">
+                        <h3 class="card-title">@Model.Name</h3>
+                        <p><strong>Thương hiệu:</strong> @Model.Brand?.Name</p>
+                        <p><strong>CPU:</strong> @Model.Cpu</p>
+                        <p><strong>GPU:</strong> @Model.Gpu</p>
+                        <p><strong>Ram:</strong> @Model.Ram</p>
+                        <p><strong>Ổ Cứng:</strong> @Model.HardDrive</p>
+                        <p><strong>Màn Hình:</strong> @Model.ScreenSize</p>
+                        <p><strong>Khối Lượng:</strong> @Model.Weight</p>
+                        <p><strong>Mô tả:</strong> @Model.Description</p>
+                        <p>
+                            <strong>Giá:</strong> 
+                            <span class="text-danger">@String.Format("{0:N0} VND", Model.Price)</span>
+                        </p>
+                        <p>
+                            <strong>Số lượng:</strong>
+                            @(Model.StockQuantity > 0 ? Model.StockQuantity.ToString() : Html.Raw("<span class='text-danger'>Hết hàng</span>"))
+                        </p>
+                        <!-- Nút thêm vào giỏ hàng -->
+                        <form method="post" asp-controller="Cart" asp-action="AddToCart">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showMainImage(url) {
+            document.getElementById('mainProductImage').src = url;
+        }
+    </script>
+}
+
+<style>
+    .product-thumb:hover {
+        border: 2px solid #007bff;
+    }
+</style>
