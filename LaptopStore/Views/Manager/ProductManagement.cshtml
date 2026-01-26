@@ -1,0 +1,45 @@
+﻿@model List<ProductResponse>
+
+<html>
+<body>
+    <div>
+        <h2 style="display:inline-block">Quản lý sản phẩm</h2>
+        <a asp-controller="ProductManagement" asp-action="AddNewProduct" style="float:right; margin-top:10px;">Thêm sản phẩm mới</a>
+    </div>
+    @if (Model == null || Model.Count == 0)
+    {
+        <p>Không có sản phẩm nào trong hệ thống.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Thumbnail</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Phân loại</th>
+                    <th>Thương hiệu</th>
+                    <th>Giá bán</th>
+                    <th>Số lượng</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model)
+                {
+                    <tr>
+                        <td><img style="width:3rem" src="@product.ProductImages.FirstOrDefault(i => i.IsThumbnail.Value)?.ImageUrl" alt="@product.Name"/></td>
+                        <td><a asp-controller="ProductManagement" asp-action="ProductDetails" asp-route-id="@product.Id">@product.Name</a></td>
+                        <td>@product.CategoryName</td>
+                        <td>@product.BrandName</td>
+                        <td>@product.Price.ToString("C")</td>
+                        <td>@product.StockQuantity</td>
+                        <td>@(product.IsActive.Value ? "Hiện" : "Ẩn")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+</body>
+</html>
