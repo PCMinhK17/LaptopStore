@@ -1,0 +1,199 @@
+﻿@model List<LaptopStore.Models.Product>
+@using LaptopStore.Models
+
+@{
+    ViewData["Title"] = "Kho Laptop";
+}
+
+@if (ViewBag.SelectedCategory != null)
+
+{
+    <h4 class="text-center mb-4">Danh mục: <span class="text-primary">@ViewBag.SelectedCategory</span></h4>
+}
+@if (ViewBag.SelectedBrand != null)
+
+{
+    <h4 class="text-center mb-4">Danh mục: <span class="text-primary">@ViewBag.SelectedBrand</span></h4>
+}
+ @if (ViewBag.SearchTerm != null)
+ {
+     <div class="alert alert-info" role="alert">
+         Kết quả tìm kiếm cho: "@ViewBag.SearchTerm" 
+         (@Model.Count() Laptop được tìm thấy)
+     </div>
+ }
+
+<div class="container-fluid px-0">
+    <!-- Toy Collection -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="mb-4">
+                        <form method="get" asp-controller="Product" asp-action="Search">
+                            <div class="input-group">
+                                <input type="text" id="searchTerm" name="searchTerm" class="form-control" placeholder="Nhập từ khóa tìm kiếm" value="@ViewBag.SearchTerm" />
+                                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                            </div>
+                        </form>
+                    </div>
+                <div class="card-header bg-primary text-white">
+                     <i class="bi bi-filter me-2"></i>Lọc sản phẩm
+                </div>
+                <div class="card-body">
+                     <form method="get" asp-controller="Product" asp-action="SearchByCategoryAndBrand">
+                     <div class="mb-2">
+                         <label for="brandId" class="form-label">Hãng</label>
+                         <select id="brandId" name="brandId" class="form-select">
+                             <option value="">-- Chọn hãng --</option>
+                             @foreach (var brand in ViewBag.Brands)
+                             {
+                                 <option value="@brand.Id" selected="@(ViewBag.SelectedBrandId == brand.Id ? "selected" : "")">@brand.Name</option>
+                             }
+                         </select>
+                     </div>
+                     <div class="mb-2">
+                     <label for="categoryId" class="form-label">Thể loại</label>
+                          <select id="categoryId" name="categoryId" class="form-select">
+                              <option value="">-- Chọn thể loại --</option>
+                              @foreach (var category in ViewBag.Categories)
+                              {
+                                  <option value="@category.Id" selected="@(ViewBag.SelectedCategoryId == category.Id ? "selected" : "")">@category.Name</option>
+                              }
+                          </select>
+                     </div>
+                            <div class="mb-2">
+                                <label for="priceRange" class="form-label">Khoảng giá</label>
+                                <select id="priceRange" name="priceRange" class="form-select">
+                                    <option value="">-- Chọn khoảng giá --</option>
+                                    <option value="1">Dưới 10 triệu</option>
+                                    <option value="2">10 triệu - 20 triệu</option>
+                                    <option value="3">20 triệu - 50 triệu</option>
+                                    <option value="4">Trên 50 triệu</option>
+                                </select>
+                            </div>
+                     <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                     </form>
+                </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9">
+                @if (Model == null || !Model.Any())
+                {
+                    <div class="alert alert-info text-center" role="alert">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Hiện chưa có sản phẩm nào sẵn sàng. Hãy quay lại sau!
+                    </div>
+                }
+                else
+                {
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        @foreach (var product in Model)
+                        {
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm toy-card overflow-hidden d-flex flex-column">
+                                    @{
+                                        var productImage = product.ProductImages?.FirstOrDefault()?.ImageUrl ?? "/images/default-toy.svg";
+                                    }
+                                    <div class="card-img-top position-relative" style="height: 250px; overflow: hidden;">
+                                        <img src="@productImage" class="w-100 h-100 object-fit-cover" alt="@product.Name">
+                                        <div class="toy-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end p-3" style="background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.7));">
+                                            <span class="badge">
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body flex-grow-1 d-flex flex-column">
+                                        <h5 class="card-title mb-2">@product.Name</h5>
+                                        <p class="card-text text-muted small mb-2 flex-grow-1">@product.Description</p>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                             <small class="text-muted">
+                                                <i class="bi bi-person-fill me-1"></i>@product.Brand.Name
+                                             </small>
+                                             <small class="text-muted">
+                                                <i class="bi bi-tag-fill me-1"></i>@product.Category.Name
+                                             </small>
+                                        </div>
+                                        <div class="mt-2">
+                                                <strong class="text-danger">@String.Format("{0:N0} VND", product.Price)</strong>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent border-0 text-center mt-auto">
+                                            <a asp-controller="Product" asp-action="Detail" asp-route-id="@product.Id" class="btn btn-info btn-sm w-100">
+                                                <i class="bi bi-eye me-1"></i> Xem chi tiết
+                                            </a>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .thumbnail-section {
+            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .toy-card {
+            transition: transform 0.2s ease;
+            height: 100%;
+        }
+
+            .toy-card:hover {
+                transform: scale(1.03);
+            }
+
+        .object-fit-cover {
+            object-fit: cover;
+        }
+
+        .toy-card .card-img-top {
+            height: 180px;
+            overflow: hidden;
+        }
+
+        .toy-card .card-body {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .toy-card .card-title {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .toy-card .card-text {
+            font-size: 0.85rem;
+            color: #666;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Giới hạn 2 dòng mô tả */
+            -webkit-box-orient: vertical;
+        }
+
+        .toy-card .card-footer {
+            padding: 0.75rem;
+            background-color: transparent;
+            border-top: none;
+        }
+
+        .toy-card .btn-sm {
+            font-size: 0.85rem;
+            padding: 4px 8px;
+        }
+    </style>
+}
+
+
+

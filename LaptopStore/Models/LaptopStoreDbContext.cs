@@ -1,3 +1,4 @@
+
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,6 @@ public partial class LaptopStoreDbContext : DbContext
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Coupon> Coupons { get; set; }
-
     public virtual DbSet<ImportDetail> ImportDetails { get; set; }
 
     public virtual DbSet<ImportReceipt> ImportReceipts { get; set; }
@@ -43,9 +43,14 @@ public partial class LaptopStoreDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-        var connectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("MyCnn");
-        optionsBuilder.UseSqlServer(connectionString);
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        var builder = new ConfigurationBuilder()
+                       .SetBasePath(Directory.GetCurrentDirectory())
+                       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+        IConfigurationRoot configuration = builder.Build();
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));
+
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -496,3 +501,4 @@ public partial class LaptopStoreDbContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+
