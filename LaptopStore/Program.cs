@@ -1,11 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using LaptopStore.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<LaptopStoreDbContext>(options =>
@@ -37,7 +36,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
-app.UseSession();
 
 app.UseRouting();
 

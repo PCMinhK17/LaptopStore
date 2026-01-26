@@ -1,5 +1,7 @@
-﻿using LaptopStore.Models;
+﻿using LaptopStore.Extensions;
+using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LaptopStore.Controllers
 {
@@ -12,10 +14,56 @@ namespace LaptopStore.Controllers
             _context = context;
         }
 
-        // VIEW PROFILE
-        public IActionResult Profile(int id, bool edit = false)
+        //public IActionResult Index()
+        //{
+        //    int? userId = Identity.GetUserId(User);
+
+        //    if (userId == null)
+        //    {
+        //        return Content("Không xác định được UserId");
+        //    }
+
+        //    return RedirectToAction("Profile", new { id = userId });
+        //}
+
+        //public IActionResult Profile(int id, bool edit = false)
+        //{
+        //    var user = _context.Users.FirstOrDefault(x => x.Id == id);
+        //    if (user == null) return NotFound();
+
+        //    if (edit) ViewBag.EditMode = true;
+
+        //    return View(user);
+        //}
+
+        //[HttpPost]
+        //public IActionResult Profile(User model)
+        //{
+        //    var user = _context.Users.First(x => x.Id == model.Id);
+        //    user.FullName = model.FullName;
+        //    user.PhoneNumber = model.PhoneNumber;
+        //    user.Address = model.Address;
+
+        //    _context.SaveChanges();
+
+        //    return RedirectToAction("Profile", new { id = user.Id });
+        //}
+
+        public IActionResult Index()
         {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            return RedirectToAction("Profile");
+        }
+
+        public IActionResult Profile(bool edit = false)
+        {
+            int? userId = Identity.GetUserId(User);
+
+            if (userId == null)
+            {
+                return Content("Không xác định được UserId");
+            }
+
+            var user = _context.Users.FirstOrDefault(x => x.Id == userId);
             if (user == null) return NotFound();
 
             if (edit) ViewBag.EditMode = true;
@@ -33,7 +81,7 @@ namespace LaptopStore.Controllers
 
             _context.SaveChanges();
 
-            return RedirectToAction("Profile", new { id = user.Id });
+            return RedirectToAction("Profile");
         }
 
     }

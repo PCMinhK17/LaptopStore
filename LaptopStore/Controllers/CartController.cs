@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LaptopStore.Models;
+using LaptopStore.Extensions;
 
 namespace LaptopStore.Controllers
 {
@@ -15,6 +16,11 @@ namespace LaptopStore.Controllers
 
         public IActionResult CartView(int? userId = 2)
         {
+            int? cookieUserId = Identity.GetUserId(User);
+            if (cookieUserId.HasValue)
+            {
+                userId = cookieUserId;
+            }
             // Nếu không có userId, có thể lấy từ session hoặc authentication
             // Tạm thời chỉ lấy cart của userId nếu có
             Cart? cart = null;

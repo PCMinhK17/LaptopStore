@@ -101,7 +101,17 @@ namespace LaptopStore.Controllers
                 TempData["ToastMessage"] = $"Đăng nhập thành công! Chào {user.FullName ?? user.Email}";
                 TempData["ToastType"] = "success";
 
-                return RedirectToAction("Index", "Home");
+                switch (user.Role)
+                {
+                    case "admin":
+                        return RedirectToAction("Index", "ProductManagement");
+                    case "staff":
+                        return RedirectToAction("Index", "Home");
+                    case "customer":
+                        return RedirectToAction("Index", "Product");
+                    default:
+                        return RedirectToAction("Index", "Home");
+                }  
             }
             catch (Exception ex)
             {
@@ -122,7 +132,7 @@ namespace LaptopStore.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Product");
             }
 
             return View(new RegisterViewModel());
@@ -180,7 +190,7 @@ namespace LaptopStore.Controllers
                 TempData["ToastMessage"] = "Đăng ký và đăng nhập thành công!";
                 TempData["ToastType"] = "success";
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Product");
             }
             catch (Exception ex)
             {
