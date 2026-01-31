@@ -333,10 +333,15 @@
                 <!-- Address -->
                 <div class="form-floating-custom">
                     <input asp-for="Address"
+                           id="regAddress"
                            class="form-control-custom"
                            placeholder="Địa chỉ"
-                           required />
+                           required
+                           maxlength="255"
+                           oninput="checkAddress()" />
                     <i class="fas fa-map-marker-alt input-icon"></i>
+                    <i id="addressIcon" class="fas fa-circle-check validity-icon"></i>
+                    <span id="address-error" class="validation-message" style="display:none;"></span>
                     <span asp-validation-for="Address" class="validation-message"></span>
                 </div>
 
@@ -400,6 +405,7 @@
     <script>
         let emailValid = false;
         let phoneValid = false;
+        let addressValid = false;
         let passwordValid = false;
         let confirmValid = false;
 
@@ -413,7 +419,7 @@
 
         function updateSubmitState() {
             const btn = document.getElementById('btnRegister');
-            btn.disabled = !(emailValid && phoneValid && passwordValid && confirmValid);
+            btn.disabled = !(emailValid && phoneValid && addressValid && passwordValid && confirmValid);
         }
 
         // EMAIL
@@ -525,6 +531,42 @@
                 console.error(err);
                 phoneValid = false;
                 icon.style.display = 'none';
+            }
+
+            updateSubmitState();
+        }
+
+        // ADDRESS
+        function checkAddress() {
+            const addressInput = document.getElementById('regAddress');
+            const errorSpan = document.getElementById('address-error');
+            const icon = document.getElementById('addressIcon');
+
+            const address = addressInput.value.trim();
+            
+            if (!address) {
+                addressValid = false;
+                icon.className = 'fas fa-circle-check validity-icon';
+                icon.style.display = 'none';
+                errorSpan.style.display = 'none';
+                addressInput.classList.remove('is-invalid-custom');
+                updateSubmitState();
+                return;
+            }
+
+            if (address.length > 255) {
+                addressValid = false;
+                errorSpan.textContent = 'Địa chỉ không được quá 255 ký tự';
+                errorSpan.style.display = 'block';
+                addressInput.classList.add('is-invalid-custom');
+                icon.style.display = 'inline-block';
+                icon.className = 'fas fa-circle-exclamation validity-icon invalid';
+            } else {
+                addressValid = true;
+                errorSpan.style.display = 'none';
+                addressInput.classList.remove('is-invalid-custom');
+                icon.style.display = 'inline-block';
+                icon.className = 'fas fa-circle-check validity-icon valid';
             }
 
             updateSubmitState();

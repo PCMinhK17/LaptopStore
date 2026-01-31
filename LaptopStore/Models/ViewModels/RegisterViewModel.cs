@@ -19,6 +19,7 @@ namespace LaptopStore.Models.ViewModels
         public string PhoneNumber { get; set; } = null!;
 
         [Required(ErrorMessage = "Vui lòng chọn Tỉnh/Thành phố")]
+        [StringLength(255, ErrorMessage = "Địa chỉ không được quá 255 ký tự")]
         [Display(Name = "Tỉnh/Thành phố")]
         public string Address { get; set; } = null!;
 
