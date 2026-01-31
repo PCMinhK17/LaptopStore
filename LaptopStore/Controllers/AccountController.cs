@@ -293,16 +293,38 @@ namespace LaptopStore.Controllers
 
         #region Logout
 
+        [HttpGet]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            try
+            {
+                // Xóa authentication cookie
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công.";
-            TempData["ToastType"] = "success";
+                // Xóa tất cả session data
+                HttpContext.Session.Clear();
 
-            return RedirectToAction("Index", "Home");
+                // Xóa tất cả cookies liên quan
+                foreach (var cookie in Request.Cookies.Keys)
+                {
+                    Response.Cookies.Delete(cookie);
+                }
+
+                _logger.LogInformation("User logged out successfully");
+
+                TempData["ToastMessage"] = "Bạn đã đăng xuất thành công.";
+                TempData["ToastType"] = "success";
+
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during logout");
+                
+                // Vẫn redirect về login dù có lỗi
+                return RedirectToAction("Login", "Account");
+            }
         }
 
         #endregion
