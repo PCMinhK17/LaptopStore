@@ -314,11 +314,8 @@
                            id="loginInput"
                            class="form-control-custom"
                            placeholder="Email hoặc Số điện thoại"
-                           required
-                           oninput="validateLoginIdentifier()"
-                           onblur="validateLoginIdentifier()" />
+                           required />
                     <i class="fas fa-user input-icon"></i>
-                    <span id="login-feedback" class="validation-message" style="display:none;"></span>
                     <span asp-validation-for="Input" class="validation-message"></span>
                 </div>
 
@@ -372,59 +369,6 @@
             } else {
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
-            }
-        }
-
-        // Validate email/phone realtime trong ô Login.Input
-        async function validateLoginIdentifier() {
-            const input = document.getElementById('loginInput');
-            const feedback = document.getElementById('login-feedback');
-            const value = input.value.trim();
-            const atSymbol = '@@';
-
-            if (!value) {
-                feedback.style.display = 'none';
-                return;
-            }
-
-            if (value.includes(atSymbol)) {
-                const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
-
-                if (!emailRegex.test(value)) {
-                    feedback.textContent = 'Email không hợp lệ.';
-                    feedback.className = 'validation-message';
-                    feedback.style.display = 'block';
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`/Account/CheckEmail?email=${encodeURIComponent(value)}`);
-                    const data = await response.json();
-
-                    if (!data.exists) {
-                        feedback.textContent = 'Email này chưa được đăng ký.';
-                        feedback.className = 'validation-message';
-                    } else {
-                        feedback.textContent = 'Email hợp lệ, bạn có thể đăng nhập.';
-                        feedback.className = 'validation-success';
-                    }
-                    feedback.style.display = 'block';
-                } catch (err) {
-                    console.error(err);
-                    feedback.style.display = 'none';
-                }
-            } else {
-                const phoneRegex = /^[0-9]{9,11}$/;
-
-                if (!phoneRegex.test(value)) {
-                    feedback.textContent = 'Số điện thoại không hợp lệ (9–11 chữ số).';
-                    feedback.className = 'validation-message';
-                } else {
-                    feedback.textContent = 'Số điện thoại hợp lệ.';
-                    feedback.className = 'validation-success';
-                }
-
-                feedback.style.display = 'block';
             }
         }
 
