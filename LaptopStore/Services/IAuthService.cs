@@ -11,6 +11,12 @@ namespace LaptopStore.Services
         Task<bool> CheckPhoneExistsAsync(string phoneNumber);
         Task<User?> GetUserByIdentifierAsync(string identifier);
         Task<bool> VerifyPasswordAsync(User user, string password);
+        
+        // Email Verification Methods
+        Task<string> GenerateEmailVerificationTokenAsync(int userId);
+        Task<EmailVerificationResult> VerifyEmailTokenAsync(string token);
+        Task<bool> ResendVerificationEmailAsync(int userId);
+        Task<User?> GetUserByIdAsync(int userId);
     }
 
     public class AuthResult
@@ -20,5 +26,17 @@ namespace LaptopStore.Services
         public string? ErrorMessage { get; set; }
         public string? RedirectAction { get; set; }
         public string? RedirectController { get; set; }
+        
+        /// <summary>
+        /// Cho biết user cần xác thực email
+        /// </summary>
+        public bool RequiresEmailVerification { get; set; }
+    }
+
+    public class EmailVerificationResult
+    {
+        public bool Success { get; set; }
+        public User? User { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }

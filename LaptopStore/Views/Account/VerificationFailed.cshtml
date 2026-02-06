@@ -1,0 +1,251 @@
+@{
+    ViewData["Title"] = "Xác thực thất bại";
+    Layout = null;
+    var errorMessage = ViewBag.ErrorMessage as string ?? "Xác thực email thất bại.";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LaptopStore</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        :root {
+            --error-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            --bg-overlay: rgba(15, 23, 42, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0f172a url('https://images.unsplash.com/photo-1497294815431-9365093b7331?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--bg-overlay);
+            backdrop-filter: blur(8px);
+        }
+
+        .error-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            padding: 50px;
+            border-radius: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .error-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: var(--error-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: shake 0.6s ease-out;
+        }
+
+        .error-icon i {
+            font-size: 55px;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .description {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fff1f2 100%);
+            border: 1px solid #fecaca;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .error-box p {
+            margin: 0;
+            color: #991b1b;
+            font-size: 0.95rem;
+        }
+
+        .error-box i {
+            color: #ef4444;
+            margin-right: 8px;
+        }
+
+        .help-section {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .help-section h3 {
+            color: #334155;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .help-item {
+            display: flex;
+            align-items: flex-start;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .help-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-item i {
+            color: #3b82f6;
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+
+        .btn-primary-custom {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 30px rgba(37, 99, 235, 0.45);
+            color: #fff;
+        }
+
+        .btn-outline-custom {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            background: transparent;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-custom:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        @@keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fas fa-times"></i>
+        </div>
+
+        <h1>Xác thực thất bại</h1>
+        
+        <p class="description">
+            Rất tiếc, chúng tôi không thể xác thực tài khoản của bạn.
+        </p>
+
+        <div class="error-box">
+            <p>
+                <i class="fas fa-exclamation-circle"></i>
+                @errorMessage
+            </p>
+        </div>
+
+        <div class="help-section">
+            <h3><i class="fas fa-lightbulb me-2"></i>Bạn có thể thử:</h3>
+            <div class="help-item">
+                <i class="fas fa-redo"></i>
+                <span>Yêu cầu gửi lại email xác thực mới</span>
+            </div>
+            <div class="help-item">
+                <i class="fas fa-user-plus"></i>
+                <span>Đăng ký tài khoản mới nếu email không còn hiệu lực</span>
+            </div>
+            <div class="help-item">
+                <i class="fas fa-envelope"></i>
+                <span>Liên hệ hỗ trợ nếu bạn cần trợ giúp</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a asp-controller="Account" asp-action="Register" class="btn-primary-custom">
+                <i class="fas fa-user-plus me-2"></i>Đăng ký mới
+            </a>
+            <a asp-controller="Account" asp-action="Login" class="btn-outline-custom">
+                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+            </a>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
