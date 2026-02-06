@@ -1,0 +1,391 @@
+@using LaptopStore.Models
+@model PaginatedList<LaptopStore.Models.ViewModels.UserViewModel>
+
+@{
+    var isStaffList = Context.Request.Path.Value?.Contains("Staff") == true;
+    var actionName = isStaffList ? "StaffList" : "CustomerList";
+    ViewData["Title"] = isStaffList ? "Quản lý nhân viên" : "Quản lý khách hàng";
+    ViewData["Subtitle"] = isStaffList ? "Quản lý tài khoản nhân viên trong hệ thống" : "Quản lý tài khoản khách hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-left">
+        <h2>@ViewData["Title"]</h2>
+        <p>@ViewData["Subtitle"]</p>
+    </div>
+    <a href="@Url.Action("Create")" class="btn btn-primary">
+        <i class="fas fa-user-plus"></i>
+        Thêm @(isStaffList ? "nhân viên" : "người dùng") mới
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas @(isStaffList ? "fa-user-tie" : "fa-users")"></i>
+            </div>
+            <div class="stat-label">Tổng số</div>
+            <div class="stat-value">@Model.TotalItems</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-label">Đang hoạt động</div>
+            <div class="stat-value">@Model.Count(u => u.Status == "active")</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-user-clock"></i>
+            </div>
+            <div class="stat-label">Chờ duyệt</div>
+            <div class="stat-value">@Model.Count(u => u.Status == "pending")</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card stat-warning" style="--warning-500: var(--danger-500); --warning-50: var(--danger-50); --warning-600: var(--danger-600);">
+            <div class="stat-icon">
+                <i class="fas fa-user-lock"></i>
+            </div>
+            <div class="stat-label">Đã khóa</div>
+            <div class="stat-value">@Model.Count(u => u.Status == "locked")</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-5 col-lg-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tên, email, số điện thoại...">
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control form-select" id="statusFilter">
+                    <option value="">Tất cả</option>
+                    <option value="active">Hoạt động</option>
+                    <option value="pending">Chờ duyệt</option>
+                    <option value="locked">Đã khóa</option>
+                </select>
+            </div>
+            @if (!isStaffList)
+            {
+                <div class="col-6 col-md-2 col-lg-2">
+                    <label class="form-label">Vai trò</label>
+                    <select class="form-control form-select" id="roleFilter">
+                        <option value="">Tất cả</option>
+                        <option value="customer">Khách hàng</option>
+                    </select>
+                </div>
+            }
+            <div class="col-6 col-md-2 col-lg-2">
+                <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">
+                    <i class="fas fa-redo me-1"></i> Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas @(isStaffList ? "fa-user-tie" : "fa-users")"></i>
+            Danh sách @(isStaffList ? "nhân viên" : "người dùng")
+            <span class="badge badge-light ms-2">@Model.TotalItems người</span>
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("ExportExcel", new { role = isStaffList ? "staff" : "customer" })" class="btn btn-sm btn-secondary">
+                <i class="fas fa-file-excel"></i>
+                <span class="d-none d-md-inline ms-1">Xuất Excel</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        @if (Model.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="empty-state-title">Chưa có @(isStaffList ? "nhân viên" : "người dùng") nào</div>
+                <p class="empty-state-text">Bắt đầu thêm @(isStaffList ? "nhân viên" : "người dùng") vào hệ thống</p>
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-1"></i> Thêm @(isStaffList ? "nhân viên" : "người dùng") đầu tiên
+                </a>
+            </div>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">STT</th>
+                        <th>Thông tin người dùng</th>
+                        <th>Liên hệ</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ 
+                        int stt = (Model.PageIndex - 1) * 10 + 1;
+                    }
+                    @foreach (var user in Model)
+                    {
+                        var statusClass = user.Status switch
+                        {
+                            "active" => "badge-success",
+                            "pending" => "badge-warning",
+                            "locked" => "badge-danger",
+                            _ => "badge-light"
+                        };
+                        var statusText = user.Status switch
+                        {
+                            "active" => "Hoạt động",
+                            "pending" => "Chờ duyệt",
+                            "locked" => "Đã khóa",
+                            _ => user.Status
+                        };
+                        var roleClass = user.Role switch
+                        {
+                            "admin" => "badge-primary",
+                            "staff" => "badge-info",
+                            _ => "badge-success"
+                        };
+                        var roleText = user.Role switch
+                        {
+                            "admin" => "Quản trị viên",
+                            "staff" => "Nhân viên",
+                            _ => "Khách hàng"
+                        };
+                        
+                        <tr class="user-row" 
+                            data-status="@user.Status" 
+                            data-role="@user.Role">
+                            <td class="text-center fw-medium">@(stt++)</td>
+                            <td>
+                                <div class="table-user">
+                                    <div class="table-user-avatar">
+                                        @(user.FullName?.Substring(0, 1).ToUpper() ?? "?")
+                                    </div>
+                                    <div class="table-user-info">
+                                        <div class="table-user-name">@user.FullName</div>
+                                        <div class="table-user-email">@user.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    <div>
+                                        <i class="fas fa-phone-alt text-muted me-2" style="width: 14px;"></i>
+                                        <span>@(string.IsNullOrEmpty(user.PhoneNumber) ? "Chưa có" : user.PhoneNumber)</span>
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.8rem; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <i class="fas fa-map-marker-alt text-muted me-2" style="width: 14px;"></i>
+                                        <span title="@user.Address">@(string.IsNullOrEmpty(user.Address) ? "Chưa có" : user.Address)</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge @roleClass">
+                                    @roleText
+                                </span>
+                            </td>
+                            <td>
+                                <span id="status-badge-@user.Id" class="badge @statusClass">
+                                    <span class="status-dot @(user.Status == "active" ? "active" : user.Status == "pending" ? "pending" : "inactive") me-1"></span>
+                                    @statusText
+                                </span>
+                            </td>
+                            <td>
+                                <div>@user.CreatedAt?.ToString("dd/MM/yyyy")</div>
+                                <small class="text-muted">@user.CreatedAt?.ToString("HH:mm")</small>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="@Url.Action("Edit", new { id = user.Id })" 
+                                       class="btn btn-icon btn-sm btn-secondary" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" 
+                                            id="btn-toggle-@user.Id"
+                                            class="btn btn-icon btn-sm @(user.Status == "locked" ? "btn-outline-primary" : "btn-outline-danger")" 
+                                            title="@(user.Status == "locked" ? "Mở khóa" : "Khóa tài khoản")"
+                                            onclick="toggleStatus(@user.Id)">
+                                        <i class="fas @(user.Status == "locked" ? "fa-unlock" : "fa-lock")"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    
+    @if (Model.Count > 0)
+    {
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="pagination-info">
+                    Hiển thị <strong>@Model.Count</strong> trên tổng số <strong>@Model.TotalItems</strong> @(isStaffList ? "nhân viên" : "người dùng")
+                </div>
+                <div class="pagination">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a asp-action="@actionName" asp-route-pageNumber="@(Model.PageIndex - 1)" class="pagination-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    }
+                    
+                    @for (int i = 1; i <= Model.TotalPages && i <= 5; i++)
+                    {
+                        <a asp-action="@actionName" 
+                           asp-route-pageNumber="@i"
+                           class="pagination-btn @(i == Model.PageIndex ? "active" : "")">
+                            @i
+                        </a>
+                    }
+                    
+                    @if (Model.TotalPages > 5)
+                    {
+                        <span class="pagination-btn disabled">...</span>
+                        <a asp-action="@actionName" 
+                           asp-route-pageNumber="@Model.TotalPages"
+                           class="pagination-btn @(Model.TotalPages == Model.PageIndex ? "active" : "")">
+                            @Model.TotalPages
+                        </a>
+                    }
+                    
+                    @if (Model.HasNextPage)
+                    {
+                        <a asp-action="@actionName" asp-route-pageNumber="@(Model.PageIndex + 1)" class="pagination-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Filter functionality
+        document.getElementById('searchInput').addEventListener('keyup', filterUsers);
+        document.getElementById('statusFilter').addEventListener('change', filterUsers);
+        
+        const roleFilter = document.getElementById('roleFilter');
+        if (roleFilter) {
+            roleFilter.addEventListener('change', filterUsers);
+        }
+
+        function filterUsers() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const role = document.getElementById('roleFilter')?.value || '';
+            
+            const rows = document.querySelectorAll('.user-row');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const rowStatus = row.dataset.status;
+                const rowRole = row.dataset.role;
+                
+                let show = true;
+                
+                if (search && !text.includes(search)) show = false;
+                if (status && rowStatus !== status) show = false;
+                if (role && rowRole !== role) show = false;
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            if (document.getElementById('roleFilter')) {
+                document.getElementById('roleFilter').value = '';
+            }
+            filterUsers();
+        }
+
+        // Toggle Status
+        function toggleStatus(userId) {
+            if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái của người dùng này?')) return;
+
+            fetch('/UserManagement/ToggleStatus/' + userId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = document.getElementById('status-badge-' + userId);
+                    const btn = document.getElementById('btn-toggle-' + userId);
+                    const icon = btn.querySelector('i');
+                    const statusDot = badge.querySelector('.status-dot');
+                    
+                    if (data.newStatus === 'active') {
+                        badge.className = 'badge badge-success';
+                        badge.innerHTML = '<span class="status-dot active me-1"></span>Hoạt động';
+                        btn.className = 'btn btn-icon btn-sm btn-outline-danger';
+                        btn.title = 'Khóa tài khoản';
+                        icon.className = 'fas fa-lock';
+                    } else {
+                        badge.className = 'badge badge-danger';
+                        badge.innerHTML = '<span class="status-dot inactive me-1"></span>Đã khóa';
+                        btn.className = 'btn btn-icon btn-sm btn-outline-primary';
+                        btn.title = 'Mở khóa';
+                        icon.className = 'fas fa-unlock';
+                    }
+                    
+                    // Update row data attribute
+                    const row = btn.closest('.user-row');
+                    if (row) {
+                        row.dataset.status = data.newStatus;
+                    }
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi thay đổi trạng thái');
+            });
+        }
+    </script>
+}

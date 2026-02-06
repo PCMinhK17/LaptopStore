@@ -21,5 +21,14 @@ namespace LaptopStore.Services
         /// <param name="userName">Tên người dùng</param>
         /// <returns>True nếu gửi thành công</returns>
         Task<bool> SendVerificationSuccessEmailAsync(string toEmail, string userName);
+
+        /// <summary>
+        /// Gửi email thiết lập tài khoản (cho user do admin tạo)
+        /// </summary>
+        /// <param name="toEmail">Email người nhận</param>
+        /// <param name="userName">Tên người dùng</param>
+        /// <param name="setupLink">Link thiết lập mật khẩu</param>
+        /// <returns>True nếu gửi thành công</returns>
+        Task<bool> SendAccountSetupEmailAsync(string toEmail, string userName, string setupLink);
     }
 }

@@ -65,6 +65,14 @@
                     <ul class="navbar-nav ms-auto">
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
+                            @if (User.IsInRole("admin") || User.IsInRole("staff"))
+                            {
+                                <li class="nav-item d-flex align-items-center me-3">
+                                    <a class="nav-link text-primary fw-bold" asp-controller="AdminDashboard" asp-action="Index">
+                                        <i class="fas fa-user-shield me-1"></i> Quản trị
+                                    </a>
+                                </li>
+                            }
                             <li class="nav-item d-flex align-items-center me-4">
                                 <span class="navbar-text">
                                     <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none"><strong>🛒 Giỏ hàng</strong></a>

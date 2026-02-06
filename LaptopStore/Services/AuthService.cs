@@ -220,8 +220,8 @@ namespace LaptopStore.Services
         {
             return role?.ToLower() switch
             {
-                "admin" => ("ProductManagement", "Index"),
-                "staff" => ("Home", "Index"),
+                "admin" => ("AdminDashboard", "Index"),
+                "staff" => ("AdminDashboard", "Index"), // Staff also goes to dashboard
                 "customer" => ("Product", "Index"),
                 _ => ("Home", "Index")
             };
@@ -344,6 +344,21 @@ namespace LaptopStore.Services
                     ErrorMessage = "Đã xảy ra lỗi khi xác thực email. Vui lòng thử lại sau."
                 };
             }
+        }
+
+        public async Task<bool> ValidateEmailTokenAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return false;
+            
+            var verificationToken = await _context.EmailVerificationTokens
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Token == token);
+
+            if (verificationToken == null) return false;
+            if (verificationToken.IsUsed) return false;
+            if (verificationToken.ExpiresAt < DateTime.Now) return false;
+
+            return true;
         }
 
         public async Task<bool> ResendVerificationEmailAsync(int userId)

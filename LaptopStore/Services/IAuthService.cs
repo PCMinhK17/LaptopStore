@@ -15,6 +15,7 @@ namespace LaptopStore.Services
         // Email Verification Methods
         Task<string> GenerateEmailVerificationTokenAsync(int userId);
         Task<EmailVerificationResult> VerifyEmailTokenAsync(string token);
+        Task<bool> ValidateEmailTokenAsync(string token);
         Task<bool> ResendVerificationEmailAsync(int userId);
         Task<User?> GetUserByIdAsync(int userId);
     }

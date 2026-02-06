@@ -328,6 +328,78 @@ namespace LaptopStore.Controllers
 
         #endregion
 
+        #region Account Setup (for admin created users)
+
+        [HttpGet]
+        public async Task<IActionResult> SetupAccount(string token, string email)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+            {
+                TempData["ToastMessage"] = "Liên kết không hợp lệ.";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Login");
+            }
+            
+             // Validate token without consuming it
+            var isValid = await _authService.ValidateEmailTokenAsync(token);
+            if (!isValid)
+            {
+                 TempData["ToastMessage"] = "Mã xác thực không hợp lệ hoặc đã hết hạn.";
+                 TempData["ToastType"] = "error";
+                 return RedirectToAction("Login");
+            }
+
+            var model = new SetupAccountViewModel
+            {
+                Token = token,
+                Email = email
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetupAccount(SetupAccountViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Verify and consume token
+            var result = await _authService.VerifyEmailTokenAsync(model.Token);
+
+            if (!result.Success)
+            {
+                 TempData["ToastMessage"] = result.ErrorMessage ?? "Xác thực thất bại.";
+                 TempData["ToastType"] = "error";
+                 return RedirectToAction("Login");
+            }
+            
+            var user = result.User;
+            if (user == null || user.Email != model.Email)
+            {
+                 TempData["ToastMessage"] = "Người dùng không hợp lệ.";
+                 TempData["ToastType"] = "error";
+                 return RedirectToAction("Login");
+            }
+
+            // Update password
+            user.Password = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            // Status is set to "active" by VerifyEmailTokenAsync already
+            
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            TempData["ToastMessage"] = "Thiết lập tài khoản thành công. Vui lòng đăng nhập.";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Login");
+        }
+
+        #endregion
+
         #region Validation APIs (for real-time validation)
 
         [HttpGet]

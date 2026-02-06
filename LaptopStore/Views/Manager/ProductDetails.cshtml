@@ -1,1 +1,416 @@
-﻿Chưa làm
+﻿@model LaptopStore.Models.Product
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+    ViewData["Subtitle"] = Model.Name;
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    
+    var stockClass = Model.StockQuantity > 10 ? "badge-success" : 
+                     Model.StockQuantity > 0 ? "badge-warning" : "badge-danger";
+    var stockText = Model.StockQuantity > 0 ? $"{Model.StockQuantity} sản phẩm" : "Hết hàng";
+}
+
+<!-- Breadcrumb -->
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <a href="@Url.Action("Index")" class="btn btn-sm btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+    <div class="d-flex gap-2">
+        <a href="#" class="btn btn-primary">
+            <i class="fas fa-edit me-1"></i> Chỉnh sửa
+        </a>
+        <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
+            <i class="fas fa-trash me-1"></i> Xóa
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Product Image & Quick Info -->
+    <div class="col-12 col-lg-4">
+        <!-- Product Image -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="product-image-container mb-4">
+                    <img src="@(Model.ProductImages?.FirstOrDefault(i => i.IsThumbnail ?? false)?.ImageUrl ?? "/images/default-product.png")" 
+                         alt="@Model.Name" 
+                         class="product-main-image" />
+                </div>
+                
+                <!-- Product Title -->
+                <h4 class="fw-bold mb-2">@Model.Name</h4>
+                <p class="text-muted mb-3">SKU: @Model.Sku</p>
+                
+                <!-- Tags -->
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="badge badge-light">
+                        <i class="fas fa-tag me-1"></i> @Model.Brand?.Name
+                    </span>
+                    <span class="badge badge-light">
+                        <i class="fas fa-folder me-1"></i> @Model.Category?.Name
+                    </span>
+                </div>
+                
+                <!-- Price -->
+                <div class="price-display">
+                    <span class="price-label">Giá bán</span>
+                    <span class="price-value">@Model.Price.ToString("#,##0") ₫</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Status -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-warehouse"></i>
+                    Tình trạng kho
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Số lượng tồn</span>
+                        <span class="badge @stockClass">@stockText</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Trạng thái</span>
+                        <span class="badge @(Model.IsActive == true ? "badge-success" : "badge-danger")">
+                            @(Model.IsActive == true ? "Đang kinh doanh" : "Ngừng kinh doanh")
+                        </span>
+                    </div>
+                    @if (Model.CreatedAt != null)
+                    {
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Ngày tạo</span>
+                            <span>@Model.CreatedAt?.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    }
+                </div>
+                
+                @if (Model.StockQuantity <= 5 && Model.StockQuantity > 0)
+                {
+                    <div class="alert alert-warning mt-3 mb-0" style="padding: 12px 16px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span style="font-size: 0.85rem;">Sản phẩm sắp hết hàng, cần nhập thêm!</span>
+                        </div>
+                    </div>
+                }
+                @if (Model.StockQuantity == 0)
+                {
+                    <div class="alert alert-danger mt-3 mb-0" style="padding: 12px 16px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-times-circle"></i>
+                            <span style="font-size: 0.85rem;">Sản phẩm đã hết hàng!</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-bolt"></i>
+                    Thao tác nhanh
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <a href="#" class="quick-action" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    <div class="quick-action-icon primary">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">Nhập thêm hàng</div>
+                        <div class="quick-action-desc">Cập nhật số lượng tồn kho</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted"></i>
+                </a>
+                <a href="#" class="quick-action">
+                    <div class="quick-action-icon info">
+                        <i class="fas fa-copy"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">Nhân bản sản phẩm</div>
+                        <div class="quick-action-desc">Tạo sản phẩm mới từ template này</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted"></i>
+                </a>
+                <a href="/" target="_blank" class="quick-action" style="border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+                    <div class="quick-action-icon success">
+                        <i class="fas fa-external-link-alt"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">Xem trang khách hàng</div>
+                        <div class="quick-action-desc">Xem sản phẩm như khách hàng thấy</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="col-12 col-lg-8">
+        <!-- Specifications -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-microchip"></i>
+                    Thông số kỹ thuật
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="spec-content">
+                            <div class="spec-label">CPU</div>
+                            <div class="spec-value">@(string.IsNullOrEmpty(Model.Cpu) ? "Chưa cập nhật" : Model.Cpu)</div>
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-memory"></i>
+                        </div>
+                        <div class="spec-content">
+                            <div class="spec-label">RAM</div>
+                            <div class="spec-value">@(string.IsNullOrEmpty(Model.Ram) ? "Chưa cập nhật" : Model.Ram)</div>
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <div class="spec-content">
+                            <div class="spec-label">Ổ cứng</div>
+                            <div class="spec-value">@(string.IsNullOrEmpty(Model.HardDrive) ? "Chưa cập nhật" : Model.HardDrive)</div>
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div class="spec-content">
+                            <div class="spec-label">Màn hình</div>
+                            <div class="spec-value">@(string.IsNullOrEmpty(Model.ScreenSize) ? "Chưa cập nhật" : Model.ScreenSize)</div>
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div class="spec-content">
+                            <div class="spec-label">GPU</div>
+                            <div class="spec-value">@(string.IsNullOrEmpty(Model.Gpu) ? "Không có" : Model.Gpu)</div>
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-weight-hanging"></i>
+                        </div>
+                        <div class="spec-content">
+                            <div class="spec-label">Trọng lượng</div>
+                            <div class="spec-value">@(!string.IsNullOrEmpty(Model.Weight) ? $"{Model.Weight} kg" : "Chưa cập nhật")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-align-left"></i>
+                    Mô tả sản phẩm
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.ShortDescription))
+                {
+                    <div class="mb-4">
+                        <label class="form-label">Mô tả ngắn</label>
+                        <p class="mb-0">@Model.ShortDescription</p>
+                    </div>
+                }
+                
+                <div>
+                    <label class="form-label">Mô tả chi tiết</label>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="description-content">
+                            @Html.Raw(Model.Description.Replace("\n", "<br/>"))
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Chưa có mô tả chi tiết cho sản phẩm này.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log (Placeholder) -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-history"></i>
+                    Lịch sử hoạt động
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Sản phẩm được tạo</div>
+                            <div class="timeline-text">Sản phẩm @Model.Name đã được thêm vào hệ thống.</div>
+                            <div class="timeline-time">@(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" id="deleteModalBackdrop"></div>
+<div class="modal" id="deleteModal">
+    <div class="modal-header">
+        <h5 class="modal-title">
+            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+            Xác nhận xóa
+        </h5>
+        <button class="modal-close" onclick="closeDeleteModal()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>@Model.Name</strong>?</p>
+        <p class="text-muted mb-0">Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan.</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy bỏ</button>
+        <button class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i> Xóa sản phẩm
+        </button>
+    </div>
+</div>
+
+<style>
+    .product-image-container {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 280px;
+    }
+    
+    .product-main-image {
+        max-width: 100%;
+        max-height: 240px;
+        object-fit: contain;
+    }
+    
+    .price-display {
+        background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .price-label {
+        font-size: 0.875rem;
+        color: var(--primary-700);
+        font-weight: 500;
+    }
+    
+    .price-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-600);
+    }
+    
+    .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    @@media (max-width: 768px) {
+        .specs-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .spec-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+    }
+    
+    .spec-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        background: var(--primary-100);
+        color: var(--primary-600);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .spec-content {
+        flex: 1;
+    }
+    
+    .spec-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    
+    .spec-value {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .description-content {
+        background: var(--bg-tertiary);
+        padding: 20px;
+        border-radius: var(--radius-md);
+        line-height: 1.7;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            document.getElementById('deleteModal').classList.add('show');
+            document.getElementById('deleteModalBackdrop').classList.add('show');
+        }
+        
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            document.getElementById('deleteModalBackdrop').classList.remove('show');
+        }
+        
+        document.getElementById('deleteModalBackdrop').addEventListener('click', closeDeleteModal);
+    </script>
+}
