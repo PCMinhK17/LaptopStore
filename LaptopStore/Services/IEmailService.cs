@@ -30,5 +30,14 @@ namespace LaptopStore.Services
         /// <param name="setupLink">Link thiết lập mật khẩu</param>
         /// <returns>True nếu gửi thành công</returns>
         Task<bool> SendAccountSetupEmailAsync(string toEmail, string userName, string setupLink);
+
+        /// <summary>
+        /// Gửi email reset mật khẩu
+        /// </summary>
+        /// <param name="toEmail">Email người nhận</param>
+        /// <param name="userName">Tên người dùng</param>
+        /// <param name="resetLink">Link reset mật khẩu</param>
+        /// <returns>True nếu gửi thành công</returns>
+        Task<bool> SendPasswordResetEmailAsync(string toEmail, string userName, string resetLink);
     }
 }

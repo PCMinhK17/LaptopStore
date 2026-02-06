@@ -232,6 +232,22 @@ namespace LaptopStore.Services
 </body>
 </html>";
         }
+        public async Task<bool> SendPasswordResetEmailAsync(string toEmail, string userName, string resetLink)
+        {
+            try
+            {
+                var subject = "Đặt lại mật khẩu LaptopStore";
+                var body = GeneratePasswordResetEmailBody(userName, resetLink);
+
+                return await SendEmailAsync(toEmail, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi gửi email reset mật khẩu đến {Email}", toEmail);
+                return false;
+            }
+        }
+
         private static string GenerateAccountSetupEmailBody(string userName, string setupLink)
         {
             return $@"
@@ -277,6 +293,65 @@ namespace LaptopStore.Services
             </p>
             <p style='color: #556270; font-size: 13px; word-break: break-all; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 0 0 25px 0;'>
                 {setupLink}
+            </p>
+            
+            <div style='background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 25px 0; border-radius: 4px;'>
+                <p style='color: #856404; font-size: 14px; margin: 0;'>
+                    ⚠️ <strong>Lưu ý:</strong> Link này sẽ hết hạn sau <strong>24 giờ</strong>.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style='background-color: #f8f9fa; padding: 25px; text-align: center; border-top: 1px solid #eeeeee;'>
+            <p style='color: #888888; font-size: 13px; margin: 0 0 10px 0;'>
+                © 2024 LaptopStore. Mọi quyền được bảo lưu.
+            </p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+        private static string GeneratePasswordResetEmailBody(string userName, string resetLink)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+</head>
+<body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;'>
+    <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff;'>
+        <!-- Header -->
+        <div style='background: linear-gradient(135deg, #FF6B6B 0%, #556270 100%); padding: 40px 20px; text-align: center;'>
+            <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>💻 LaptopStore</h1>
+            <p style='color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;'>Khôi phục mật khẩu</p>
+        </div>
+        
+        <!-- Content -->
+        <div style='padding: 40px 30px;'>
+            <h2 style='color: #333333; margin: 0 0 20px 0; font-size: 22px;'>Xin chào {userName},</h2>
+            
+            <p style='color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;'>
+                Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. 
+                Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.
+            </p>
+            
+            <div style='text-align: center; margin: 35px 0;'>
+                <a href='{resetLink}' 
+                   style='display: inline-block; background: linear-gradient(135deg, #FF6B6B 0%, #556270 100%); 
+                          color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 30px; 
+                          font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(85, 98, 112, 0.4);'>
+                    Đặt lại mật khẩu
+                </a>
+            </div>
+            
+            <p style='color: #888888; font-size: 14px; line-height: 1.6; margin: 0 0 10px 0;'>
+                Hoặc copy và dán link sau vào trình duyệt:
+            </p>
+            <p style='color: #556270; font-size: 13px; word-break: break-all; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 0 0 25px 0;'>
+                {resetLink}
             </p>
             
             <div style='background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 25px 0; border-radius: 4px;'>

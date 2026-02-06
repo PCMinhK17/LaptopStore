@@ -608,10 +608,111 @@ namespace LaptopStore.Controllers
 
         #endregion
 
+        #region Forgot Password & Reset Password
+
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View();
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            
+            // Luôn thông báo success để tránh user enumeration attack, trừ khi dev mode
+            if (user != null)
+            {
+                try 
+                {
+                    var token = await _authService.GenerateEmailVerificationTokenAsync(user.Id);
+                    var resetLink = Url.Action("ResetPassword", "Account", new { token, email = user.Email }, Request.Scheme);
+                    
+                    await _emailService.SendPasswordResetEmailAsync(user.Email, user.FullName ?? user.Email, resetLink ?? "");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error sending password reset email");
+                }
+            }
+
+            TempData["ToastMessage"] = "Nếu địa chỉ email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token, string email)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+            {
+                TempData["ToastMessage"] = "Liên kết không hợp lệ.";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Login");
+            }
+            
+            // Validate token without consuming
+            var isValid = await _authService.ValidateEmailTokenAsync(token);
+            if (!isValid)
+            {
+                TempData["ToastMessage"] = "Liên kết đã hết hạn hoặc không hợp lệ.";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Login");
+            }
+
+            var model = new ResetPasswordViewModel { Token = token, Email = email };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Verify and consume token
+            var result = await _authService.VerifyEmailTokenAsync(model.Token);
+            if (!result.Success)
+            {
+                TempData["ToastMessage"] = result.ErrorMessage ?? "Liên kết không hợp lệ hoặc hết hạn.";
+                TempData["ToastType"] = "error";
+                return View(model);
+            }
+            
+            var user = result.User; 
+            if (user == null) 
+            {
+                 user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            }
+            
+            if (user != null)
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+                user.UpdatedAt = DateTime.Now;
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                
+                 TempData["ToastMessage"] = "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập.";
+                 TempData["ToastType"] = "success";
+                 return RedirectToAction("Login");
+            }
+            
+            TempData["ToastMessage"] = "Có lỗi xảy ra khi cập nhật mật khẩu.";
+            TempData["ToastType"] = "error";
+            return View(model);
+        }
+
+        #endregion
     }
 }
