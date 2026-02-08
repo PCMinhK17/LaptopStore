@@ -492,6 +492,10 @@ public partial class LaptopStoreDbContext : DbContext
                 .IsUnicode(false)
                 .HasDefaultValue("active")
                 .HasColumnName("status");
+            entity.Property(e => e.AvatarUrl)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("avatar_url");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
