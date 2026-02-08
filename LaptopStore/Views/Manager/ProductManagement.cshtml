@@ -1,45 +1,344 @@
-﻿@model List<ProductResponse>
+﻿@using LaptopStore.Models
+@model PaginatedList<LaptopStore.DTOs.ProductDTOs.ProductResponse>
 
-<html>
-<body>
-    <div>
-        <h2 style="display:inline-block">Quản lý sản phẩm</h2>
-        <a asp-controller="ProductManagement" asp-action="AddNewProduct" style="float:right; margin-top:10px;">Thêm sản phẩm mới</a>
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    ViewData["Subtitle"] = "Quản lý danh sách sản phẩm trong hệ thống";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-left">
+        <h2>Danh sách sản phẩm</h2>
+        <p>Quản lý kho hàng và thông tin sản phẩm</p>
     </div>
-    @if (Model == null || Model.Count == 0)
-    {
-        <p>Không có sản phẩm nào trong hệ thống.</p>
-    }
-    else
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Thumbnail</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Phân loại</th>
-                    <th>Thương hiệu</th>
-                    <th>Giá bán</th>
-                    <th>Số lượng</th>
-                    <th>Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var product in Model)
-                {
-                    <tr>
-                        <td><img style="width:3rem" src="@product.ProductImages.FirstOrDefault(i => i.IsThumbnail.Value)?.ImageUrl" alt="@product.Name"/></td>
-                        <td><a asp-controller="ProductManagement" asp-action="ProductDetails" asp-route-id="@product.Id">@product.Name</a></td>
-                        <td>@product.CategoryName</td>
-                        <td>@product.BrandName</td>
-                        <td>@product.Price.ToString("C")</td>
-                        <td>@product.StockQuantity</td>
-                        <td>@(product.IsActive.Value ? "Hiện" : "Ẩn")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    <a asp-controller="ProductManagement" asp-action="AddNewProduct" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Thêm sản phẩm mới
+    </a>
+</div>
 
-</body>
-</html>
+<!-- Filters Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-4 col-lg-3">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tên sản phẩm, SKU...">
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label">Danh mục</label>
+                <select class="form-control form-select" id="categoryFilter">
+                    <option value="">Tất cả</option>
+                    <option value="Laptop">Laptop</option>
+                    <option value="Accessory">Phụ kiện</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label">Thương hiệu</label>
+                <select class="form-control form-select" id="brandFilter">
+                    <option value="">Tất cả</option>
+                    @if (ViewBag.Brands != null)
+                    {
+                        foreach (var brand in ViewBag.Brands)
+                        {
+                            <option value="@brand.Name">@brand.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control form-select" id="statusFilter">
+                    <option value="">Tất cả</option>
+                    <option value="active">Đang bán</option>
+                    <option value="inactive">Ngừng bán</option>
+                    <option value="lowstock">Sắp hết hàng</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">
+                    <i class="fas fa-redo me-1"></i> Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-box-open"></i>
+            Sản phẩm trong kho
+            <span class="badge badge-light ms-2">@Model?.TotalItems tổng</span>
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("ExportExcel")" class="btn btn-sm btn-secondary">
+                <i class="fas fa-file-excel"></i>
+                <span class="d-none d-md-inline ms-1">Xuất Excel</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        @if (Model == null || Model.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <div class="empty-state-title">Chưa có sản phẩm nào</div>
+                <p class="empty-state-text">Bắt đầu thêm sản phẩm vào hệ thống</p>
+                <a asp-action="AddNewProduct" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Thêm sản phẩm đầu tiên
+                </a>
+            </div>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">STT</th>
+                        <th>Sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Thương hiệu</th>
+                        <th>Giá bán</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ 
+                        int stt = (Model.PageIndex - 1) * 10 + 1;
+                    }
+                    @foreach (var product in Model)
+                    {
+                        var stockClass = product.StockQuantity > 10 ? "badge-success" : 
+                                         product.StockQuantity > 0 ? "badge-warning" : "badge-danger";
+                        var stockIcon = product.StockQuantity > 10 ? "fa-check-circle" : 
+                                        product.StockQuantity > 0 ? "fa-exclamation-triangle" : "fa-times-circle";
+                        var stockText = product.StockQuantity > 0 ? product.StockQuantity.ToString() : "Hết hàng";
+                        
+                        <tr class="product-row" 
+                            data-category="@product.CategoryName" 
+                            data-brand="@product.BrandName" 
+                            data-status="@(product.IsActive == true ? "active" : "inactive")"
+                            data-stock="@(product.StockQuantity <= 5 ? "lowstock" : "instock")">
+                            <td class="text-center fw-medium">@(stt++)</td>
+                            <td>
+                                <div class="table-product">
+                                    <div class="table-product-img">
+                                        <img src="@(product.ProductImages?.FirstOrDefault(i => i.IsThumbnail ?? false)?.ImageUrl ?? "/images/default-product.png")" 
+                                             alt="@product.Name" />
+                                    </div>
+                                    <div class="table-product-info">
+                                        <a asp-action="ProductDetails" asp-route-id="@product.Id" 
+                                           class="table-product-name" style="text-decoration: none; color: var(--text-primary);">
+                                            @product.Name
+                                        </a>
+                                        <div class="table-product-sku">SKU: @product.Sku</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-light">@product.CategoryName</span>
+                            </td>
+                            <td>@product.BrandName</td>
+                            <td>
+                                <span class="fw-bold text-primary">@product.Price.ToString("#,##0") ₫</span>
+                            </td>
+                            <td>
+                                <span class="badge @stockClass">
+                                    <i class="fas @stockIcon me-1"></i>
+                                    @stockText
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(product.IsActive == true ? "badge-success" : "badge-danger")">
+                                    <span class="status-dot @(product.IsActive == true ? "active" : "inactive") me-1"></span>
+                                    @(product.IsActive == true ? "Đang bán" : "Ngừng bán")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a asp-action="ProductDetails" asp-route-id="@product.Id" 
+                                       class="btn btn-icon btn-sm btn-secondary" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-icon btn-sm btn-secondary" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-icon btn-sm btn-outline-danger" 
+                                            title="Xóa" onclick="confirmDelete(@product.Id, '@product.Name')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="pagination-info">
+                    Hiển thị <strong>@Model.Count</strong> trên tổng số <strong>@Model.TotalItems</strong> sản phẩm
+                </div>
+                <div class="pagination">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" class="pagination-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    }
+                    
+                    @for (int i = 1; i <= Model.TotalPages && i <= 5; i++)
+                    {
+                        <a asp-action="Index" 
+                           asp-route-pageNumber="@i"
+                           class="pagination-btn @(i == Model.PageIndex ? "active" : "")">
+                            @i
+                        </a>
+                    }
+                    
+                    @if (Model.TotalPages > 5)
+                    {
+                        <span class="pagination-btn disabled">...</span>
+                        <a asp-action="Index" 
+                           asp-route-pageNumber="@Model.TotalPages"
+                           class="pagination-btn @(Model.TotalPages == Model.PageIndex ? "active" : "")">
+                            @Model.TotalPages
+                        </a>
+                    }
+                    
+                    @if (Model.HasNextPage)
+                    {
+                        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" class="pagination-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" id="deleteModalBackdrop"></div>
+<div class="modal" id="deleteModal">
+    <div class="modal-header">
+        <h5 class="modal-title">
+            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+            Xác nhận xóa
+        </h5>
+        <button class="modal-close" onclick="closeDeleteModal()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa sản phẩm <strong id="deleteProductName"></strong>?</p>
+        <p class="text-muted mb-0">Hành động này không thể hoàn tác.</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy bỏ</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">
+            <i class="fas fa-trash me-1"></i> Xóa sản phẩm
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let deleteProductId = null;
+
+        // Search & Filter functionality
+        document.getElementById('searchInput').addEventListener('keyup', filterProducts);
+        document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+        document.getElementById('brandFilter').addEventListener('change', filterProducts);
+        document.getElementById('statusFilter').addEventListener('change', filterProducts);
+
+        function filterProducts() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const brand = document.getElementById('brandFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            
+            const rows = document.querySelectorAll('.product-row');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const rowCategory = row.dataset.category;
+                const rowBrand = row.dataset.brand;
+                const rowStatus = row.dataset.status;
+                const rowStock = row.dataset.stock;
+                
+                let show = true;
+                
+                if (search && !text.includes(search)) show = false;
+                if (category && rowCategory !== category) show = false;
+                if (brand && rowBrand !== brand) show = false;
+                if (status === 'active' && rowStatus !== 'active') show = false;
+                if (status === 'inactive' && rowStatus !== 'inactive') show = false;
+                if (status === 'lowstock' && rowStock !== 'lowstock') show = false;
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('brandFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            filterProducts();
+        }
+
+        // Delete Modal
+        function confirmDelete(id, name) {
+            deleteProductId = id;
+            document.getElementById('deleteProductName').textContent = name;
+            document.getElementById('deleteModal').classList.add('show');
+            document.getElementById('deleteModalBackdrop').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            document.getElementById('deleteModalBackdrop').classList.remove('show');
+            deleteProductId = null;
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (deleteProductId) {
+                // Implement delete logic here
+                alert('Chức năng xóa sẽ được triển khai. ID: ' + deleteProductId);
+                closeDeleteModal();
+            }
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('deleteModalBackdrop').addEventListener('click', closeDeleteModal);
+    </script>
+}

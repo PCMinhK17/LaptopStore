@@ -1,11 +1,19 @@
-﻿@{
+@{
     var toastMessage = TempData["ToastMessage"] as string;
     var toastType = (TempData["ToastType"] as string ?? "success").ToLower();
     var toastClass = toastType == "error" ? "text-bg-danger" : "text-bg-success";
+    
+    // Lấy thông tin user hiện tại
+    var userName = User?.Identity?.Name ?? "";
+    var userEmail = User?.FindFirst("Email")?.Value ?? "";
+    var userId = User?.FindFirst("UserId")?.Value;
+    
+    // Lấy avatar từ session hoặc tạo từ chữ cái đầu
+    var avatarLetter = !string.IsNullOrEmpty(userName) ? userName.Substring(0, 1).ToUpper() : "U";
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,10 +22,12 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LaptopStore.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     @await RenderSectionAsync("Styles", required: false)
 
     <style>
+        /* Toast styles */
         .toast-container {
             z-index: 1080;
         }
@@ -34,19 +44,378 @@
                 opacity: 0;
                 transform: translateX(30px);
             }
-
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
+
+        /* Header Styles */
+        .main-header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #d70018 !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar-brand i {
+            font-size: 1.3rem;
+        }
+
+        /* Avatar Styles */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-avatar:hover {
+            opacity: 0.85;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            min-width: 280px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1050;
+            overflow: hidden;
+        }
+
+        .profile-dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-dropdown-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .profile-dropdown-header .avatar-large {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 auto 10px;
+            overflow: hidden;
+        }
+
+        .profile-dropdown-header .avatar-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-dropdown-header .user-name {
+            font-weight: 600;
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .profile-dropdown-header .user-email {
+            font-size: 13px;
+            color: #718096;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profile-dropdown-body {
+            padding: 8px;
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .profile-dropdown-item:hover {
+            background: #f7fafc;
+            color: #d70018;
+        }
+
+        .profile-dropdown-item i {
+            width: 20px;
+            text-align: center;
+            color: #718096;
+        }
+
+        .profile-dropdown-item:hover i {
+            color: #d70018;
+        }
+
+        .profile-dropdown-item.logout {
+            color: #e53e3e;
+        }
+
+        .profile-dropdown-item.logout i {
+            color: #e53e3e;
+        }
+
+        .profile-dropdown-item.logout:hover {
+            background: #fff5f5;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 8px 0;
+        }
+
+        /* Change Password Modal */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 24px;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            border: none;
+            padding: 16px 24px 24px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .password-input-group {
+            position: relative;
+        }
+
+        .password-input-group .form-control {
+            padding-right: 48px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: #4a5568;
+        }
+
+        /* Password Strength */
+        .password-strength {
+            margin-top: 8px;
+        }
+
+        .password-strength .progress {
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+        }
+
+        .password-strength .progress-bar {
+            transition: width 0.3s ease;
+        }
+
+        .strength-weak .progress-bar {
+            background: #e53e3e;
+        }
+
+        .strength-medium .progress-bar {
+            background: #dd6b20;
+        }
+
+        .strength-strong .progress-bar {
+            background: #38a169;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .strength-weak .strength-text { color: #e53e3e; }
+        .strength-medium .strength-text { color: #dd6b20; }
+        .strength-strong .strength-text { color: #38a169; }
+
+        /* Validation Messages */
+        .validation-message {
+            font-size: 12px;
+            color: #e53e3e;
+            margin-top: 4px;
+        }
+
+        .validation-message.success {
+            color: #38a169;
+        }
+
+        /* Logout Confirm Dialog */
+        .logout-dialog .modal-content {
+            text-align: center;
+        }
+
+        .logout-dialog .modal-header {
+            display: block;
+            background: none;
+            padding-bottom: 0;
+        }
+
+        .logout-dialog .modal-header i {
+            font-size: 48px;
+            color: #e53e3e;
+            margin-bottom: 16px;
+        }
+
+        .logout-dialog .modal-body {
+            padding-top: 0;
+        }
+
+        .logout-dialog .modal-footer {
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            color: #4a5568;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-logout-confirm {
+            background: #e53e3e;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout-confirm:hover {
+            background: #c53030;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .profile-dropdown-menu {
+                min-width: 260px;
+                right: -60px;
+            }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    @Html.AntiForgeryToken()
+    <header class="main-header">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LaptopStore</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-laptop"></i>
+                    LaptopStore
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -55,47 +424,77 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index">Sản phẩm</a>
                         </li>
                     </ul>
 
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto align-items-center">
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
+                            @if (User.IsInRole("admin") || User.IsInRole("staff"))
+                            {
+                                <li class="nav-item d-flex align-items-center me-3">
+                                    <a class="nav-link text-primary fw-bold" asp-controller="AdminDashboard" asp-action="Index">
+                                        <i class="fas fa-user-shield me-1"></i> Quản trị
+                                    </a>
+                                </li>
+                            }
                             <li class="nav-item d-flex align-items-center me-4">
                                 <span class="navbar-text">
-                                    <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none"><strong>🛒 Giỏ hàng</strong></a>
+                                    <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none">
+                                        <i class="fas fa-shopping-cart me-1"></i><strong>Giỏ hàng</strong>
+                                    </a>
                                 </span>
                             </li>
-                            <li class="nav-item d-flex align-items-center me-2">
-                                <span class="navbar-text">
-                                    Xin chào,&nbsp;<a asp-controller="User" asp-action="Profile"><strong>@User.Identity!.Name</strong></a>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-danger btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Logout">
-                                    Đăng xuất
-                                </a>
+                            
+                            <!-- Profile Dropdown -->
+                            <li class="nav-item profile-dropdown">
+                                <div class="user-avatar" id="profileAvatar" role="button" 
+                                     data-bs-toggle="dropdown" aria-expanded="false"
+                                     title="@userName">
+                                    @avatarLetter
+                                </div>
+
+                                <div class="profile-dropdown-menu" id="profileDropdownMenu">
+                                    <div class="profile-dropdown-header">
+                                        <div class="avatar-large" id="dropdownAvatar">
+                                            @avatarLetter
+                                        </div>
+                                        <div class="user-name" id="dropdownUserName">@userName</div>
+                                        <div class="user-email" id="dropdownUserEmail">@userEmail</div>
+                                    </div>
+                                    <div class="profile-dropdown-body">
+                                        <a class="profile-dropdown-item" asp-controller="User" asp-action="Profile">
+                                            <i class="fas fa-user"></i>
+                                            <span>Xem tài khoản</span>
+                                        </a>
+                                        <button class="profile-dropdown-item" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                            <i class="fas fa-lock"></i>
+                                            <span>Đổi mật khẩu</span>
+                                        </button>
+                                        <div class="dropdown-divider"></div>
+                                        <button class="profile-dropdown-item logout" id="logoutBtn">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                            <span>Đăng xuất</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item me-2">
                                 <a class="btn btn-outline-primary btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Login">
+                                   asp-controller="Account" asp-action="Login">
                                     Đăng nhập
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="btn btn-primary btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Register">
+                                   asp-controller="Account" asp-action="Register">
                                     Đăng ký
                                 </a>
                             </li>
@@ -112,13 +511,105 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-5">
         <div class="container">
             &copy; 2026 - LaptopStore -
             <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
 
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">
+                        <i class="fas fa-lock me-2"></i>Đổi mật khẩu
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <!-- Current Password -->
+                        <div class="mb-3">
+                            <label class="form-label">Mật khẩu hiện tại</label>
+                            <div class="password-input-group">
+                                <input type="password" class="form-control" id="currentPassword" 
+                                       placeholder="Nhập mật khẩu hiện tại" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('currentPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="validation-message" id="currentPasswordError"></div>
+                        </div>
+
+                        <!-- New Password -->
+                        <div class="mb-3">
+                            <label class="form-label">Mật khẩu mới</label>
+                            <div class="password-input-group">
+                                <input type="password" class="form-control" id="newPassword" 
+                                       placeholder="Nhập mật khẩu mới" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('newPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength" id="passwordStrength">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div class="strength-text" id="strengthText"></div>
+                            </div>
+                            <div class="validation-message" id="newPasswordError"></div>
+                            <small class="text-muted">Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số</small>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="mb-3">
+                            <label class="form-label">Xác nhận mật khẩu mới</label>
+                            <div class="password-input-group">
+                                <input type="password" class="form-control" id="confirmPassword" 
+                                       placeholder="Nhập lại mật khẩu mới" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="validation-message" id="confirmPasswordError"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-cancel" data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+                    <button type="button" class="btn btn-primary" id="submitChangePassword" disabled>
+                        <span class="spinner-border spinner-border-sm me-2 d-none" id="loadingSpinner"></span>
+                        <span id="btnText">Đổi mật khẩu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirm Dialog -->
+    <div class="modal fade logout-dialog" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <div class="modal-body">
+                    <h5 class="mb-3">Đăng xuất</h5>
+                    <p class="text-muted">Bạn có chắc muốn đăng xuất không?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Hủy</button>
+                    <a href="@Url.Action("Logout", "Account")" class="btn btn-logout-confirm">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
     @if (!string.IsNullOrEmpty(toastMessage))
     {
         <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -145,13 +636,318 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        // Load user info and update avatar
+        function loadUserInfo() {
+            $.ajax({
+                url: '/User/GetUserInfo',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        var data = response.data;
+                        
+                        // Update header avatar
+                        var profileAvatar = document.getElementById('profileAvatar');
+                        var dropdownAvatar = document.getElementById('dropdownAvatar');
+                        
+                        if (data.avatarUrl) {
+                            var avatarUrl = '/uploads/avatars/' + data.avatarUrl;
+                            
+                            if (profileAvatar) {
+                                profileAvatar.innerHTML = '<img src="' + avatarUrl + '" alt="" />';
+                            }
+                            if (dropdownAvatar) {
+                                dropdownAvatar.innerHTML = '<img src="' + avatarUrl + '" alt="" />';
+                            }
+                        }
+                        
+                        // Update dropdown info
+                        var dropdownName = document.getElementById('dropdownUserName');
+                        if (dropdownName && data.fullName) {
+                            dropdownName.textContent = data.fullName;
+                        }
+                    }
+                },
+                error: function() {
+                    console.log('Could not load user info');
+                }
+            });
+        }
+
+        // Profile Dropdown Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load user info if logged in
+            var isAuthenticated = @((User?.Identity?.IsAuthenticated ?? false).ToString().ToLower());
+            if (isAuthenticated) {
+                loadUserInfo();
+            }
+
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileDropdownMenu = document.getElementById('profileDropdownMenu');
+
+            if (profileAvatar && profileDropdownMenu) {
+                profileAvatar.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    profileDropdownMenu.classList.toggle('show');
+                    
+                    // Refresh user info when dropdown opens
+                    if (isAuthenticated) {
+                        loadUserInfo();
+                    }
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!profileDropdownMenu.contains(e.target)) {
+                        profileDropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // Toast handling
             var toastEl = document.getElementById('mainToast');
             if (toastEl) {
                 var toast = new bootstrap.Toast(toastEl, { delay: 3000 });
                 toast.show();
             }
+
+            // Logout confirmation
+            var logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));
+                    logoutModal.show();
+                });
+            }
         });
+
+        // Password visibility toggle
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength += 1;
+            if (password.length >= 12) strength += 1;
+            
+            // Character type checks
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
+            
+            return strength;
+        }
+
+        function updatePasswordStrengthUI(strength, password) {
+            const strengthContainer = document.getElementById('passwordStrength');
+            const progressBar = strengthContainer.querySelector('.progress-bar');
+            const strengthText = document.getElementById('strengthText');
+            
+            // Remove old classes
+            strengthContainer.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+            
+            if (password.length === 0) {
+                progressBar.style.width = '0%';
+                strengthText.textContent = '';
+                return;
+            }
+
+            if (strength <= 2) {
+                strengthContainer.classList.add('strength-weak');
+                progressBar.style.width = '33%';
+                strengthText.textContent = 'Mật khẩu yếu';
+            } else if (strength <= 4) {
+                strengthContainer.classList.add('strength-medium');
+                progressBar.style.width = '66%';
+                strengthText.textContent = 'Mật khẩu trung bình';
+            } else {
+                strengthContainer.classList.add('strength-strong');
+                progressBar.style.width = '100%';
+                strengthText.textContent = 'Mật khẩu mạnh';
+            }
+        }
+
+        // Form validation
+        function validateForm() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const submitBtn = document.getElementById('submitChangePassword');
+            
+            let isValid = true;
+            
+            // Current password validation
+            if (currentPassword.length === 0) {
+                document.getElementById('currentPasswordError').textContent = 'Vui lòng nhập mật khẩu hiện tại';
+                isValid = false;
+            } else {
+                document.getElementById('currentPasswordError').textContent = '';
+            }
+            
+            // New password validation
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!passwordRegex.test(newPassword)) {
+                document.getElementById('newPasswordError').textContent = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số';
+                isValid = false;
+            } else if (newPassword === currentPassword) {
+                document.getElementById('newPasswordError').textContent = 'Mật khẩu mới phải khác mật khẩu hiện tại';
+                isValid = false;
+            } else {
+                document.getElementById('newPasswordError').textContent = '';
+            }
+            
+            // Confirm password validation
+            if (newPassword !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
+                isValid = false;
+            }else {
+                document.getElementById('confirmPasswordError').textContent = '';
+            }
+            
+            submitBtn.disabled = !isValid;
+        }
+
+        // Change password form handling
+        $(document).ready(function() {
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const currentPasswordInput = document.getElementById('currentPassword');
+            
+            // Password strength on input
+            newPasswordInput.addEventListener('input', function() {
+                const strength = checkPasswordStrength(this.value);
+                updatePasswordStrengthUI(strength, this.value);
+                validateForm();
+            });
+            
+            // Real-time validation
+            currentPasswordInput.addEventListener('input', validateForm);
+            confirmPasswordInput.addEventListener('input', validateForm);
+            
+            // Submit handler
+            $('#submitChangePassword').click(function() {
+                const btn = $(this);
+                const spinner = $('#loadingSpinner');
+                const btnText = $('#btnText');
+                
+                // Show loading state
+                spinner.removeClass('d-none');
+                btnText.text('Đang xử lý...');
+                btn.prop('disabled', true);
+                
+                const currentPassword = $('#currentPassword').val();
+                const newPassword = $('#newPassword').val();
+                const confirmPassword = $('#confirmPassword').val();
+                
+                $.ajax({
+                    url: '@Url.Action("ChangePassword", "User")',
+                    type: 'POST',
+                    data: {
+                        currentPassword: currentPassword,
+                        newPassword: newPassword,
+                        confirmPassword: confirmPassword
+                    },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Close modal and show success toast
+                            bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                            
+                            // Reset form
+                            $('#changePasswordForm')[0].reset();
+                            $('#passwordStrength .progress-bar').css('width', '0%');
+                            $('#strengthText').text('');
+                            
+                            // Show success message
+                            if (response.message) {
+                                showToast(response.message, 'success');
+                            }
+                        } else {
+                            // Show error
+                            if (response.message) {
+                                showToast(response.message, 'error');
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        showToast('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+                    },
+                    complete: function() {
+                        spinner.addClass('d-none');
+                        btnText.text('Đổi mật khẩu');
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Reset form when modal is closed
+            $('#changePasswordModal').on('hidden.bs.modal', function() {
+                $('#changePasswordForm')[0].reset();
+                $('#passwordStrength .progress-bar').css('width', '0%');
+                $('#strengthText').text('');
+                $('#currentPasswordError').textContent = '';
+                $('#newPasswordError').textContent = '';
+                $('#confirmPasswordError').textContent = '';
+                $('#submitChangePassword').prop('disabled', true);
+            });
+        });
+        
+        // Toast notification helper
+        function showToast(message, type) {
+            const toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                // Create toast container if not exists
+                const container = document.createElement('div');
+                container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(container);
+                
+                const toastEl = document.createElement('div');
+                toastEl.className = `toast align-items-center border-0 toast-custom ${type === 'error' ? 'text-bg-danger' : 'text-bg-success'}`;
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+                toastEl.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
+                container.appendChild(toastEl);
+                
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+            } else {
+                const toastClass = type === 'error' ? 'text-bg-danger' : 'text-bg-success';
+                toastContainer.innerHTML = `
+                    <div class="toast align-items-center border-0 toast-custom ${toastClass}" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                const toastEl = toastContainer.querySelector('.toast');
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+            }
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

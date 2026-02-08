@@ -1,0 +1,721 @@
+@using LaptopStore.Models
+@model PaginatedList<LaptopStore.Models.Order>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    ViewData["Subtitle"] = "Theo dõi và xử lý đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    
+    var currentStatus = ViewBag.CurrentStatus as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
+}
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl-2">
+        <a href="@Url.Action("Index")" class="order-stat-card @(string.IsNullOrEmpty(currentStatus) ? "active" : "")" data-status="">
+            <div class="order-stat-icon all">
+                <i class="fas fa-list-ul"></i>
+            </div>
+            <div class="order-stat-content">
+                <div class="order-stat-value">@ViewBag.AllCount</div>
+                <div class="order-stat-label">Tất cả</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <a href="@Url.Action("Index", new { status = "pending" })" class="order-stat-card @(currentStatus == "pending" ? "active" : "")" data-status="pending">
+            <div class="order-stat-icon pending">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="order-stat-content">
+                <div class="order-stat-value">@ViewBag.PendingCount</div>
+                <div class="order-stat-label">Chờ xác nhận</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <a href="@Url.Action("Index", new { status = "processing" })" class="order-stat-card @(currentStatus == "processing" ? "active" : "")" data-status="processing">
+            <div class="order-stat-icon processing">
+                <i class="fas fa-cog"></i>
+            </div>
+            <div class="order-stat-content">
+                <div class="order-stat-value">@ViewBag.ProcessingCount</div>
+                <div class="order-stat-label">Đang xử lý</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <a href="@Url.Action("Index", new { status = "shipping" })" class="order-stat-card @(currentStatus == "shipping" ? "active" : "")" data-status="shipping">
+            <div class="order-stat-icon shipping">
+                <i class="fas fa-shipping-fast"></i>
+            </div>
+            <div class="order-stat-content">
+                <div class="order-stat-value">@ViewBag.ShippingCount</div>
+                <div class="order-stat-label">Đang giao</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <a href="@Url.Action("Index", new { status = "delivered" })" class="order-stat-card @(currentStatus == "delivered" ? "active" : "")" data-status="delivered">
+            <div class="order-stat-icon delivered">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="order-stat-content">
+                <div class="order-stat-value">@ViewBag.DeliveredCount</div>
+                <div class="order-stat-label">Đã giao</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <a href="@Url.Action("Index", new { status = "cancelled" })" class="order-stat-card @(currentStatus == "cancelled" ? "active" : "")" data-status="cancelled">
+            <div class="order-stat-icon cancelled">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="order-stat-content">
+                <div class="order-stat-value">@ViewBag.CancelledCount</div>
+                <div class="order-stat-label">Đã hủy</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-5 col-lg-4">
+                    <label class="form-label small fw-medium">Tìm kiếm</label>
+                    <div class="search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" class="form-control" value="@currentSearch" placeholder="Mã đơn, tên khách hàng, SĐT...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label small fw-medium">Trạng thái</label>
+                    <select name="status" class="form-control form-select">
+                        <option value="">Tất cả</option>
+                        @{
+                            var statuses = new[] {
+                                ("pending", "Chờ xác nhận"),
+                                ("processing", "Đang xử lý"),
+                                ("shipping", "Đang giao"),
+                                ("delivered", "Đã giao"),
+                                ("cancelled", "Đã hủy")
+                            };
+                        }
+                        @foreach (var (val, text) in statuses)
+                        {
+                            if (currentStatus == val)
+                            {
+                                <option value="@val" selected>@text</option>
+                            }
+                            else
+                            {
+                                <option value="@val">@text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3 col-md-2 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i> Lọc
+                    </button>
+                </div>
+                <div class="col-3 col-md-2 col-lg-2">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary w-100">
+                        <i class="fas fa-redo me-1"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-shopping-bag"></i>
+            Danh sách đơn hàng
+            <span class="badge badge-light ms-2">@Model.TotalItems đơn</span>
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("ExportExcel", new { status = currentStatus })" class="btn btn-sm btn-secondary">
+                <i class="fas fa-file-excel"></i>
+                <span class="d-none d-md-inline ms-1">Xuất Excel</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        @if (Model.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="empty-state-title">Không có đơn hàng nào</div>
+                <p class="empty-state-text">Chưa có đơn hàng nào trong hệ thống hoặc không tìm thấy kết quả phù hợp.</p>
+            </div>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th class="text-end">Tổng tiền</th>
+                        <th class="text-center">Thanh toán</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        var statusClass = order.Status switch
+                        {
+                            "pending" => "status-pending",
+                            "processing" => "status-processing",
+                            "shipping" => "status-shipping",
+                            "delivered" => "status-delivered",
+                            "cancelled" => "status-cancelled",
+                            _ => ""
+                        };
+                        var statusText = order.Status switch
+                        {
+                            "pending" => "Chờ xác nhận",
+                            "processing" => "Đang xử lý",
+                            "shipping" => "Đang giao",
+                            "delivered" => "Đã giao",
+                            "cancelled" => "Đã hủy",
+                            _ => order.Status ?? "N/A"
+                        };
+                        var paymentClass = order.PaymentStatus switch
+                        {
+                            "paid" => "payment-paid",
+                            "unpaid" => "payment-unpaid",
+                            "refunded" => "payment-refunded",
+                            _ => ""
+                        };
+                        var paymentText = order.PaymentStatus switch
+                        {
+                            "paid" => "Đã thanh toán",
+                            "unpaid" => "Chưa thanh toán",
+                            "refunded" => "Đã hoàn tiền",
+                            _ => order.PaymentStatus ?? "N/A"
+                        };
+                        var paymentMethodText = order.PaymentMethod switch
+                        {
+                            "cod" => "COD",
+                            "vietqr" => "Chuyển khoản",
+                            "vnpay" => "VNPay",
+                            _ => order.PaymentMethod ?? ""
+                        };
+                        
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = order.Id })" class="order-id">
+                                    #@order.Id.ToString("D6")
+                                </a>
+                            </td>
+                            <td>
+                                <div class="table-user">
+                                    <div class="table-user-avatar">
+                                        @(order.FullName?.Substring(0, 1).ToUpper() ?? "?")
+                                    </div>
+                                    <div class="table-user-info">
+                                        <div class="table-user-name">@order.FullName</div>
+                                        <div class="table-user-email">@order.PhoneNumber</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="order-date">
+                                    <span class="date">@order.CreatedAt?.ToString("dd/MM/yyyy")</span>
+                                    <span class="time">@order.CreatedAt?.ToString("HH:mm")</span>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <span class="order-total">@order.TotalMoney.ToString("#,##0") ₫</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="payment-info">
+                                    <span class="payment-badge @paymentClass">@paymentText</span>
+                                    <span class="payment-method">@paymentMethodText</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="order-status @statusClass">@statusText</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="order-actions">
+                                    <a href="@Url.Action("Details", new { id = order.Id })" 
+                                       class="action-btn action-view" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (order.Status == "pending")
+                                    {
+                                        <button type="button" 
+                                                class="action-btn action-confirm" 
+                                                onclick="updateStatus(@order.Id, 'processing')">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Xác nhận</span>
+                                        </button>
+                                    }
+                                    @if (order.Status == "processing")
+                                    {
+                                        <button type="button" 
+                                                class="action-btn action-ship" 
+                                                onclick="updateStatus(@order.Id, 'shipping')">
+                                            <i class="fas fa-truck"></i>
+                                            <span>Giao hàng</span>
+                                        </button>
+                                    }
+                                    @if (order.Status == "shipping")
+                                    {
+                                        <button type="button" 
+                                                class="action-btn action-complete" 
+                                                onclick="updateStatus(@order.Id, 'delivered')">
+                                            <i class="fas fa-box-check"></i>
+                                            <span>Đã giao</span>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    
+    @if (Model.Count > 0)
+    {
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="pagination-info">
+                    Hiển thị <strong>@Model.Count</strong> trên tổng số <strong>@Model.TotalItems</strong> đơn hàng
+                </div>
+                <div class="pagination">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a href="@Url.Action("Index", new { pageNumber = Model.PageIndex - 1, status = currentStatus, search = currentSearch })"
+                           class="pagination-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    }
+                    
+                    @for (int i = 1; i <= Model.TotalPages && i <= 5; i++)
+                    {
+                        <a href="@Url.Action("Index", new { pageNumber = i, status = currentStatus, search = currentSearch })"
+                           class="pagination-btn @(i == Model.PageIndex ? "active" : "")">
+                            @i
+                        </a>
+                    }
+                    
+                    @if (Model.TotalPages > 5)
+                    {
+                        <span class="pagination-btn disabled">...</span>
+                        <a href="@Url.Action("Index", new { pageNumber = Model.TotalPages, status = currentStatus, search = currentSearch })"
+                           class="pagination-btn @(Model.TotalPages == Model.PageIndex ? "active" : "")">
+                            @Model.TotalPages
+                        </a>
+                    }
+                    
+                    @if (Model.HasNextPage)
+                    {
+                        <a href="@Url.Action("Index", new { pageNumber = Model.PageIndex + 1, status = currentStatus, search = currentSearch })"
+                           class="pagination-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    /* Order Stats Cards */
+    .order-stat-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+    }
+    
+    .order-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        text-decoration: none;
+    }
+    
+    .order-stat-card.active {
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .order-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .order-stat-icon.all {
+        background: var(--primary-100);
+        color: var(--primary-600);
+    }
+    
+    .order-stat-icon.pending {
+        background: var(--warning-100);
+        color: var(--warning-600);
+    }
+    
+    .order-stat-icon.processing {
+        background: var(--info-100);
+        color: var(--info-600);
+    }
+    
+    .order-stat-icon.shipping {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+    
+    .order-stat-icon.delivered {
+        background: var(--success-100);
+        color: var(--success-600);
+    }
+    
+    .order-stat-icon.cancelled {
+        background: var(--danger-100);
+        color: var(--danger-600);
+    }
+    
+    .order-stat-content {
+        min-width: 0;
+    }
+    
+    .order-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+    
+    .order-stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Order ID */
+    .order-id {
+        font-weight: 600;
+        color: var(--primary-600);
+        text-decoration: none;
+    }
+    
+    .order-id:hover {
+        color: var(--primary-700);
+        text-decoration: underline;
+    }
+    
+    /* Order Date */
+    .order-date {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .order-date .date {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .order-date .time {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    
+    /* Order Total */
+    .order-total {
+        font-weight: 700;
+        color: var(--primary-600);
+        font-size: 0.95rem;
+    }
+    
+    /* Payment Info */
+    .payment-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .payment-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+    
+    .payment-badge.payment-paid {
+        background: var(--success-100);
+        color: var(--success-700);
+    }
+    
+    .payment-badge.payment-unpaid {
+        background: var(--warning-100);
+        color: var(--warning-600);
+    }
+    
+    .payment-badge.payment-refunded {
+        background: var(--info-100);
+        color: var(--info-600);
+    }
+    
+    .payment-method {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    
+    /* Order Status */
+    .order-status {
+        display: inline-block;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+    
+    .order-status.status-pending {
+        background: var(--warning-100);
+        color: var(--warning-600);
+    }
+    
+    .order-status.status-processing {
+        background: var(--info-100);
+        color: var(--info-600);
+    }
+    
+    .order-status.status-shipping {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+    
+    .order-status.status-delivered {
+        background: var(--success-100);
+        color: var(--success-700);
+    }
+    
+    .order-status.status-cancelled {
+        background: var(--danger-100);
+        color: var(--danger-700);
+    }
+    
+    /* Order Actions */
+    .order-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        align-items: center;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        white-space: nowrap;
+    }
+    
+    .action-btn i {
+        font-size: 0.9rem;
+    }
+    
+    /* View button */
+    .action-view {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+    }
+    
+    .action-view:hover {
+        background: var(--gray-300);
+        color: var(--text-primary);
+    }
+    
+    /* Confirm button - Green */
+    .action-confirm {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    
+    .action-confirm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    /* Ship button - Blue */
+    .action-ship {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .action-ship:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Complete button - Purple */
+    .action-complete {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    }
+    
+    .action-complete:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+    
+    /* Dark mode action buttons */
+    [data-theme="dark"] .action-view {
+        background: var(--gray-700);
+        color: var(--gray-300);
+    }
+    
+    [data-theme="dark"] .action-view:hover {
+        background: var(--gray-600);
+        color: white;
+    }
+    
+    /* Dark mode adjustments */
+    [data-theme="dark"] .order-stat-icon.all {
+        background: rgba(99, 102, 241, 0.15);
+    }
+    
+    [data-theme="dark"] .order-stat-icon.pending {
+        background: rgba(245, 158, 11, 0.15);
+    }
+    
+    [data-theme="dark"] .order-stat-icon.processing {
+        background: rgba(59, 130, 246, 0.15);
+    }
+    
+    [data-theme="dark"] .order-stat-icon.shipping {
+        background: rgba(124, 58, 237, 0.15);
+    }
+    
+    [data-theme="dark"] .order-stat-icon.delivered {
+        background: rgba(16, 185, 129, 0.15);
+    }
+    
+    [data-theme="dark"] .order-stat-icon.cancelled {
+        background: rgba(239, 68, 68, 0.15);
+    }
+    
+    [data-theme="dark"] .payment-badge.payment-paid,
+    [data-theme="dark"] .order-status.status-delivered {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+    
+    [data-theme="dark"] .payment-badge.payment-unpaid,
+    [data-theme="dark"] .order-status.status-pending {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+    }
+    
+    [data-theme="dark"] .order-status.status-processing {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+    
+    [data-theme="dark"] .order-status.status-shipping {
+        background: rgba(124, 58, 237, 0.15);
+        color: #a78bfa;
+    }
+    
+    [data-theme="dark"] .order-status.status-cancelled {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function updateStatus(orderId, newStatus) {
+            const statusText = {
+                'processing': 'xác nhận',
+                'shipping': 'chuyển sang giao hàng',
+                'delivered': 'đánh dấu đã giao'
+            };
+            
+            if (!confirm(`Bạn có chắc chắn muốn ${statusText[newStatus]} đơn hàng #${orderId.toString().padStart(6, '0')}?`)) {
+                return;
+            }
+
+            fetch('/OrderManagement/UpdateStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: `id=${orderId}&status=${newStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi cập nhật trạng thái');
+            });
+        }
+    </script>
+}

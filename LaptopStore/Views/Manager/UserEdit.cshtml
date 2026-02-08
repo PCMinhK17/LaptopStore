@@ -1,0 +1,298 @@
+@model LaptopStore.Models.ViewModels.EditUserViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa người dùng";
+    ViewData["Subtitle"] = "Cập nhật thông tin tài khoản";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    
+    var roleText = Model.Role switch
+    {
+        "admin" => "Quản trị viên",
+        "staff" => "Nhân viên",
+        _ => "Khách hàng"
+    };
+}
+
+<!-- Breadcrumb -->
+<div class="mb-4">
+    <a href="@Url.Action("Index")" class="btn btn-sm btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+</div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-left">
+        <h2>Chỉnh sửa thông tin</h2>
+        <p>Cập nhật thông tin cho tài khoản: <strong>@Model.Email</strong></p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- User Summary Card -->
+    <div class="col-12 col-lg-4 order-lg-2">
+        <div class="card" style="position: sticky; top: 100px;">
+            <div class="card-body text-center py-4">
+                <div class="table-user-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem; border-radius: var(--radius-xl);">
+                    @(Model.FullName?.Substring(0, 1).ToUpper() ?? "?")
+                </div>
+                <h5 class="fw-bold mb-1">@Model.FullName</h5>
+                <p class="text-muted mb-3">@Model.Email</p>
+                <span class="badge @(Model.Role == "admin" ? "badge-primary" : Model.Role == "staff" ? "badge-info" : "badge-success")">
+                    @roleText
+                </span>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">ID người dùng</span>
+                        <span class="fw-semibold">#@Model.Id</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Vai trò hiện tại</span>
+                        <span class="fw-semibold">@roleText</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="col-12 col-lg-8 order-lg-1">
+        <form asp-action="Edit" method="post" id="editUserForm">
+            <input type="hidden" asp-for="Id" />
+            
+            <!-- Login Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-key"></i>
+                        Thông tin đăng nhập
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-0">
+                                <label asp-for="Email" class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger" style="font-size: 0.8rem;"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-0">
+                                <label asp-for="NewPassword" class="form-label">Mật khẩu mới</label>
+                                <div class="position-relative">
+                                    <input asp-for="NewPassword" type="password" class="form-control" id="passwordInput" 
+                                           placeholder="Để trống nếu không đổi" autocomplete="new-password" />
+                                    <button type="button" class="btn btn-sm position-absolute" 
+                                            style="right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted);"
+                                            onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Để trống nếu không muốn thay đổi mật khẩu</small>
+                                <span asp-validation-for="NewPassword" class="text-danger d-block" style="font-size: 0.8rem;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-user"></i>
+                        Thông tin cá nhân
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-0">
+                                <label asp-for="FullName" class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                <input asp-for="FullName" class="form-control" />
+                                <span asp-validation-for="FullName" class="text-danger" style="font-size: 0.8rem;"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-0">
+                                <label asp-for="PhoneNumber" class="form-label">Số điện thoại</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size: 0.8rem;"></span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group mb-0">
+                                <label asp-for="Address" class="form-label">Địa chỉ</label>
+                                <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="Address" class="text-danger" style="font-size: 0.8rem;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role & Permissions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Phân quyền
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-0">
+                        <label asp-for="Role" class="form-label">Vai trò <span class="text-danger">*</span></label>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <div class="role-option">
+                                    <input type="radio" asp-for="Role" value="customer" id="roleCustomer" />
+                                    <label for="roleCustomer" class="role-card">
+                                        <div class="role-icon" style="background: var(--success-50); color: var(--success-600);">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="role-info">
+                                            <div class="role-name">Khách hàng</div>
+                                            <div class="role-desc">Người dùng thông thường</div>
+                                        </div>
+                                        <div class="role-check">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="role-option">
+                                    <input type="radio" asp-for="Role" value="staff" id="roleStaff" />
+                                    <label for="roleStaff" class="role-card">
+                                        <div class="role-icon" style="background: var(--info-50); color: var(--info-600);">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div class="role-info">
+                                            <div class="role-name">Nhân viên</div>
+                                            <div class="role-desc">Quản lý đơn hàng, sản phẩm</div>
+                                        </div>
+                                        <div class="role-check">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="role-option">
+                                    <input type="radio" asp-for="Role" value="admin" id="roleAdmin" />
+                                    <label for="roleAdmin" class="role-card">
+                                        <div class="role-icon" style="background: var(--primary-100); color: var(--primary-600);">
+                                            <i class="fas fa-crown"></i>
+                                        </div>
+                                        <div class="role-info">
+                                            <div class="role-name">Quản trị viên</div>
+                                            <div class="role-desc">Toàn quyền hệ thống</div>
+                                        </div>
+                                        <div class="role-check">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Role" class="text-danger" style="font-size: 0.8rem;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i> Lưu thay đổi
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg">Hủy bỏ</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .role-option input[type="radio"] {
+        display: none;
+    }
+    
+    .role-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        background: var(--bg-secondary);
+    }
+    
+    .role-card:hover {
+        border-color: var(--primary-300);
+        background: var(--primary-50);
+    }
+    
+    .role-option input[type="radio"]:checked + .role-card {
+        border-color: var(--primary-500);
+        background: var(--primary-50);
+    }
+    
+    .role-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    
+    .role-info {
+        flex: 1;
+    }
+    
+    .role-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+    
+    .role-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    
+    .role-check {
+        color: var(--primary-500);
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+    }
+    
+    .role-option input[type="radio"]:checked + .role-card .role-check {
+        opacity: 1;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('togglePasswordIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
+}

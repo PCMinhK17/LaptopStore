@@ -1,6 +1,6 @@
-@model LaptopStore.Models.ViewModels.ForgotPasswordViewModel
+@model LaptopStore.Models.ViewModels.SetupAccountViewModel
 @{
-    ViewData["Title"] = "Quên mật khẩu";
+    ViewData["Title"] = "Thiết lập tài khoản";
     Layout = null; 
 }
 
@@ -46,8 +46,9 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             height: auto;
+            min-height: 500px;
             display: flex;
             border-radius: 30px;
             background: var(--glass-bg);
@@ -65,7 +66,7 @@
             color: white;
         }
 
-         .icon-large {
+         .laptop-icon-large {
             font-size: 3.5rem;
             margin-bottom: 1rem;
             filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.25));
@@ -129,6 +130,21 @@
             color: #94a3b8;
             pointer-events: none;
         }
+        
+         .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 4px;
+        }
+
+        .password-toggle:hover {
+            color: #64748b;
+        }
+
 
         .btn-primary-custom {
             width: 100%;
@@ -156,6 +172,20 @@
             display: block;
         }
 
+        .auth-user-info {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+        
+        .auth-user-info strong {
+            color: #0f172a;
+        }
+
         @@keyframes float {
             0% { transform: translateY(0); }
             50% { transform: translateY(-12px); }
@@ -171,14 +201,21 @@
 <body>
     <div class="auth-wrapper">
         <div class="auth-header-custom">
-            <i class="fas fa-unlock-alt icon-large"></i>
-            <h2>Quên mật khẩu?</h2>
+            <i class="fas fa-key laptop-icon-large"></i>
+            <h2>Thiết lập mật khẩu</h2>
         </div>
 
         <div class="auth-form-container">
-            <p class="auth-subtitle">Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu.</p>
+            <p class="auth-subtitle">Chào mừng bạn đến với LaptopStore!</p>
             
-            <form asp-action="ForgotPassword" method="post">
+            <div class="auth-user-info">
+                Tài khoản: <strong>@Model.Email</strong>
+            </div>
+
+            <form asp-action="SetupAccount" method="post">
+                <input type="hidden" asp-for="Token" />
+                <input type="hidden" asp-for="Email" />
+
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div style="color: #ef4444; background: #fee2e2; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem;">
@@ -188,40 +225,67 @@
                 }
 
                 <div class="form-floating-custom">
-                    <input asp-for="Email"
-                           type="email"
+                    <input asp-for="NewPassword"
+                           type="password"
+                           id="newPass"
                            class="form-control-custom"
-                           placeholder="Email"
+                           placeholder="Mật khẩu mới"
                            required />
-                    <i class="fas fa-envelope input-icon"></i>
-                    <span asp-validation-for="Email" class="validation-message"></span>
+                    <i class="fas fa-lock input-icon"></i>
+                    <i class="fas fa-eye password-toggle" onclick="togglePass('newPass', this)"></i>
+                    <span asp-validation-for="NewPassword" class="validation-message"></span>
+                    <div class="form-text text-muted small mt-1" style="font-size: 0.75rem; color: #64748b; margin-left: 4px; margin-top: 5px;">
+                        <i class="fas fa-info-circle me-1"></i>Tối thiểu 8 ký tự, gồm chữ hoa, thường, số và ký tự đặc biệt.
+                    </div>
+                </div>
+
+                <div class="form-floating-custom">
+                    <input asp-for="ConfirmPassword"
+                           type="password"
+                           id="confirmPass"
+                           class="form-control-custom"
+                           placeholder="Xác nhận mật khẩu"
+                           required />
+                    <i class="fas fa-shield-alt input-icon"></i>
+                    <i class="fas fa-eye password-toggle" onclick="togglePass('confirmPass', this)"></i>
+                    <span asp-validation-for="ConfirmPassword" class="validation-message"></span>
                 </div>
 
                 <button type="submit" class="btn-primary-custom" id="btnSubmit">
-                    <span class="btn-text">Gửi liên kết</span>
+                    <span class="btn-text">Kích hoạt tài khoản</span>
                     <span class="btn-loading" style="display: none;">
-                        <i class="fas fa-spinner fa-spin me-2"></i>Đang gửi...
+                        <i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...
                     </span>
                 </button>
             </form>
             
-            <div class="mt-4 text-center">
-                <a href="@Url.Action("Login")" style="color: #64748b; text-decoration: none; font-size: 0.9rem;">
-                    <i class="fas fa-arrow-left me-1"></i> Quay lại Đăng nhập
-                </a>
-            </div>
+            <p class="mt-4 mb-0 text-center" style="font-size:0.85rem; color:#64748b;">
+                Đã có tài khoản?
+                <a href="@Url.Action("Login")" style="color: #64748b; text-decoration: underline;">Đăng nhập</a>
+            </p>
         </div>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
     <script>
+        function togglePass(inputId, icon) {
+            const input = document.getElementById(inputId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
         document.querySelector('form').addEventListener('submit', function(e) {
             const btn = document.getElementById('btnSubmit');
             const btnText = btn.querySelector('.btn-text');
             const btnLoading = btn.querySelector('.btn-loading');
             
+            // Basic client side check
             const form = $(this);
             if(form.valid && !form.valid()) return;
 
@@ -230,5 +294,8 @@
             btnLoading.style.display = 'inline';
         });
     </script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>
