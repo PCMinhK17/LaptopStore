@@ -43,8 +43,6 @@ public partial class LaptopStoreDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var builder = new ConfigurationBuilder()
@@ -492,43 +490,10 @@ public partial class LaptopStoreDbContext : DbContext
                 .IsUnicode(false)
                 .HasDefaultValue("active")
                 .HasColumnName("status");
-            entity.Property(e => e.AvatarUrl)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("avatar_url");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
-        });
-
-        modelBuilder.Entity<EmailVerificationToken>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-
-            entity.ToTable("Email_Verification_Tokens");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.Token)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("token");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.ExpiresAt)
-                .HasColumnType("datetime")
-                .HasColumnName("expires_at");
-            entity.Property(e => e.IsUsed)
-                .HasDefaultValue(false)
-                .HasColumnName("is_used");
-
-            entity.HasOne(d => d.User).WithMany()
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_EmailVerificationTokens_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);
