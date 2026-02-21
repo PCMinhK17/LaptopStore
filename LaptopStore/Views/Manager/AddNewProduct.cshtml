@@ -1,404 +1,273 @@
-﻿@model LaptopStore.DTOs.ProductDTOs.AddNewProductRequest
+﻿@model AddNewProductRequest;
 
-@{
-    ViewData["Title"] = "Thêm sản phẩm mới";
-    ViewData["Subtitle"] = "Nhập thông tin sản phẩm mới vào hệ thống";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
+<html>
+<body>
+    <div class="container mt-4 mb-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Thêm sản phẩm mới</h4>
+            </div>
+            <div class="card-body">
+                <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post" enctype="multipart/form-data">
 
-<!-- Breadcrumb -->
-<div class="mb-4">
-    <a href="@Url.Action("Index")" class="btn btn-sm btn-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
-    </a>
-</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm</label>
+                            <input asp-for="Name" class="form-control" placeholder="Nhập tên máy tính..." />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
 
-<!-- Page Header -->
-<div class="page-header">
-    <div class="page-header-left">
-        <h2>Thêm sản phẩm mới</h2>
-        <p>Điền đầy đủ thông tin để thêm sản phẩm vào hệ thống</p>
-    </div>
-</div>
+                        <div class="col-md-6">
+                            <label asp-for="Sku" class="form-label fw-bold">Mã SKU</label>
+                            <input asp-for="Sku" class="form-control" placeholder="Ví dụ: LPT-A102" />
+                            <span asp-validation-for="Sku" class="text-danger small"></span>
+                        </div>
 
-<form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post" enctype="multipart/form-data" id="addProductForm">
-    <div class="row g-4">
-        <!-- Main Content -->
-        <div class="col-12 col-lg-8">
-            <!-- Basic Information -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <i class="fas fa-info-circle"></i>
-                        Thông tin cơ bản
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-4">
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="Name" class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
-                                <input asp-for="Name" class="form-control" placeholder="VD: MacBook Pro 14 inch M3 Pro" />
-                                <span asp-validation-for="Name" class="text-danger" style="font-size: 0.8rem;"></span>
+                        <div class="col-md-6">
+                            <label asp-for="BrandId" class="form-label fw-bold">Thương hiệu</label>
+                            <select asp-for="BrandId" class="form-select">
+                                <option value="" selected disabled>-- Chọn thương hiệu --</option>
+                                @foreach (var brand in ViewBag.Brands)
+                                {
+                                    <option value="@brand.Id">@brand.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="BrandId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label fw-bold">Phân loại</label>
+                            <select asp-for="CategoryId" class="form-select">
+                                <option value="" selected disabled>-- Chọn phân loại --</option>
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="Price" class="form-label fw-bold">Giá bán (VNĐ)</label>
+                            <input asp-for="Price" class="form-control" type="number" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Cpu" class="form-label fw-bold">CPU</label>
+                            <input asp-for="Cpu" class="form-control" placeholder="i7-13700H..." />
+                            <span asp-validation-for="Cpu" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Ram" class="form-label fw-bold">RAM</label>
+                            <input asp-for="Ram" class="form-control" placeholder="16GB DDR5..." />
+                            <span asp-validation-for="Ram" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="HardDrive" class="form-label fw-bold">Ổ cứng</label>
+                            <input asp-for="HardDrive" class="form-control" placeholder="SSD 512GB..." />
+                            <span asp-validation-for="HardDrive" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Gpu" class="form-label fw-bold">GPU</label>
+                            <input asp-for="Gpu" class="form-control" placeholder="RTX 4060..." />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ScreenSize" class="form-label fw-bold">Màn hình</label>
+                            <input asp-for="ScreenSize" class="form-control" placeholder="15.6 inch..." />
+                            <span asp-validation-for="ScreenSize" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Weight" class="form-label fw-bold">Trọng lượng (kg)</label>
+                            <input asp-for="Weight" class="form-control" type="number" />
+                            <span asp-validation-for="Weight" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ShortDescription" class="form-label fw-bold">Tóm tắt ngắn</label>
+                            <textarea asp-for="ShortDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Description" class="form-label fw-bold">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Hình ảnh sản phẩm</label>
+                            <div class="input-group">
+                                <input asp-for="ImageFile" type="file" class="form-control" id="uploadImg" accept="image/*">
+                                <label class="input-group-text" for="uploadImg">Tải lên</label>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="Sku" class="form-label">Mã SKU <span class="text-danger">*</span></label>
-                                <input asp-for="Sku" class="form-control" placeholder="VD: MBP-14-M3P-001" />
-                                <span asp-validation-for="Sku" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="BrandId" class="form-label">Thương hiệu <span class="text-danger">*</span></label>
-                                <select asp-for="BrandId" class="form-control form-select">
-                                    <option value="" disabled selected>-- Chọn thương hiệu --</option>
-                                    @if (ViewBag.Brands != null)
-                                    {
-                                        @foreach (var brand in ViewBag.Brands)
-                                        {
-                                            <option value="@brand.Id">@brand.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="BrandId" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="CategoryId" class="form-label">Danh mục <span class="text-danger">*</span></label>
-                                <select asp-for="CategoryId" class="form-control form-select">
-                                    <option value="" disabled selected>-- Chọn danh mục --</option>
-                                    @if (ViewBag.Categories != null)
-                                    {
-                                        @foreach (var category in ViewBag.Categories)
-                                        {
-                                            <option value="@category.Id">@category.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="CategoryId" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="Price" class="form-label">Giá bán <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input asp-for="Price" class="form-control" type="number" min="0" placeholder="0" />
-                                    <span class="input-group-text">VNĐ</span>
-                                </div>
-                                <span asp-validation-for="Price" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
+
+                        <div class="col-12 mt-4 text-end">
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary me-2">Hủy</a>
+                            <button type="submit" class="btn btn-primary px-5">Lưu sản phẩm</button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Technical Specifications -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <i class="fas fa-microchip"></i>
-                        Thông số kỹ thuật
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-4">
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="Cpu" class="form-label">CPU <span class="text-danger">*</span></label>
-                                <input asp-for="Cpu" class="form-control" placeholder="VD: Apple M3 Pro 11-core" />
-                                <span asp-validation-for="Cpu" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="Ram" class="form-label">RAM <span class="text-danger">*</span></label>
-                                <input asp-for="Ram" class="form-control" placeholder="VD: 18GB Unified Memory" />
-                                <span asp-validation-for="Ram" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="HardDrive" class="form-label">Ổ cứng <span class="text-danger">*</span></label>
-                                <input asp-for="HardDrive" class="form-control" placeholder="VD: 512GB SSD" />
-                                <span asp-validation-for="HardDrive" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="Gpu" class="form-label">GPU</label>
-                                <input asp-for="Gpu" class="form-control" placeholder="VD: 14-core GPU" />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="ScreenSize" class="form-label">Màn hình <span class="text-danger">*</span></label>
-                                <input asp-for="ScreenSize" class="form-control" placeholder="VD: 14.2 inch Liquid Retina XDR" />
-                                <span asp-validation-for="ScreenSize" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group mb-0">
-                                <label asp-for="Weight" class="form-label">Trọng lượng <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input asp-for="Weight" class="form-control" type="number" step="0.01" min="0" placeholder="1.6" />
-                                    <span class="input-group-text">kg</span>
-                                </div>
-                                <span asp-validation-for="Weight" class="text-danger" style="font-size: 0.8rem;"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Description -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <i class="fas fa-align-left"></i>
-                        Mô tả sản phẩm
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-4">
-                        <div class="col-12">
-                            <div class="form-group mb-0">
-                                <label asp-for="ShortDescription" class="form-label">Mô tả ngắn</label>
-                                <textarea asp-for="ShortDescription" class="form-control" rows="2" 
-                                          placeholder="Mô tả ngắn gọn về sản phẩm (hiển thị ở danh sách)"></textarea>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-group mb-0">
-                                <label asp-for="Description" class="form-label">Mô tả chi tiết</label>
-                                <textarea asp-for="Description" class="form-control" rows="5" 
-                                          placeholder="Mô tả đầy đủ về sản phẩm, tính năng, ưu điểm..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="d-flex gap-3">
-                <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-save me-2"></i> Lưu sản phẩm
-                </button>
-                <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg">Hủy bỏ</a>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-12 col-lg-4">
-            <!-- Image Upload -->
-            <div class="card mb-4" style="position: sticky; top: 100px;">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <i class="fas fa-image"></i>
-                        Hình ảnh sản phẩm
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
-                        <div class="upload-preview" id="uploadPreview" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview" />
-                            <button type="button" class="remove-image" onclick="removeImage(event)">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="upload-placeholder" id="uploadPlaceholder">
-                            <div class="upload-icon">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </div>
-                            <div class="upload-text">Kéo thả hoặc click để upload</div>
-                            <div class="upload-hint">PNG, JPG, WEBP (Tối đa 5MB)</div>
-                        </div>
-                    </div>
-                    <input asp-for="ImageFile" type="file" id="imageInput" accept="image/*" style="display: none;" onchange="previewImage(this)" />
-                </div>
-            </div>
-
-            <!-- Tips Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <i class="fas fa-lightbulb"></i>
-                        Mẹo hữu ích
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-success"></i>
-                            </div>
-                            <div class="text-muted" style="font-size: 0.85rem;">
-                                Tên sản phẩm nên đầy đủ và rõ ràng để khách hàng dễ tìm kiếm.
-                            </div>
-                        </div>
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-success"></i>
-                            </div>
-                            <div class="text-muted" style="font-size: 0.85rem;">
-                                Mã SKU phải là duy nhất để quản lý kho hàng hiệu quả.
-                            </div>
-                        </div>
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-success"></i>
-                            </div>
-                            <div class="text-muted" style="font-size: 0.85rem;">
-                                Hình ảnh chất lượng cao, tỉ lệ 1:1 hoặc 4:3 sẽ hiển thị tốt nhất.
-                            </div>
-                        </div>
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-success"></i>
-                            </div>
-                            <div class="text-muted" style="font-size: 0.85rem;">
-                                Mô tả chi tiết giúp tăng tỷ lệ chuyển đổi mua hàng.
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
-</form>
 
-<style>
-    .upload-area {
-        border: 2px dashed var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: 40px 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        background: var(--bg-tertiary);
-        position: relative;
-        min-height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .upload-area:hover {
-        border-color: var(--primary-400);
-        background: var(--primary-50);
-    }
-    
-    .upload-area.has-image {
-        padding: 0;
-        border-style: solid;
-    }
-    
-    .upload-icon {
-        font-size: 3rem;
-        color: var(--text-muted);
-        margin-bottom: 12px;
-    }
-    
-    .upload-text {
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 4px;
-    }
-    
-    .upload-hint {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-    }
-    
-    .upload-preview {
-        width: 100%;
-        height: 200px;
-        position: relative;
-    }
-    
-    .upload-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: var(--radius-lg);
-    }
-    
-    .remove-image {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: var(--danger-500);
-        color: white;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        transition: all var(--transition-fast);
-    }
-    
-    .remove-image:hover {
-        background: var(--danger-600);
-        transform: scale(1.1);
-    }
-</style>
+</body>
+</html>
 
-@section Scripts {
-    <script>
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('uploadPreview').style.display = 'block';
-                    document.getElementById('uploadPlaceholder').style.display = 'none';
-                    document.getElementById('uploadArea').classList.add('has-image');
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
+@* @model Product;
+
+<html>
+<head>
+    <style>
+        .form-inline-block {
+            display: inline-block;
+            margin-right: 1rem
         }
-        
-        function removeImage(event) {
-            event.stopPropagation();
-            document.getElementById('imageInput').value = '';
-            document.getElementById('uploadPreview').style.display = 'none';
-            document.getElementById('uploadPlaceholder').style.display = 'block';
-            document.getElementById('uploadArea').classList.remove('has-image');
+        .form-small {
+            height: 2rem;
+            margin-top: 0.2rem
         }
-        
-        // Drag and drop support
-        const uploadArea = document.getElementById('uploadArea');
-        
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
+        .form-big {
+            height: 4rem;
+            margin-top: 0.2rem
+        }
+        .form-label {
+            width: 8rem;
+        }
+        .form-field {
+            width: 10rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Thêm sản phẩm mới</h2>
+    <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post">
+        <div style="display: inline-block">
+            <div class="form-inline-block">
+                <div class="form-inline-block">
+                    <div class="form-label form-small">
+                        <label for="Name">Tên sản phẩm:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Brand">Thương hiệu:</label>
+                    </div>
+                    <div class="form-label form-big">
+                        <label for="Description">Thông tin chi tiết:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Cpu">Cpu:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="HardDrive">HardDrive:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="ScreenSize">Kích cỡ màn hình:</label>
+                    </div>
+
+                </div>
+                <div class="form-inline-block">
+                    <div class="form-small">
+                        <input class="form-field" asp-for="Name" type="text" id="Name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <select id="Brand" asp-for="BrandId">
+                            <option value="" selected disabled>-- Chọn thương hiệu --</option>
+                            @foreach (var brand in ViewBag.Brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="BrandId" class="text-danger"></span>
+                    </div>
+                    <div class="form-big">
+                        <textarea asp-for="Description" type="text" id="Description"> </textarea>
+                    </div>
+                    <div style="height:2rem; margin-top:0.5rem">
+                        <input asp-for="Cpu" type="text" id="Cpu" />
+                        <span asp-validation-for="Cpu" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="HardDrive" type="text" id="HardDrive" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="ScreenSize" type="text" id="ScreenSize" />
+                        <span asp-validation-for="ScreenSize" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
             
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const input = document.getElementById('imageInput');
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                input.files = dataTransfer.files;
-                previewImage(input);
-            }
-        });
-    </script>
-}
+            <div class="form-inline-block">
+                <div class="form-inline-block">
+                    <div class="form-label form-small">
+                        <label for="Sku">Mã SKU:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Category">Phân loại:</label>
+                    </div>
+                    <div class="form-label form-big">
+                        <label for="ShortDescription">Tóm tắt chi tiết:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Ram">Ram:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Gpu">Gpu:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Weight">Cân nặng (kg):</label>
+                    </div>
+
+                </div>
+                <div class="form-inline-block">
+                    <div class="form-small">
+                        <input asp-for="Sku" type="text" id="Sku" />
+                        <span asp-validation-for="Sku" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <select id="Category" asp-for="CategoryId">
+                            <option value="" selected disabled>-- Chọn phân loại --</option>
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                    <div class="form-big">
+                        <textarea asp-for="ShortDescription" type="text" id="ShortDescription"></textarea>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="Ram" type="text" id="Ram" />
+                        <span asp-validation-for="Ram" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="Gpu" type="text" id="Gpu" />
+                        <span asp-validation-for="Gpu" class="text-danger"></span>
+                    </div>
+                    <div class="form-small">
+                        <input asp-for="Weight" type="text" id="Weight" />
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+        <div>
+            <div class="form-small">
+                <label for="Price">Giá bán:</label>
+            </div>
+            <div class="form-small">
+                <input asp-for="Price" type="number" id="Price" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+        </div>
+        <div>
+            <button type="submit">Thêm</button>
+        </div>
+    </form>
+
+</body>
+</html> *@

@@ -13,18 +13,15 @@ namespace LaptopStore.Controllers
     public class AccountController : Controller
     {
         private readonly IAuthService _authService;
-        private readonly IEmailService _emailService;
         private readonly LaptopStoreDbContext _context;
         private readonly ILogger<AccountController> _logger;
 
         public AccountController(
             IAuthService authService,
-            IEmailService emailService,
             LaptopStoreDbContext context,
             ILogger<AccountController> logger)
         {
             _authService = authService;
-            _emailService = emailService;
             _context = context;
             _logger = logger;
         }
@@ -60,21 +57,10 @@ namespace LaptopStore.Controllers
 
             if (!result.Success)
             {
-                // Xử lý trường hợp chưa xác thực email
-                if (result.RequiresEmailVerification && result.User != null)
-                {
-                    // Chuyển hướng đến trang thông báo đã gửi email
-                    TempData["UserEmail"] = result.User.Email;
-                    TempData["UserId"] = result.User.Id;
-                    TempData["ToastMessage"] = result.ErrorMessage;
-                    TempData["ToastType"] = "warning";
-                    return RedirectToAction("VerificationSent");
-                }
-
                 // Chỉ hiển thị thông báo đơn giản, không có dấu *
                 var errorMessage = result.ErrorMessage?.Contains("Tài khoản") == true 
                     ? "Tài khoản hoặc mật khẩu không chính xác"
-                    : result.ErrorMessage ?? "Tài khoản hoặc mật khẩu không chính xác";
+                    : "Tài khoản hoặc mật khẩu không chính xác";
                 
                 ModelState.AddModelError(string.Empty, errorMessage);
                 TempData["ToastMessage"] = errorMessage;
@@ -162,42 +148,7 @@ namespace LaptopStore.Controllers
                 return View(model);
             }
 
-            // Tạo token xác thực email và gửi mail
-            if (result.RequiresEmailVerification)
-            {
-                try
-                {
-                    var token = await _authService.GenerateEmailVerificationTokenAsync(result.User.Id);
-                    var verificationLink = Url.Action(
-                        "VerifyEmail",
-                        "Account",
-                        new { token },
-                        Request.Scheme
-                    );
-
-                    await _emailService.SendVerificationEmailAsync(
-                        result.User.Email,
-                        result.User.FullName ?? result.User.Email,
-                        verificationLink ?? ""
-                    );
-
-                    TempData["UserEmail"] = result.User.Email;
-                    TempData["UserId"] = result.User.Id;
-
-                    return RedirectToAction("VerificationSent");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to send verification email");
-                    TempData["ToastMessage"] = "Đăng ký thành công nhưng không thể gửi email xác thực. Vui lòng thử gửi lại.";
-                    TempData["ToastType"] = "warning";
-                    TempData["UserEmail"] = result.User.Email;
-                    TempData["UserId"] = result.User.Id;
-                    return RedirectToAction("VerificationSent");
-                }
-            }
-
-            // Nếu không cần xác thực (để cho tương lai, có thể disable tính năng này)
+            // Đăng nhập tự động sau khi đăng ký
             await SignInUserAsync(result.User, false);
 
             TempData["ToastMessage"] = $"Đăng ký thành công! Chào mừng {result.User.FullName ?? result.User.Email}";
@@ -206,196 +157,6 @@ namespace LaptopStore.Controllers
             return RedirectToAction(
                 result.RedirectAction ?? "Index",
                 result.RedirectController ?? "Product");
-        }
-
-        #endregion
-
-        #region Email Verification
-
-        [HttpGet]
-        public IActionResult VerificationSent()
-        {
-            var email = TempData["UserEmail"]?.ToString();
-            var userId = TempData["UserId"];
-
-            // Giữ lại TempData để có thể dùng khi gửi lại
-            TempData.Keep("UserEmail");
-            TempData.Keep("UserId");
-
-            ViewBag.Email = email;
-            ViewBag.UserId = userId;
-
-            return View();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> VerifyEmail(string token)
-        {
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                TempData["ToastMessage"] = "Link xác thực không hợp lệ.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("Login");
-            }
-
-            var result = await _authService.VerifyEmailTokenAsync(token);
-
-            if (!result.Success)
-            {
-                TempData["ToastMessage"] = result.ErrorMessage ?? "Xác thực email thất bại.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("VerificationFailed", new { message = result.ErrorMessage });
-            }
-
-            // Gửi email thông báo xác thực thành công
-            if (result.User != null)
-            {
-                await _emailService.SendVerificationSuccessEmailAsync(
-                    result.User.Email,
-                    result.User.FullName ?? result.User.Email
-                );
-            }
-
-            TempData["ToastMessage"] = "Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.";
-            TempData["ToastType"] = "success";
-
-            return RedirectToAction("VerificationSuccess");
-        }
-
-        [HttpGet]
-        public IActionResult VerificationSuccess()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult VerificationFailed(string? message)
-        {
-            ViewBag.ErrorMessage = message ?? "Xác thực email thất bại.";
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResendVerificationEmail(int userId)
-        {
-            var user = await _authService.GetUserByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["ToastMessage"] = "Không tìm thấy tài khoản.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("Login");
-            }
-
-            if (user.Status == "active")
-            {
-                TempData["ToastMessage"] = "Tài khoản đã được xác thực. Vui lòng đăng nhập.";
-                TempData["ToastType"] = "info";
-                return RedirectToAction("Login");
-            }
-
-            try
-            {
-                var token = await _authService.GenerateEmailVerificationTokenAsync(user.Id);
-                var verificationLink = Url.Action(
-                    "VerifyEmail",
-                    "Account",
-                    new { token },
-                    Request.Scheme
-                );
-
-                await _emailService.SendVerificationEmailAsync(
-                    user.Email,
-                    user.FullName ?? user.Email,
-                    verificationLink ?? ""
-                );
-
-                TempData["ToastMessage"] = "Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.";
-                TempData["ToastType"] = "success";
-                TempData["UserEmail"] = user.Email;
-                TempData["UserId"] = user.Id;
-
-                return RedirectToAction("VerificationSent");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to resend verification email");
-                TempData["ToastMessage"] = "Không thể gửi email xác thực. Vui lòng thử lại sau.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("VerificationSent");
-            }
-        }
-
-        #endregion
-
-        #region Account Setup (for admin created users)
-
-        [HttpGet]
-        public async Task<IActionResult> SetupAccount(string token, string email)
-        {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
-            {
-                TempData["ToastMessage"] = "Liên kết không hợp lệ.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("Login");
-            }
-            
-             // Validate token without consuming it
-            var isValid = await _authService.ValidateEmailTokenAsync(token);
-            if (!isValid)
-            {
-                 TempData["ToastMessage"] = "Mã xác thực không hợp lệ hoặc đã hết hạn.";
-                 TempData["ToastType"] = "error";
-                 return RedirectToAction("Login");
-            }
-
-            var model = new SetupAccountViewModel
-            {
-                Token = token,
-                Email = email
-            };
-
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetupAccount(SetupAccountViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            // Verify and consume token
-            var result = await _authService.VerifyEmailTokenAsync(model.Token);
-
-            if (!result.Success)
-            {
-                 TempData["ToastMessage"] = result.ErrorMessage ?? "Xác thực thất bại.";
-                 TempData["ToastType"] = "error";
-                 return RedirectToAction("Login");
-            }
-            
-            var user = result.User;
-            if (user == null || user.Email != model.Email)
-            {
-                 TempData["ToastMessage"] = "Người dùng không hợp lệ.";
-                 TempData["ToastType"] = "error";
-                 return RedirectToAction("Login");
-            }
-
-            // Update password
-            user.Password = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
-            // Status is set to "active" by VerifyEmailTokenAsync already
-            
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-
-            TempData["ToastMessage"] = "Thiết lập tài khoản thành công. Vui lòng đăng nhập.";
-            TempData["ToastType"] = "success";
-
-            return RedirectToAction("Login");
         }
 
         #endregion
@@ -608,111 +369,10 @@ namespace LaptopStore.Controllers
 
         #endregion
 
-        #region Forgot Password & Reset Password
-
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View();
         }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-            
-            // Luôn thông báo success để tránh user enumeration attack, trừ khi dev mode
-            if (user != null)
-            {
-                try 
-                {
-                    var token = await _authService.GenerateEmailVerificationTokenAsync(user.Id);
-                    var resetLink = Url.Action("ResetPassword", "Account", new { token, email = user.Email }, Request.Scheme);
-                    
-                    await _emailService.SendPasswordResetEmailAsync(user.Email, user.FullName ?? user.Email, resetLink ?? "");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error sending password reset email");
-                }
-            }
-
-            TempData["ToastMessage"] = "Nếu địa chỉ email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.";
-            TempData["ToastType"] = "success";
-
-            return RedirectToAction("Login");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ResetPassword(string token, string email)
-        {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
-            {
-                TempData["ToastMessage"] = "Liên kết không hợp lệ.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("Login");
-            }
-            
-            // Validate token without consuming
-            var isValid = await _authService.ValidateEmailTokenAsync(token);
-            if (!isValid)
-            {
-                TempData["ToastMessage"] = "Liên kết đã hết hạn hoặc không hợp lệ.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("Login");
-            }
-
-            var model = new ResetPasswordViewModel { Token = token, Email = email };
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            // Verify and consume token
-            var result = await _authService.VerifyEmailTokenAsync(model.Token);
-            if (!result.Success)
-            {
-                TempData["ToastMessage"] = result.ErrorMessage ?? "Liên kết không hợp lệ hoặc hết hạn.";
-                TempData["ToastType"] = "error";
-                return View(model);
-            }
-            
-            var user = result.User; 
-            if (user == null) 
-            {
-                 user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-            }
-            
-            if (user != null)
-            {
-                user.Password = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
-                user.UpdatedAt = DateTime.Now;
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
-                
-                 TempData["ToastMessage"] = "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập.";
-                 TempData["ToastType"] = "success";
-                 return RedirectToAction("Login");
-            }
-            
-            TempData["ToastMessage"] = "Có lỗi xảy ra khi cập nhật mật khẩu.";
-            TempData["ToastType"] = "error";
-            return View(model);
-        }
-
-        #endregion
     }
 }

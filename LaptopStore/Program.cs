@@ -11,7 +11,6 @@ builder.Services.AddDbContext<LaptopStoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 builder.Services.AddSignalR();
 builder.Services.AddScoped<LaptopStore.Services.IAuthService, LaptopStore.Services.AuthService>();
-builder.Services.AddScoped<LaptopStore.Services.IEmailService, LaptopStore.Services.EmailService>();
 
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

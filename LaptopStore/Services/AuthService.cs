@@ -49,23 +49,12 @@ namespace LaptopStore.Services
                 }
 
                 // Kiểm tra trạng thái tài khoản
-                if (string.Equals(user.Status, "pending", StringComparison.OrdinalIgnoreCase))
-                {
-                    return new AuthResult
-                    {
-                        Success = false,
-                        User = user,
-                        RequiresEmailVerification = true,
-                        ErrorMessage = "Tài khoản chưa được xác thực. Vui lòng kiểm tra email của bạn."
-                    };
-                }
-
                 if (!string.Equals(user.Status, "active", StringComparison.OrdinalIgnoreCase))
                 {
                     return new AuthResult
                     {
                         Success = false,
-                        ErrorMessage = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ."
+                        ErrorMessage = "Tài khoản hoặc mật khẩu không chính xác"
                     };
                 }
 
@@ -128,7 +117,7 @@ namespace LaptopStore.Services
                     Address = model.Address?.Trim(),
                     Password = BCryptNet.HashPassword(model.Password),
                     Role = "customer",
-                    Status = "pending", // Đổi từ "active" thành "pending" để chờ xác thực email
+                    Status = "active",
                     CreatedAt = now,
                     UpdatedAt = now
                 };
@@ -136,15 +125,14 @@ namespace LaptopStore.Services
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("New user registered (pending verification): {Email}", email);
+                _logger.LogInformation("New user registered: {Email}", email);
 
                 return new AuthResult
                 {
                     Success = true,
                     User = user,
-                    RequiresEmailVerification = true, // Đánh dấu cần xác thực email
-                    RedirectController = "Account",
-                    RedirectAction = "VerificationSent"
+                    RedirectController = "Product",
+                    RedirectAction = "Index"
                 };
             }
             catch (Exception ex)
@@ -220,179 +208,11 @@ namespace LaptopStore.Services
         {
             return role?.ToLower() switch
             {
-                "admin" => ("AdminDashboard", "Index"),
-                "staff" => ("AdminDashboard", "Index"), // Staff also goes to dashboard
+                "admin" => ("ProductManagement", "Index"),
+                "staff" => ("Home", "Index"),
                 "customer" => ("Product", "Index"),
                 _ => ("Home", "Index")
             };
         }
-
-        #region Email Verification Methods
-
-        public async Task<string> GenerateEmailVerificationTokenAsync(int userId)
-        {
-            try
-            {
-                // Vô hiệu hóa các token cũ
-                var oldTokens = await _context.EmailVerificationTokens
-                    .Where(t => t.UserId == userId && !t.IsUsed)
-                    .ToListAsync();
-
-                foreach (var oldToken in oldTokens)
-                {
-                    oldToken.IsUsed = true;
-                }
-
-                // Tạo token mới
-                var token = Guid.NewGuid().ToString("N");
-                var now = DateTime.Now;
-
-                var verificationToken = new EmailVerificationToken
-                {
-                    UserId = userId,
-                    Token = token,
-                    CreatedAt = now,
-                    ExpiresAt = now.AddHours(24), // Hết hạn sau 24 giờ
-                    IsUsed = false
-                };
-
-                _context.EmailVerificationTokens.Add(verificationToken);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Generated email verification token for user {UserId}", userId);
-
-                return token;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating email verification token for user {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<EmailVerificationResult> VerifyEmailTokenAsync(string token)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(token))
-                {
-                    return new EmailVerificationResult
-                    {
-                        Success = false,
-                        ErrorMessage = "Token không hợp lệ."
-                    };
-                }
-
-                var verificationToken = await _context.EmailVerificationTokens
-                    .Include(t => t.User)
-                    .FirstOrDefaultAsync(t => t.Token == token);
-
-                if (verificationToken == null)
-                {
-                    return new EmailVerificationResult
-                    {
-                        Success = false,
-                        ErrorMessage = "Token không tồn tại hoặc đã hết hạn."
-                    };
-                }
-
-                if (verificationToken.IsUsed)
-                {
-                    return new EmailVerificationResult
-                    {
-                        Success = false,
-                        ErrorMessage = "Token này đã được sử dụng."
-                    };
-                }
-
-                if (verificationToken.ExpiresAt < DateTime.Now)
-                {
-                    return new EmailVerificationResult
-                    {
-                        Success = false,
-                        ErrorMessage = "Token đã hết hạn. Vui lòng yêu cầu gửi lại email xác thực."
-                    };
-                }
-
-                // Đánh dấu token đã sử dụng
-                verificationToken.IsUsed = true;
-
-                // Cập nhật trạng thái user
-                var user = verificationToken.User;
-                if (user != null)
-                {
-                    user.Status = "active";
-                    user.UpdatedAt = DateTime.Now;
-                }
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Email verified successfully for user {UserId}", verificationToken.UserId);
-
-                return new EmailVerificationResult
-                {
-                    Success = true,
-                    User = user
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error verifying email token");
-                return new EmailVerificationResult
-                {
-                    Success = false,
-                    ErrorMessage = "Đã xảy ra lỗi khi xác thực email. Vui lòng thử lại sau."
-                };
-            }
-        }
-
-        public async Task<bool> ValidateEmailTokenAsync(string token)
-        {
-            if (string.IsNullOrWhiteSpace(token)) return false;
-            
-            var verificationToken = await _context.EmailVerificationTokens
-                .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Token == token);
-
-            if (verificationToken == null) return false;
-            if (verificationToken.IsUsed) return false;
-            if (verificationToken.ExpiresAt < DateTime.Now) return false;
-
-            return true;
-        }
-
-        public async Task<bool> ResendVerificationEmailAsync(int userId)
-        {
-            try
-            {
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                {
-                    _logger.LogWarning("Resend verification email failed: user {UserId} not found", userId);
-                    return false;
-                }
-
-                if (user.Status == "active")
-                {
-                    _logger.LogWarning("Resend verification email failed: user {UserId} already verified", userId);
-                    return false;
-                }
-
-                // Token sẽ được tạo trong controller và gửi email
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error resending verification email for user {UserId}", userId);
-                return false;
-            }
-        }
-
-        public async Task<User?> GetUserByIdAsync(int userId)
-        {
-            return await _context.Users.FindAsync(userId);
-        }
-
-        #endregion
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace LaptopStore.Models;
@@ -20,8 +20,6 @@ public partial class User
     public string? Role { get; set; }
 
     public string? Status { get; set; }
-
-    public string? AvatarUrl { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 

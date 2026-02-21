@@ -1,640 +1,144 @@
-@model LaptopStore.Models.User
-@{
-    ViewData["Title"] = "Tài khoản của tôi";
-    var isEditMode = ViewBag.EditMode as bool? ?? false;
-    
-    // Get avatar URL or generate initial
-    var avatarUrl = Model.AvatarUrl;
-    var avatarLetter = !string.IsNullOrEmpty(Model.FullName) ? Model.FullName.Substring(0, 1).ToUpper() : "U";
-    var userId = Model.Id;
-}
+﻿@model LaptopStore.Models.User
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-    .profile-container {
-        max-width: 900px;
-        margin: 30px auto;
+    body {
+        background-color: #f5f6f7;
+    }
+
+    .profile-sidebar .list-group-item {
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .profile-sidebar .list-group-item.active {
+        background-color: #fff0f0;
+        color: #d70018;
+        font-weight: 600;
     }
 
     .profile-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
+        border-radius: 10px;
     }
 
-    /* Header Styles */
-    .profile-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        text-align: center;
-        position: relative;
+    .profile-label {
+        width: 200px;
+        color: #6c757d;
     }
 
-    .profile-avatar-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-        font-size: 48px;
-        font-weight: 600;
-        border: 5px solid rgba(255, 255, 255, 0.3);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .profile-avatar:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .profile-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    /* Camera icon button */
-    .avatar-camera-btn {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        width: 36px;
-        height: 36px;
-        background: rgba(255, 255, 255, 0.95);
+    .avatar {
+        width: 90px;
+        height: 90px;
+        background: #ffe3d5;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        border: none;
-    }
-
-    .avatar-camera-btn:hover {
-        transform: scale(1.1);
-        background: #fff;
-    }
-
-    .avatar-camera-btn i {
-        color: #667eea;
-        font-size: 16px;
-    }
-
-    .avatar-upload-input {
-        display: none;
-    }
-
-    .profile-name {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .profile-email {
-        font-size: 14px;
-        opacity: 0.9;
-    }
-
-    .profile-body {
-        padding: 30px;
-    }
-
-    .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .info-row {
-        display: flex;
-        padding: 15px 0;
-        border-bottom: 1px solid #f5f5f5;
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        width: 150px;
-        color: #666;
-        font-size: 14px;
-        flex-shrink: 0;
-    }
-
-    .info-value {
-        flex: 1;
-        color: #333;
-        font-weight: 500;
-    }
-
-    .info-value.empty {
-        color: #aaa;
-        font-style: italic;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: block;
-        font-weight: 500;
-        color: #444;
-        margin-bottom: 8px;
-    }
-
-    .form-group .form-control {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .form-group .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-group .form-control:disabled {
-        background: #f8f9fa;
-        cursor: not-allowed;
-    }
-
-    .btn-save {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 8px;
-        padding: 12px 30px;
-        color: white;
-        font-weight: 500;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-
-    .btn-cancel {
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 12px 30px;
-        color: #666;
-        font-weight: 500;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-cancel:hover {
-        background: #f5f5f5;
-        color: #666;
-    }
-
-    .btn-edit {
-        background: #fff;
-        border: 1px solid #667eea;
-        color: #667eea;
-        border-radius: 8px;
-        padding: 10px 25px;
-        font-weight: 500;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-edit:hover {
-        background: #667eea;
-        color: white;
-    }
-
-    .validation-msg {
-        font-size: 12px;
-        color: #e53e3e;
-        margin-top: 5px;
-    }
-
-    .text-muted-info {
-        font-size: 12px;
-        color: #999;
-        margin-top: 5px;
-    }
-
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        display: none;
-    }
-
-    .loading-overlay.show {
-        display: flex;
-    }
-
-    .spinner-lg {
-        width: 50px;
-        height: 50px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    @@media (max-width: 768px) {
-        .profile-container {
-            margin: 15px;
-        }
-        
-        .info-row {
-            flex-direction: column;
-        }
-        
-        .info-label {
-            width: auto;
-            margin-bottom: 5px;
-        }
-        
-        .profile-body {
-            padding: 20px;
-        }
-        
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            font-size: 40px;
-        }
-        
-        .avatar-camera-btn {
-            width: 32px;
-            height: 32px;
-        }
-        
-        .avatar-camera-btn i {
-            font-size: 14px;
-        }
+        margin: auto;
+        font-size: 30px;
+        color: #ff6a00;
     }
 </style>
 
-<div class="container profile-container">
-    <div class="profile-card">
-        <!-- Header with Avatar -->
-        <div class="profile-header">
-            <div class="profile-avatar-wrapper">
-                <div class="profile-avatar" id="headerAvatar">
-                    @if (!string.IsNullOrEmpty(avatarUrl))
-                    {
-                        <img src="~/uploads/avatars/@avatarUrl" alt="@Model.FullName" id="avatarImg" />
-                    }
-                    else
-                    {
-                        <span id="avatarLetter">@avatarLetter</span>
-                    }
+<div class="container mt-4">
+    <div class="row">
+
+        <!-- LEFT SIDEBAR -->
+        <div class="col-md-3">
+            <div class="card profile-sidebar shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="fw-bold mb-0">@Model.FullName</h6>
+                    <small class="text-muted">@Model.PhoneNumber</small>
                 </div>
-                
-                <!-- Camera button for direct upload -->
-                <button type="button" class="avatar-camera-btn" onclick="document.getElementById('directAvatarInput').click()" 
-                        title="Thay đổi ảnh đại diện">
-                    <i class="fas fa-camera"></i>
-                </button>
-                
-                <!-- Hidden file input for direct avatar upload -->
-                <input type="file" id="directAvatarInput" name="directAvatar" class="avatar-upload-input" 
-                       accept="image/jpeg,image/png,image/gif,image/webp" onchange="uploadAvatarDirect(this)">
+
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item active">Thông tin cá nhân</li>
+                    <li class="list-group-item">Đơn hàng của tôi</li>
+                    <li class="list-group-item">Thông báo của tôi</li>
+                    @* <li class="list-group-item text-danger">Đăng xuất</li> *@
+                </ul>
             </div>
-            
-            <div class="profile-name">@Model.FullName</div>
-            <div class="profile-email">@Model.Email</div>
         </div>
 
-        <!-- Body -->
-        <div class="profile-body">
-            @if (!isEditMode)
+        <!-- RIGHT CONTENT -->
+        <div class="col-md-9">
+
+            <!-- VIEW PROFILE -->
+            @if (ViewBag.EditMode == null)
             {
-                <!-- View Mode -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="section-title mb-0">Thông tin cá nhân</h5>
-                    <a href="/User/Profile?edit=true" class="btn-edit">
-                        <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                <div class="card profile-card shadow-sm p-4">
+                    <h5 class="fw-bold mb-4">Thông tin cá nhân</h5>
+
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="profile-label">Họ và tên</td>
+                            <td class="fw-semibold">@Model.FullName</td>
+                        </tr>
+                        <tr>
+                            <td class="profile-label">Số điện thoại</td>
+                            <td>@Model.PhoneNumber</td>
+                        </tr>
+                        <tr>
+                            <td class="profile-label">Email</td>
+                            <td>@Model.Email</td>
+                        </tr>
+                        <tr>
+                            <td class="profile-label">Địa chỉ</td>
+                            <td>@Model.Address</td>
+                        </tr>
+                    </table>
+
+                    @* <a href="/User/Profile/@Model.Id?edit=true" *@
+                    <a href="/User/Profile?edit=true"
+                       class="btn btn-danger px-4">
+                        Chỉnh sửa thông tin
                     </a>
                 </div>
-
-                <div class="info-row">
-                    <div class="info-label">Họ và tên</div>
-                    <div class="info-value @(string.IsNullOrEmpty(Model.FullName) ? "empty" : "")">
-                        @(Model.FullName ?? "Chưa cập nhật")
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">@Model.Email</div>
-                </div>
-
-                <div class="info-row">
-                    <div class="info-label">Số điện thoại</div>
-                    <div class="info-value @(string.IsNullOrEmpty(Model.PhoneNumber) ? "empty" : "")">
-                        @(Model.PhoneNumber ?? "Chưa cập nhật")
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <div class="info-label">Địa chỉ</div>
-                    <div class="info-value @(string.IsNullOrEmpty(Model.Address) ? "empty" : "")">
-                        @(Model.Address ?? "Chưa cập nhật")
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <div class="info-label">Ngày tạo</div>
-                    <div class="info-value">
-                        @(Model.CreatedAt.HasValue ? Model.CreatedAt.Value.ToString("dd/MM/yyyy") : "Không có thông tin")
-                    </div>
-                </div>
             }
-            else
+
+            <!-- EDIT PROFILE -->
+            @if (ViewBag.EditMode != null)
             {
-                <!-- Edit Mode -->
-                <form id="profileForm">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="Id" value="@Model.Id" />
+                <div class="card profile-card shadow-sm p-4">
+                    <h5 class="fw-bold mb-4">Chỉnh sửa thông tin</h5>
 
-                    <h5 class="section-title">Chỉnh sửa thông tin</h5>
+                    <form method="post" action="/User/Profile">
+                        <input type="hidden" name="Id" value="@Model.Id" />
 
-                    <!-- Full Name -->
-                    <div class="form-group">
-                        <label for="fullName">Họ và tên <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="fullName" name="FullName" 
-                               value="@Model.FullName" placeholder="Nhập họ và tên" required>
-                        <div class="validation-msg" id="fullNameError"></div>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Họ và tên</label>
+                            <input name="FullName" class="form-control" value="@Model.FullName" />
+                        </div>
 
-                    <!-- Phone -->
-                    <div class="form-group">
-                        <label for="phoneNumber">Số điện thoại</label>
-                        <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" 
-                               value="@Model.PhoneNumber" placeholder="Nhập số điện thoại">
-                        <div class="validation-msg" id="phoneNumberError"></div>
-                        <div class="text-muted-info">Bỏ trống nếu muốn giữ nguyên</div>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input name="PhoneNumber" class="form-control" value="@Model.PhoneNumber" />
+                        </div>
 
-                    <!-- Email (Read-only) -->
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" value="@Model.Email" disabled readonly>
-                        <div class="text-muted-info">Email không thể thay đổi</div>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" value="@Model.Email" disabled />
+                        </div>
 
-                    <!-- Address -->
-                    <div class="form-group">
-                        <label for="address">Địa chỉ</label>
-                        <input type="text" class="form-control" id="address" name="Address" 
-                               value="@Model.Address" placeholder="Nhập địa chỉ">
-                        <div class="validation-msg" id="addressError"></div>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ</label>
+                            <input name="Address" class="form-control" value="@Model.Address" />
+                        </div>
 
-                    <!-- Buttons -->
-                    <div class="d-flex gap-3 mt-4">
-                        <button type="button" class="btn-save" id="saveBtn" onclick="saveProfile()">
-                            <span class="spinner-border spinner-border-sm me-2 d-none" id="saveSpinner"></span>
-                            <span id="saveBtnText"><i class="fas fa-save me-2"></i>Lưu thay đổi</span>
-                        </button>
-                        <a href="/User/Profile" class="btn-cancel">
-                            <i class="fas fa-times me-2"></i>Hủy
-                        </a>
-                    </div>
-                </form>
+                        <div class="d-flex gap-3">
+                            <button class="btn btn-danger px-4">Lưu</button>
+                            @* <a href="/User/Profile/@Model.Id" *@
+                            <a href="/User/Profile"
+                               class="btn btn-outline-secondary px-4">
+                                Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
             }
+
         </div>
     </div>
 </div>
-
-<!-- Loading Overlay -->
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner-lg"></div>
-</div>
-
-<script>
-    // Show toast notification
-    function showToast(message, type) {
-        const toastContainer = document.querySelector('.toast-container');
-        if (!toastContainer) {
-            const container = document.createElement('div');
-            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-            document.body.appendChild(container);
-            
-            const toastEl = document.createElement('div');
-            toastEl.className = `toast align-items-center border-0 toast-custom ${type === 'error' ? 'text-bg-danger' : 'text-bg-success'}`;
-            toastEl.setAttribute('role', 'alert');
-            toastEl.setAttribute('aria-live', 'assertive');
-            toastEl.setAttribute('aria-atomic', 'true');
-            toastEl.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            `;
-            container.appendChild(toastEl);
-            
-            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-            toast.show();
-        } else {
-            const toastClass = type === 'error' ? 'text-bg-danger' : 'text-bg-success';
-            toastContainer.innerHTML = `
-                <div class="toast align-items-center border-0 toast-custom ${toastClass}" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>
-            `;
-            const toastEl = toastContainer.querySelector('.toast');
-            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-            toast.show();
-        }
-    }
-
-    // Direct avatar upload from header
-    function uploadAvatarDirect(input) {
-        if (input.files && input.files[0]) {
-            var file = input.files[0];
-            var validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            
-            // Validate file type
-            if (!validTypes.includes(file.type.toLowerCase())) {
-                showToast('Chỉ chấp nhận file ảnh (JPEG, PNG, GIF, WebP)', 'error');
-                input.value = '';
-                return;
-            }
-            
-            // Validate file size (max 2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                showToast('Kích thước ảnh không được vượt quá 2MB', 'error');
-                input.value = '';
-                return;
-            }
-
-            // Show loading
-            var loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.classList.add('show');
-
-            var formData = new FormData();
-            formData.append('avatar', file);
-            formData.append('Id', '@userId');
-            formData.append('FullName', '@Model.FullName');
-            formData.append('PhoneNumber', '@(Model.PhoneNumber ?? "")');
-            formData.append('Address', '@(Model.Address ?? "")');
-
-            $.ajax({
-                url: '/User/UpdateProfile',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                },
-                success: function(response) {
-                    if (response.success) {
-                        showToast('Cập nhật ảnh đại diện thành công!', 'success');
-                        
-                        // Update avatar preview
-                        var reader = new FileReader();
-                        reader.onload = function(e) {
-                            var avatarImg = document.getElementById('avatarImg');
-                            if (avatarImg) {
-                                avatarImg.src = e.target.result;
-                            } else {
-                                var headerAvatar = document.getElementById('headerAvatar');
-                                headerAvatar.innerHTML = '<img src="' + e.target.result + '" id="avatarImg" />';
-                            }
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        showToast(response.message || 'Có lỗi xảy ra', 'error');
-                    }
-                },
-                error: function(xhr) {
-                    var errorMsg = 'Có lỗi xảy ra. Vui lòng thử lại.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMsg = xhr.responseJSON.message;
-                    }
-                    showToast(errorMsg, 'error');
-                },
-                complete: function() {
-                    loadingOverlay.classList.remove('show');
-                    input.value = '';
-                }
-            });
-        }
-    }
-
-    // Save profile via AJAX
-    function saveProfile() {
-        var form = document.getElementById('profileForm');
-        var formData = new FormData(form);
-        var saveBtn = document.getElementById('saveBtn');
-        var saveSpinner = document.getElementById('saveSpinner');
-        var saveBtnText = document.getElementById('saveBtnText');
-        var loadingOverlay = document.getElementById('loadingOverlay');
-
-        // Clear previous errors
-        document.querySelectorAll('.validation-msg').forEach(function(el) {
-            el.textContent = '';
-        });
-
-        // Validate FullName
-        var fullName = document.getElementById('fullName').value.trim();
-        if (!fullName) {
-            document.getElementById('fullNameError').textContent = 'Họ và tên không được để trống';
-            return;
-        }
-        if (fullName.length < 2 || fullName.length > 100) {
-            document.getElementById('fullNameError').textContent = 'Họ và tên phải từ 2 đến 100 ký tự';
-            return;
-        }
-
-        // Validate Phone
-        var phoneNumber = document.getElementById('phoneNumber').value.trim();
-        if (phoneNumber) {
-            var phoneRegex = /^[0-9]{9,11}$/;
-            if (!phoneRegex.test(phoneNumber)) {
-                document.getElementById('phoneNumberError').textContent = 'Số điện thoại không hợp lệ (9-11 số)';
-                return;
-            }
-        }
-
-        // Show loading
-        saveSpinner.classList.remove('d-none');
-        saveBtnText.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
-        saveBtn.disabled = true;
-        loadingOverlay.classList.add('show');
-
-        $.ajax({
-            url: '/User/UpdateProfile',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-            },
-            success: function(response) {
-                if (response.success) {
-                    showToast(response.message, 'success');
-                    
-                    // Reload page after short delay
-                    setTimeout(function() {
-                        window.location.href = '/User/Profile';
-                    }, 1500);
-                } else {
-                    showToast(response.message, 'error');
-                }
-            },
-            error: function(xhr) {
-                var errorMsg = 'Có lỗi xảy ra. Vui lòng thử lại.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                }
-                showToast(errorMsg, 'error');
-            },
-            complete: function() {
-                saveSpinner.classList.add('d-none');
-                saveBtnText.innerHTML = '<i class="fas fa-save me-2"></i>Lưu thay đổi';
-                saveBtn.disabled = false;
-                loadingOverlay.classList.remove('show');
-            }
-        });
-    }
-</script>
