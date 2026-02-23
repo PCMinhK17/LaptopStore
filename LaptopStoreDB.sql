@@ -14,6 +14,7 @@ CREATE TABLE Users (
     full_name NVARCHAR(100),
     phone_number VARCHAR(15) UNIQUE,
     address NVARCHAR(255),
+	avatar_url VARCHAR(255),
     role VARCHAR(20) DEFAULT 'customer' CHECK (role IN ('admin', 'staff', 'customer')),
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'banned')),
     created_at DATETIME DEFAULT GETDATE(),
@@ -120,9 +121,10 @@ CREATE TABLE Order_Details (
 -- Bảng Import Receipts (Phiếu nhập kho)
 CREATE TABLE Import_Receipts (
     id INT PRIMARY KEY IDENTITY(1,1),
-    admin_id INT FOREIGN KEY REFERENCES Users(id),
+    staff_id INT FOREIGN KEY REFERENCES Users(id) NULL,
     supplier_name NVARCHAR(100),
     total_cost DECIMAL(15, 2),
+	status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'cancel', 'success')),
     created_at DATETIME DEFAULT GETDATE()
 );
 
@@ -131,7 +133,8 @@ CREATE TABLE Import_Details (
     id INT PRIMARY KEY IDENTITY(1,1),
     receipt_id INT FOREIGN KEY REFERENCES Import_Receipts(id),
     product_id INT FOREIGN KEY REFERENCES Products(id),
-    quantity INT NOT NULL,
+	requested_quantity INT NOT NULL,
+    actual_quantity INT NOT NULL,
     import_price DECIMAL(15, 2) NOT NULL
 );
 
