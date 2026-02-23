@@ -1,0 +1,16 @@
+﻿@{
+    // Lấy tên Controller và Action hiện tại từ Route
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<ul class="nav flex-column nav-pills">
+    <li class="nav-item mb-1">
+        <a class="nav-link @(currentController == "ProductManagement" ? "active" : "")"
+           asp-controller="ProductManagement" asp-action="Index">Quản lý sản phẩm</a>
+    </li>
+    <li class="nav-item mb-1">
+        <a class="nav-link @(currentController == "UserManagement" ? "active" : "")"
+           asp-controller="UserManagement" asp-action="Index">Quản lý người dùng</a>
+    </li>
+</ul>
