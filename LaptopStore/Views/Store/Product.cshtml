@@ -29,50 +29,52 @@
         <div class="row">
             <div class="col-md-3">
                 <div class="card mb-4">
-                    <!-- Sidebar Filter Brand-->
-                    <div class="card-header bg-primary text-white">
-                        <i class="bi bi-filter me-2"></i>Hãng
+                    <div class="mb-4">
+                        <form method="get" asp-controller="Product" asp-action="Search">
+                            <div class="input-group">
+                                <input type="text" id="searchTerm" name="searchTerm" class="form-control" placeholder="Nhập từ khóa tìm kiếm" value="@ViewBag.SearchTerm" />
+                                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="card-body">
-                        <div class="list-group">
-                            @if (ViewBag.Brands != null)
-                            {
-                                @foreach (var brand in ViewBag.Brands)
-                                {
-                                    <a href="@Url.Action("SearchByCategoryAndBrand", "Product", new { brandId = brand.Id, categoryId = ViewBag.SelectedCategoryId })"
-                                       class="list-group-item list-group-item-action @(ViewBag.SelectedBrand == brand.Name ? "active" : "")">
-                                        @brand.Name
-                                    </a>
-                                }
-                            }
-                            else
-                            {
-                                <p>Không có hãng nào để hiển thị.</p>
-                            }
-                        </div>
-                    </div>
-                    <!-- Sidebar Filter Category-->
-                    <div class="card-header bg-primary text-white">
-                        <i class="bi bi-filter me-2"></i>Thể Loại
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group">
-                            @if (ViewBag.Categories != null)
-                            {
-                                @foreach (var category in ViewBag.Categories)
-                                {
-                                    <a href="@Url.Action("SearchByCategoryAndBrand", "Product", new { brandId = ViewBag.SelectedBrandId, categoryId = category.Id })"
-                                       class="list-group-item list-group-item-action @(ViewBag.SelectedCategory == category.Name ? "active" : "")">
-                                        @category.Name
-                                    </a>
-                                }
-                            }
-                            else
-                            {
-                                <p>Không có danh mục nào để hiển thị.</p>
-                            }
-                        </div>
-                    </div>
+                <div class="card-header bg-primary text-white">
+                     <i class="bi bi-filter me-2"></i>Lọc sản phẩm
+                </div>
+                <div class="card-body">
+                     <form method="get" asp-controller="Product" asp-action="SearchByCategoryAndBrand">
+                     <div class="mb-2">
+                         <label for="brandId" class="form-label">Hãng</label>
+                         <select id="brandId" name="brandId" class="form-select">
+                             <option value="">-- Chọn hãng --</option>
+                             @foreach (var brand in ViewBag.Brands)
+                             {
+                                 <option value="@brand.Id" selected="@(ViewBag.SelectedBrandId == brand.Id ? "selected" : "")">@brand.Name</option>
+                             }
+                         </select>
+                     </div>
+                     <div class="mb-2">
+                     <label for="categoryId" class="form-label">Thể loại</label>
+                          <select id="categoryId" name="categoryId" class="form-select">
+                              <option value="">-- Chọn thể loại --</option>
+                              @foreach (var category in ViewBag.Categories)
+                              {
+                                  <option value="@category.Id" selected="@(ViewBag.SelectedCategoryId == category.Id ? "selected" : "")">@category.Name</option>
+                              }
+                          </select>
+                     </div>
+                            <div class="mb-2">
+                                <label for="priceRange" class="form-label">Khoảng giá</label>
+                                <select id="priceRange" name="priceRange" class="form-select">
+                                    <option value="">-- Chọn khoảng giá --</option>
+                                    <option value="1">Dưới 10 triệu</option>
+                                    <option value="2">10 triệu - 20 triệu</option>
+                                    <option value="3">20 triệu - 50 triệu</option>
+                                    <option value="4">Trên 50 triệu</option>
+                                </select>
+                            </div>
+                     <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                     </form>
+                </div>
                 </div>
             </div>
             
@@ -113,9 +115,12 @@
                                                 <i class="bi bi-tag-fill me-1"></i>@product.Category.Name
                                              </small>
                                         </div>
+                                        <div class="mt-2">
+                                                <strong class="text-danger">@String.Format("{0:N0} VND", product.Price)</strong>
+                                        </div>
                                     </div>
                                     <div class="card-footer bg-transparent border-0 text-center mt-auto">
-                                            <a asp-controller="Toy" asp-action="Detail" asp-route-id="@product.Id" class="btn btn-info btn-sm w-100">
+                                            <a asp-controller="Product" asp-action="Detail" asp-route-id="@product.Id" class="btn btn-info btn-sm w-100">
                                                 <i class="bi bi-eye me-1"></i> Xem chi tiết
                                             </a>
                                         
