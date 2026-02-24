@@ -1,11 +1,12 @@
 ﻿using LaptopStore.DTOs.ProductDTOs;
 using LaptopStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace LaptopStore.Controllers;
 
+[Authorize(Roles = "admin")]
 public class ProductManagementController : Controller
 {
     private readonly IWebHostEnvironment _webHostEnvironment;
