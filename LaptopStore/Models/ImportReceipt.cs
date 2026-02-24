@@ -17,6 +17,8 @@ public partial class ImportReceipt
 
     public DateTime? CreatedAt { get; set; }
 
+    public DateTime? DeliveredAt { get; set; }
+
     public virtual User? Staff { get; set; }
 
     public virtual ICollection<ImportDetail> ImportDetails { get; set; } = new List<ImportDetail>();

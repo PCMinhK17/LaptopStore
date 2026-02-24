@@ -208,6 +208,9 @@ public partial class LaptopStoreDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
+            entity.Property(e => e.DeliveredAt)
+                .HasColumnType("datetime")
+                .HasColumnName("delivered_at");
             entity.Property(e => e.StaffId).HasColumnName("staff_id");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
