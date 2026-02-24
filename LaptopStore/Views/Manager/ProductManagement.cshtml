@@ -1,93 +1,80 @@
 ﻿@model List<ProductResponse>
 
-<div class="container-fluid">
-    <div class="row">
-
-        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar pt-3 border-end" style="min-height: 100vh;">
-            <partial name="_AdminNav" />
-        </nav>
-
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
-
-            <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
-                <h2 class="m-0">Quản lý sản phẩm</h2>
-                <a asp-controller="ProductManagement" asp-action="AddNewProduct" class="btn btn-primary">
-                    + Thêm sản phẩm mới
-                </a>
-            </div>
-
-            @if (Model == null || Model.Count == 0)
-            {
-                <div class="alert alert-warning" role="alert">
-                    Không có sản phẩm nào trong hệ thống.
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Thumbnail</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Phân loại</th>
-                                <th>Thương hiệu</th>
-                                <th>Giá bán</th>
-                                <th>Số lượng</th>
-                                <th>Cpu</th>
-                                <th>Ram</th>
-                                <th>Ổ cứng</th>
-                                <th>Gpu</th>
-                                <th>Kích cỡ màn</th>
-                                <th>Cân nặng</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var product in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        <img style="width:3rem; object-fit: cover;" class="rounded"
-                                             src="@product.ProductImages.FirstOrDefault(i => i.IsThumbnail.Value)?.ImageUrl"
-                                             alt="@product.Name" />
-                                    </td>
-                                    <td>
-                                        <a asp-controller="ProductManagement" asp-action="ProductDetails" asp-route-id="@product.Id" class="text-decoration-none fw-bold">
-                                            @product.Name
-                                        </a>
-                                    </td>
-                                    <td>@product.CategoryName</td>
-                                    <td>@product.BrandName</td>
-                                    <td>@product.Price.ToString("C")</td>
-                                    <td>
-                                        <span class="badge @(product.StockQuantity > 0 ? "bg-success" : "bg-danger")">
-                                            @product.StockQuantity
-                                        </span>
-                                    </td>
-                                    <td>@(product.Cpu ?? "Không có")</td>
-                                    <td>@(product.Ram ?? "Không có")</td>
-                                    <td>@(product.HardDrive ?? "Không có")</td>
-                                    <td>@(product.Gpu ?? "Không có")</td>
-                                    <td>@(product.ScreenSize ?? "Không có")</td>
-                                    <td>@(product.Weight ?? "Không có")</td>
-                                    <td>
-                                        @if (product.IsActive.Value)
-                                        {
-                                            <span class="text-success">Hiện</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-secondary">Ẩn</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </main>
-
-    </div>
+<div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+    <h2 class="m-0">Quản lý sản phẩm</h2>
+    <a asp-controller="ProductManagement" asp-action="AddNewProduct" class="btn btn-primary">
+        + Thêm sản phẩm mới
+    </a>
 </div>
+
+@if (Model == null || Model.Count == 0)
+{
+    <div class="alert alert-warning" role="alert">
+        Không có sản phẩm nào trong hệ thống.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Thumbnail</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Phân loại</th>
+                    <th>Thương hiệu</th>
+                    <th>Giá bán</th>
+                    <th>Số lượng</th>
+                    <th>Cpu</th>
+                    <th>Ram</th>
+                    <th>Ổ cứng</th>
+                    <th>Gpu</th>
+                    <th>Kích cỡ màn</th>
+                    <th>Cân nặng</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model)
+                {
+                    <tr>
+                        <td>
+                            <img style="width:3rem; object-fit: cover;" class="rounded"
+                                 src="@product.ProductImages.FirstOrDefault(i => i.IsThumbnail.Value)?.ImageUrl"
+                                 alt="@product.Name" />
+                        </td>
+                        <td>
+                            <a asp-controller="ProductManagement" asp-action="ProductDetails" asp-route-id="@product.Id" class="text-decoration-none fw-bold">
+                                @product.Name
+                            </a>
+                        </td>
+                        <td>@product.CategoryName</td>
+                        <td>@product.BrandName</td>
+                        <td>@product.Price.ToString("C")</td>
+                        <td>
+                            <span class="badge @(product.StockQuantity > 0 ? "bg-success" : "bg-danger")">
+                                @product.StockQuantity
+                            </span>
+                        </td>
+                        <td>@(product.Cpu ?? "Không có")</td>
+                        <td>@(product.Ram ?? "Không có")</td>
+                        <td>@(product.HardDrive ?? "Không có")</td>
+                        <td>@(product.Gpu ?? "Không có")</td>
+                        <td>@(product.ScreenSize ?? "Không có")</td>
+                        <td>@(product.Weight ?? "Không có")</td>
+                        <td>
+                            @if (product.IsActive.Value)
+                            {
+                                <span class="text-success">Hiện</span>
+                            }
+                            else
+                            {
+                                <span class="text-secondary">Ẩn</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

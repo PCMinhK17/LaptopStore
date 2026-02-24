@@ -43,80 +43,101 @@
     </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LaptopStore</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+    @if (User == null || User.Identity == null || !User.Identity.IsAuthenticated || User.IsInRole("customer"))
+    {
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container-fluid">
+                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LaptopStore</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-
-                    <ul class="navbar-nav ms-auto">
-                        @if (User?.Identity?.IsAuthenticated ?? false)
-                        {
-                            <li class="nav-item d-flex align-items-center me-4">
-                                <span class="navbar-text">
-                                    <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none"><strong>🛒 Giỏ hàng</strong></a>
-                                </span>
-                            </li>
-                            <li class="nav-item d-flex align-items-center me-2">
-                                <span class="navbar-text">
-                                    Xin chào,&nbsp;<a asp-controller="User" asp-action="Profile"><strong>@User.Identity!.Name</strong></a>
-                                </span>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="btn btn-outline-danger btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Logout">
-                                    Đăng xuất
-                                </a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                             </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item me-2">
-                                <a class="btn btn-outline-primary btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Login">
-                                    Đăng nhập
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Register">
-                                    Đăng ký
-                                </a>
-                            </li>
-                        }
-                    </ul>
+                        </ul>
+
+                        <ul class="navbar-nav ms-auto">
+                            @if (User?.Identity?.IsAuthenticated ?? false)
+                            {
+                                <li class="nav-item d-flex align-items-center me-4">
+                                    <span class="navbar-text">
+                                        <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none"><strong>🛒 Giỏ hàng</strong></a>
+                                    </span>
+                                </li>
+                                <li class="nav-item d-flex align-items-center me-2">
+                                    <span class="navbar-text">
+                                        Xin chào,&nbsp;<a asp-controller="User" asp-action="Profile"><strong>@User.Identity!.Name</strong></a>
+                                    </span>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="btn btn-outline-danger btn-sm"
+                                       asp-controller="Account"
+                                       asp-action="Logout">
+                                        Đăng xuất
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item me-2">
+                                    <a class="btn btn-outline-primary btn-sm"
+                                       asp-controller="Account"
+                                       asp-action="Login">
+                                        Đăng nhập
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="btn btn-primary btn-sm"
+                                       asp-controller="Account"
+                                       asp-action="Register">
+                                        Đăng ký
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
                 </div>
+            </nav>
+        </header>
+
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2026 - LaptopStore -
+                <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
             </div>
-        </nav>
-    </header>
+        </footer>
+    }
+    else if (User.IsInRole("staff"))
+    {
+        
+    }
+    else {
+        <div class="container-fluid">
+            <div class="row">
+                <nav class="position-fixed col-md-3 col-lg-2 d-flex flex-column bg-light sidebar pt-3 border-end"
+                     style="height: 100vh; top: 0; left: 0; overflow-y: auto;">
+                    <partial name="_AdminNav" />
+                </nav>
 
-    <main role="main" class="pb-3">
-        @RenderBody()
-    </main>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - LaptopStore -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3 mb-5">
+                    @RenderBody()
+                </main>
+            </div>
         </div>
-    </footer>
-
+    }
+    
     @if (!string.IsNullOrEmpty(toastMessage))
     {
         <div class="toast-container position-fixed top-0 end-0 p-3">
