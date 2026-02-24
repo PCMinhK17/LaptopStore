@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LaptopStore.Controllers
 {
-    [Authorize(Roles = "admin,staff")]
+    [Authorize(Roles = "admin")]
     public class AdminDashboardController : Controller
     {
         private readonly LaptopStoreDbContext _context;

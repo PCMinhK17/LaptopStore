@@ -221,7 +221,7 @@ namespace LaptopStore.Services
             return role?.ToLower() switch
             {
                 "admin" => ("AdminDashboard", "Index"),
-                "staff" => ("AdminDashboard", "Index"), // Staff also goes to dashboard
+                "staff" => ("StaffDashboard", "Index"), // Staff goes to staff dashboard
                 "customer" => ("Product", "Index"),
                 _ => ("Home", "Index")
             };

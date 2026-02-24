@@ -1,7 +1,7 @@
 @{
     ViewData["Title"] = "Thống kê doanh thu";
     ViewData["Subtitle"] = "Phân tích và báo cáo kinh doanh";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <!-- Page Header -->

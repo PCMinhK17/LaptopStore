@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = $"Chi tiết đơn hàng #{Model.Id:D6}";
     ViewData["Subtitle"] = "Thông tin chi tiết đơn đặt hàng";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
     
     var statusClass = Model.Status switch
     {

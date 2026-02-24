@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
     ViewData["Subtitle"] = "Theo dõi và xử lý đơn hàng";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
     
     var currentStatus = ViewBag.CurrentStatus as string ?? "";
     var currentSearch = ViewBag.CurrentSearch as string ?? "";

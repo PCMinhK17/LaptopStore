@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Thêm sản phẩm mới";
     ViewData["Subtitle"] = "Nhập thông tin sản phẩm mới vào hệ thống";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <!-- Breadcrumb -->
