@@ -25,7 +25,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="BrandId" class="form-label fw-bold">Thương hiệu</label>
+                    <label asp-for="BrandId" class="form-label fw-bold">Thương hiệu <span class="text-danger">*</span></label>
                     <select asp-for="BrandId" class="form-select">
                         <option value="" selected disabled>-- Chọn thương hiệu --</option>
                         @if (ViewBag.Brands != null)
@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="CategoryId" class="form-label fw-bold">Phân loại</label>
+                    <label asp-for="CategoryId" class="form-label fw-bold">Phân loại <span class="text-danger">*</span></label>
                     <select asp-for="CategoryId" class="form-select">
                         <option value="" selected disabled>-- Chọn phân loại --</option>
                         @if (ViewBag.Categories != null)

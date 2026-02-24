@@ -2,14 +2,14 @@
 @using LaptopStore.Models
 
 @{
-    ViewData["Title"] = "Kho";
+    ViewData["Title"] = "Đơn nhập hàng";
 
 }
 <html>
 <body>
     <div>
-        <h2 style="display:inline-block">Quản lý Kho</h2>
-        <a asp-controller="StockManagement" asp-action="AddNewStock" style="float:right; margin-top:10px;">Tạo đơn nhập hàng</a>
+        <h2 style="display:inline-block">Các đơn nhập hàng</h2>
+        <a asp-controller="StockManagement" asp-action="AddNewStockInOrder" style="float:right; margin-top:10px;">Tạo đơn nhập hàng</a>
     </div>
     @if (Model == null || Model.Count == 0)
     {
@@ -23,7 +23,7 @@
                     <th>Nhà cung cấp</th>
                     <th>Giá</th>
                     <th>Ngày</th>
-                    
+                    <th>Trạng thái</th>
                 </tr>
             </thead>
             <tbody>

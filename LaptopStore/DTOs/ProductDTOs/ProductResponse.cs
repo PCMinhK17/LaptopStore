@@ -36,10 +36,10 @@ public class ProductResponse
 
     public DateTime? CreatedAt { get; set; }
 
-    public virtual string? BrandName { get; set; }
+    public string? BrandName { get; set; }
 
-    public virtual string? CategoryName { get; set; }
+    public string? CategoryName { get; set; }
 
-    public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+    public ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 
 }
