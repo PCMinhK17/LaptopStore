@@ -1,1 +1,139 @@
-﻿Chưa làm
+@model LaptopStore.Models.Product
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm - Quản lý";
+    var mainImage = Model.ProductImages?
+        .FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl
+        ?? Model.ProductImages?.FirstOrDefault()?.ImageUrl
+        ?? "/images/no-image.png";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Chi tiết sản phẩm</h2>
+        <div class="d-flex gap-2">
+            <a asp-controller="ProductManagement" asp-action="Index" class="btn btn-outline-secondary">
+                ← Quay lại danh sách
+            </a>
+            <a asp-controller="ProductManagement" asp-action="ManageProductImages" asp-route-productId="@Model.Id" class="btn btn-outline-primary">
+                Quản lý hình ảnh
+            </a>
+            <a asp-controller="ProductManagement" asp-action="UpdateProduct" asp-route-id="@Model.Id" class="btn btn-primary">
+                Cập nhật sản phẩm
+            </a>
+        </div>
+    </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <!-- Thumbnails bên trái -->
+                    <div class="col-md-1 d-flex flex-column align-items-center">
+                        @if (Model.ProductImages != null && Model.ProductImages.Any())
+                        {
+                            foreach (var img in Model.ProductImages)
+                            {
+                                <img src="@img.ImageUrl"
+                                     class="img-thumbnail mb-3 product-thumb @(img.IsThumbnail == true ? "border-primary" : "")"
+                                     style="cursor:pointer; max-width:100px; max-height:70px;"
+                                     onclick="showMainImage('@img.ImageUrl')" />
+                            }
+                        }
+                    </div>
+                    <!-- Ảnh lớn bên phải -->
+                    <div class="col-md-5 d-flex align-items-center justify-content-center">
+                        <img id="mainProductImage" src="@mainImage" alt="@Model.Name"
+                             class="img-fluid rounded shadow"
+                             style="max-height: 320px; object-fit: contain;" />
+                    </div>
+
+                    <!-- Thông tin sản phẩm -->
+                    <div class="col-md-6">
+                        <h4 class="card-title mb-4">@Model.Name</h4>
+
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 140px;">Mã SKU</td>
+                                <td>@(Model.Sku ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Thương hiệu</td>
+                                <td>@Model.Brand?.Name</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Phân loại</td>
+                                <td>@Model.Category?.Name</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Giá bán</td>
+                                <td><strong class="text-danger">@String.Format("{0:N0} VND", Model.Price)</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Số lượng tồn kho</td>
+                                <td>@(Model.StockQuantity?.ToString() ?? "0")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Trạng thái</td>
+                                <td>
+                                    @if (Model.IsActive == true)
+                                    {
+                                        <span class="badge bg-success">Hiển thị</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Ẩn</span>
+                                    }
+                                </td>
+                            </tr>
+                            @if (Model.CreatedAt.HasValue)
+                            {
+                                <tr>
+                                    <td class="text-muted">Ngày tạo</td>
+                                    <td>@Model.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        </table>
+
+                        <hr />
+
+                        <h6 class="text-muted mb-2">Thông số kỹ thuật</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr><td class="text-muted" style="width: 120px;">CPU</td><td>@(Model.Cpu ?? "-")</td></tr>
+                            <tr><td class="text-muted">GPU</td><td>@(Model.Gpu ?? "-")</td></tr>
+                            <tr><td class="text-muted">RAM</td><td>@(Model.Ram ?? "-")</td></tr>
+                            <tr><td class="text-muted">Ổ cứng</td><td>@(Model.HardDrive ?? "-")</td></tr>
+                            <tr><td class="text-muted">Màn hình</td><td>@(Model.ScreenSize ?? "-")</td></tr>
+                            <tr><td class="text-muted">Khối lượng</td><td>@(Model.Weight ?? "-")</td></tr>
+                        </table>
+
+                        @if (!string.IsNullOrEmpty(Model.ShortDescription))
+                        {
+                            <p class="mb-1"><strong class="text-muted">Mô tả ngắn:</strong></p>
+                            <p class="small">@Model.ShortDescription</p>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="mb-1 mt-2"><strong class="text-muted">Mô tả chi tiết:</strong></p>
+                            <p class="small text-secondary">@Model.Description</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+@section Scripts {
+    <script>
+        function showMainImage(url) {
+            document.getElementById('mainProductImage').src = url;
+        }
+    </script>
+}
+
+<style>
+    .product-thumb:hover {
+        border: 2px solid #007bff;
+    }
+</style>
