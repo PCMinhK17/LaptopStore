@@ -11,9 +11,15 @@
 
             <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
                 <h2 class="m-0">Quản lý sản phẩm</h2>
-                <a asp-controller="ProductManagement" asp-action="AddNewProduct" class="btn btn-primary">
-                    + Thêm sản phẩm mới
-                </a>
+                <div class="d-inline-block">
+                    <a asp-controller="Category" asp-action="Index" class="btn btn-primary">
+                        + Quản Lý phân loại
+                    </a>
+                    <a asp-controller="ProductManagement" asp-action="AddNewProduct" class="btn btn-primary">
+                        + Thêm sản phẩm mới
+                    </a>
+                </div>
+                
             </div>
 
             @if (Model == null || Model.Count == 0)
