@@ -91,7 +91,6 @@ CREATE TABLE Orders (
     user_id INT NULL FOREIGN KEY REFERENCES Users(id), -- Null nếu khách vãng lai
     
     subtotal DECIMAL(15, 2),
-    shipping_fee DECIMAL(15, 2) DEFAULT 0,
     coupon_code VARCHAR(50),
     discount_amount DECIMAL(15, 2) DEFAULT 0,
     total_money DECIMAL(15, 2) NOT NULL,
@@ -252,17 +251,17 @@ INSERT INTO Coupons (code, discount_type, discount_value, min_order_value, usage
 
 -- Orders (Đơn hàng)
 -- Lưu ý: total_money tự tính = subtotal + shipping - discount
-INSERT INTO Orders (user_id, subtotal, shipping_fee, total_money, full_name, phone_number, address, status, payment_method, payment_status) VALUES 
-(4, 25000000, 0, 25000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'completed', 'vietqr', 'paid'),
-(3, 32000000, 50000, 32050000, N'Lê Văn Khách 2', '0912000002', N'Đà Nẵng', 'pending', 'cod', 'unpaid'),
-(NULL, 18000000, 100000, 18100000, N'Nguyễn Văn Vãng Lai', '0988888888', N'Hà Giang', 'shipping', 'cod', 'unpaid'), -- Khách vãng lai
-(4, 29000000, 0, 28000000, N'Phạm Thị C', '0912000003', N'Cần Thơ', 'completed', 'vietqr', 'paid'),
-(5, 27500000, 0, 27500000, N'Hoàng Văn D', '0912000004', N'Hải Phòng', 'cancelled', 'cod', 'unpaid'),
-(6, 19000000, 30000, 18530000, N'Đặng Văn F', '0912000006', N'Nghệ An', 'confirmed', 'vietqr', 'paid'),
-(7, 14000000, 0, 14000000, N'Bùi Thị G', '0912000007', N'Thanh Hóa', 'pending', 'cod', 'unpaid'),
-(5, 35000000, 0, 35000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'pending', 'vietqr', 'unpaid'), -- User 2 mua lần 2
-(8, 21000000, 50000, 21050000, N'Đỗ Văn H', '0912000008', N'Quảng Ninh', 'shipping', 'cod', 'unpaid'),
-(9, 45000000, 0, 45000000, N'Ngô Thị I', '0912000009', N'Huế', 'completed', 'vnpay', 'paid');
+INSERT INTO Orders (user_id, subtotal, total_money, full_name, phone_number, address, status, payment_method, payment_status) VALUES 
+(4, 25000000, 25000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'completed', 'vietqr', 'paid'),
+(3, 32000000, 32050000, N'Lê Văn Khách 2', '0912000002', N'Đà Nẵng', 'pending', 'cod', 'unpaid'),
+(NULL, 18000000, 18100000, N'Nguyễn Văn Vãng Lai', '0988888888', N'Hà Giang', 'shipping', 'cod', 'unpaid'), -- Khách vãng lai
+(4, 29000000, 28000000, N'Phạm Thị C', '0912000003', N'Cần Thơ', 'completed', 'vietqr', 'paid'),
+(5, 27500000, 27500000, N'Hoàng Văn D', '0912000004', N'Hải Phòng', 'cancelled', 'cod', 'unpaid'),
+(6, 19000000, 18530000, N'Đặng Văn F', '0912000006', N'Nghệ An', 'confirmed', 'vietqr', 'paid'),
+(7, 14000000, 14000000, N'Bùi Thị G', '0912000007', N'Thanh Hóa', 'pending', 'cod', 'unpaid'),
+(5, 35000000, 35000000, N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'pending', 'vietqr', 'unpaid'), -- User 2 mua lần 2
+(8, 21000000, 21050000, N'Đỗ Văn H', '0912000008', N'Quảng Ninh', 'shipping', 'cod', 'unpaid'),
+(9, 45000000, 45000000, N'Ngô Thị I', '0912000009', N'Huế', 'completed', 'vnpay', 'paid');
 
 -- Order Details
 INSERT INTO Order_Details (order_id, product_id, quantity, price) VALUES 
@@ -278,7 +277,7 @@ INSERT INTO Order_Details (order_id, product_id, quantity, price) VALUES
 (10, 10, 1, 45000000);
 
 -- Import Receipts (Phiếu nhập kho)
-INSERT INTO Import_Receipts (admin_id, supplier_name, total_cost) VALUES 
+INSERT INTO Import_Receipts (staff_id, supplier_name, total_cost) VALUES 
 (2, N'FPT Trading', 500000000),
 (2, N'Digiworld', 300000000),
 (2, N'Viễn Sơn', 150000000),
@@ -291,17 +290,17 @@ INSERT INTO Import_Receipts (admin_id, supplier_name, total_cost) VALUES
 (2, N'LG VN', 150000000);
 
 -- Import Details
-INSERT INTO Import_Details (receipt_id, product_id, quantity, import_price) VALUES 
-(1, 1, 10, 20000000), -- Nhập Dell XPS giá vốn 20tr
-(1, 2, 5, 28000000),
-(2, 3, 20, 15000000),
-(3, 4, 3, 25000000),
-(4, 5, 10, 24000000),
-(5, 6, 15, 16000000),
-(6, 7, 20, 11000000),
-(7, 8, 5, 30000000),
-(8, 9, 10, 18000000),
-(9, 10, 5, 38000000);
+INSERT INTO Import_Details (receipt_id, product_id, requested_quantity, actual_quantity, import_price) VALUES 
+(1, 1, 10, 10, 20000000), -- Nhập Dell XPS giá vốn 20tr
+(1, 2, 5, 4, 28000000),
+(2, 3, 20, 20, 15000000),
+(3, 4, 3, 2, 25000000),
+(4, 5, 10, 9, 24000000),
+(5, 6, 15, 15, 16000000),
+(6, 7, 20, 20, 11000000),
+(7, 8, 5, 4, 30000000),
+(8, 9, 10, 8, 18000000),
+(9, 10, 5, 0, 38000000);
 
 -- Reviews
 INSERT INTO Reviews (user_id, product_id, rating, comment, is_approved) VALUES 
