@@ -3,6 +3,7 @@ using LaptopStore.DTOs.StockDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LaptopStore.Controllers;
 
@@ -93,6 +94,45 @@ public class StockManagementController : Controller
         _context.SaveChanges();
 
         return Ok(new { message = "Lưu đơn hàng thành công"});
+    }
+
+    [HttpGet]
+    public IActionResult StockDetails(int id)
+    {
+        var order = _context.ImportReceipts.Include(r => r.ImportDetails).ThenInclude(d => d.Product).FirstOrDefault(r => r.Id == id);
+        if (order == null) {
+            return NotFound("Không tìm thấy đơn hàng.");
+        }
+        var orderDto = new StockInOrderResponse
+        {
+            SupplierName = order.SupplierName ?? "",
+            TotalCost = order.TotalCost,
+            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            DeliveredAt = order.DeliveredAt,
+            Items = order.ImportDetails.Select(d => new StockInItemResponse
+            {
+                ProductId = d.ProductId ?? 0,
+                ProductName = d.Product != null ? d.Product.Name : "Không thấy",
+                RequestedQuantity = d.RequestedQuantity,
+                ActualQuantity = d.ActualQuantity,
+                ImportPrice = d.ImportPrice
+            }).ToList()
+        };
+
+        switch (order.Status)
+        {
+            case "pending":
+                orderDto.Status = "Đang chờ xử lý";
+                break;
+            case "delivered":
+                orderDto.Status = "Đã giao hàng";
+                break;
+            case "canceled":
+                orderDto.Status = "Đã hủy";
+                break;
+        }
+
+        return View("~/Views/Manager/StockDetails.cshtml", orderDto);
     }
 
 }
