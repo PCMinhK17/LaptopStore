@@ -1,6 +1,3 @@
-
-﻿using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
 namespace LaptopStore.Models;
@@ -59,7 +56,7 @@ public partial class LaptopStoreDbContext : DbContext
     {
         modelBuilder.Entity<Brand>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Brands__3213E83FA22C2CC5");
+            entity.HasKey(e => e.Id).HasName("PK__Brands__3213E83F1656AC90");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.LogoUrl)
@@ -76,9 +73,9 @@ public partial class LaptopStoreDbContext : DbContext
 
         modelBuilder.Entity<Cart>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Carts__3213E83FBC75DA80");
+            entity.HasKey(e => e.Id).HasName("PK__Carts__3213E83F221F461A");
 
-            entity.HasIndex(e => e.UserId, "UQ__Carts__B9BE370E331C47B1").IsUnique();
+            entity.HasIndex(e => e.UserId, "UQ__Carts__B9BE370EA3737CB7").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -93,12 +90,12 @@ public partial class LaptopStoreDbContext : DbContext
 
             entity.HasOne(d => d.User).WithOne(p => p.Cart)
                 .HasForeignKey<Cart>(d => d.UserId)
-                .HasConstraintName("FK__Carts__user_id__6383C8BA");
+                .HasConstraintName("FK__Carts__user_id__6477ECF3");
         });
 
         modelBuilder.Entity<CartItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Cart_Ite__3213E83FC3DB7CE8");
+            entity.HasKey(e => e.Id).HasName("PK__Cart_Ite__3213E83F313BF6C8");
 
             entity.ToTable("Cart_Items");
 
@@ -117,16 +114,16 @@ public partial class LaptopStoreDbContext : DbContext
 
             entity.HasOne(d => d.Cart).WithMany(p => p.CartItems)
                 .HasForeignKey(d => d.CartId)
-                .HasConstraintName("FK__Cart_Item__cart___693CA210");
+                .HasConstraintName("FK__Cart_Item__cart___6A30C649");
 
             entity.HasOne(d => d.Product).WithMany(p => p.CartItems)
                 .HasForeignKey(d => d.ProductId)
-                .HasConstraintName("FK__Cart_Item__produ__6A30C649");
+                .HasConstraintName("FK__Cart_Item__produ__6B24EA82");
         });
 
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Categori__3213E83F57EFA3A9");
+            entity.HasKey(e => e.Id).HasName("PK__Categori__3213E83F8CA0BC9F");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Description).HasColumnName("description");
@@ -140,9 +137,9 @@ public partial class LaptopStoreDbContext : DbContext
 
         modelBuilder.Entity<Coupon>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Coupons__3213E83FAB5FD03F");
+            entity.HasKey(e => e.Id).HasName("PK__Coupons__3213E83FEC4909AB");
 
-            entity.HasIndex(e => e.Code, "UQ__Coupons__357D4CF900F9D320").IsUnique();
+            entity.HasIndex(e => e.Code, "UQ__Coupons__357D4CF9C4B45CC5").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Code)
@@ -180,39 +177,48 @@ public partial class LaptopStoreDbContext : DbContext
 
         modelBuilder.Entity<ImportDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Import_D__3213E83F14617B8C");
+            entity.HasKey(e => e.Id).HasName("PK__Import_D__3213E83F4FFE579F");
 
             entity.ToTable("Import_Details");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ActualQuantity).HasColumnName("actual_quantity");
             entity.Property(e => e.ImportPrice)
                 .HasColumnType("decimal(15, 2)")
                 .HasColumnName("import_price");
             entity.Property(e => e.ProductId).HasColumnName("product_id");
-            entity.Property(e => e.Quantity).HasColumnName("quantity");
             entity.Property(e => e.ReceiptId).HasColumnName("receipt_id");
+            entity.Property(e => e.RequestedQuantity).HasColumnName("requested_quantity");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ImportDetails)
                 .HasForeignKey(d => d.ProductId)
-                .HasConstraintName("FK__Import_De__produ__59063A47");
+                .HasConstraintName("FK__Import_De__produ__59FA5E80");
 
             entity.HasOne(d => d.Receipt).WithMany(p => p.ImportDetails)
                 .HasForeignKey(d => d.ReceiptId)
-                .HasConstraintName("FK__Import_De__recei__5812160E");
+                .HasConstraintName("FK__Import_De__recei__59063A47");
         });
 
         modelBuilder.Entity<ImportReceipt>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Import_R__3213E83F04225F12");
+            entity.HasKey(e => e.Id).HasName("PK__Import_R__3213E83F2E754923");
 
             entity.ToTable("Import_Receipts");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.AdminId).HasColumnName("admin_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
+            entity.Property(e => e.DeliveredAt)
+                .HasColumnType("datetime")
+                .HasColumnName("delivered_at");
+            entity.Property(e => e.StaffId).HasColumnName("staff_id");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("pending")
+                .HasColumnName("status");
             entity.Property(e => e.SupplierName)
                 .HasMaxLength(100)
                 .HasColumnName("supplier_name");
@@ -220,14 +226,14 @@ public partial class LaptopStoreDbContext : DbContext
                 .HasColumnType("decimal(15, 2)")
                 .HasColumnName("total_cost");
 
-            entity.HasOne(d => d.Admin).WithMany(p => p.ImportReceipts)
-                .HasForeignKey(d => d.AdminId)
-                .HasConstraintName("FK__Import_Re__admin__5441852A");
+            entity.HasOne(d => d.Staff).WithMany(p => p.ImportReceipts)
+                .HasForeignKey(d => d.StaffId)
+                .HasConstraintName("FK__Import_Re__staff__534D60F1");
         });
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Notifica__3213E83FB9622A1C");
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3213E83F4E9F794F");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
@@ -250,12 +256,12 @@ public partial class LaptopStoreDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Notificat__user___6FE99F9F");
+                .HasConstraintName("FK__Notificat__user___70DDC3D8");
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Orders__3213E83F7E56684A");
+            entity.HasKey(e => e.Id).HasName("PK__Orders__3213E83F4B96D80B");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Address)
@@ -291,10 +297,6 @@ public partial class LaptopStoreDbContext : DbContext
                 .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("phone_number");
-            entity.Property(e => e.ShippingFee)
-                .HasDefaultValue(0m)
-                .HasColumnType("decimal(15, 2)")
-                .HasColumnName("shipping_fee");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -315,7 +317,7 @@ public partial class LaptopStoreDbContext : DbContext
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Order_De__3213E83FBB454BFD");
+            entity.HasKey(e => e.Id).HasName("PK__Order_De__3213E83F06AE2E46");
 
             entity.ToTable("Order_Details");
 
@@ -333,18 +335,18 @@ public partial class LaptopStoreDbContext : DbContext
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.OrderId)
-                .HasConstraintName("FK__Order_Det__order__5070F446");
+                .HasConstraintName("FK__Order_Det__order__4F7CD00D");
 
             entity.HasOne(d => d.Product).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.ProductId)
-                .HasConstraintName("FK__Order_Det__produ__5165187F");
+                .HasConstraintName("FK__Order_Det__produ__5070F446");
         });
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Products__3213E83F36983353");
+            entity.HasKey(e => e.Id).HasName("PK__Products__3213E83F6B93100F");
 
-            entity.HasIndex(e => e.Sku, "UQ__Products__DDDF4BE74527FA74").IsUnique();
+            entity.HasIndex(e => e.Sku, "UQ__Products__DDDF4BE7DDAEF14A").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.BrandId).HasColumnName("brand_id");
@@ -406,7 +408,7 @@ public partial class LaptopStoreDbContext : DbContext
 
         modelBuilder.Entity<ProductImage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Product___3213E83F59C63106");
+            entity.HasKey(e => e.Id).HasName("PK__Product___3213E83FA8081A6B");
 
             entity.ToTable("Product_Images");
 
@@ -427,7 +429,7 @@ public partial class LaptopStoreDbContext : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Reviews__3213E83F2B748615");
+            entity.HasKey(e => e.Id).HasName("PK__Reviews__3213E83F43A506BB");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Comment).HasColumnName("comment");
@@ -444,25 +446,29 @@ public partial class LaptopStoreDbContext : DbContext
 
             entity.HasOne(d => d.Product).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.ProductId)
-                .HasConstraintName("FK__Reviews__product__5CD6CB2B");
+                .HasConstraintName("FK__Reviews__product__5DCAEF64");
 
             entity.HasOne(d => d.User).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Reviews__user_id__5BE2A6F2");
+                .HasConstraintName("FK__Reviews__user_id__5CD6CB2B");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3213E83FA39DCE2F");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3213E83FA19A77CF");
 
-            entity.HasIndex(e => e.PhoneNumber, "UQ__Users__A1936A6B745CC348").IsUnique();
+            entity.HasIndex(e => e.PhoneNumber, "UQ__Users__A1936A6BB8BC7BA3").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Users__AB6E61646FF2906D").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__AB6E6164BDF3686F").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Address)
                 .HasMaxLength(255)
                 .HasColumnName("address");
+            entity.Property(e => e.AvatarUrl)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("avatar_url");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")

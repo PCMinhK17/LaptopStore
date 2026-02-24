@@ -17,6 +17,8 @@ public partial class User
 
     public string? Address { get; set; }
 
+    public string? AvatarUrl { get; set; }
+
     public string? Role { get; set; }
 
     public string? Status { get; set; }
