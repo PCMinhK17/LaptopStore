@@ -36,7 +36,11 @@ public class ProductManagementController : Controller
             Gpu = p.Gpu,
             ScreenSize = p.ScreenSize,
             Weight = p.Weight,
-            ProductImages = p.ProductImages,
+            ProductImages = p.ProductImages.Select(i => new ProductImageResponse
+            {
+                ImageUrl = i.ImageUrl,
+                IsThumbnail = i.IsThumbnail ?? false
+            }).ToList(),
             IsActive = p.IsActive
         }).ToList();
         return View("~/Views/Manager/ProductManagement.cshtml", productList);
@@ -60,6 +64,11 @@ public class ProductManagementController : Controller
             {
                 ModelState.AddModelError("Price", "Giá phải nằm trong khoảng 1000 đến 1000000000");
             }
+        }
+
+        if (_context.Products.Select(p => p.Sku).Contains(newProduct.Sku))
+        {
+            ModelState.AddModelError("Sku", "Mã SKU này đã được dùng bởi sản phẩm khác");
         }
 
         if (!ModelState.IsValid)

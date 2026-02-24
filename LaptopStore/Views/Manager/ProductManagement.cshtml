@@ -40,7 +40,7 @@ else
                     <tr>
                         <td>
                             <img style="width:3rem; object-fit: cover;" class="rounded"
-                                 src="@product.ProductImages.FirstOrDefault(i => i.IsThumbnail.Value)?.ImageUrl"
+                                 src="@product.ProductImages.FirstOrDefault(i => i.IsThumbnail)?.ImageUrl"
                                  alt="@product.Name" />
                         </td>
                         <td>

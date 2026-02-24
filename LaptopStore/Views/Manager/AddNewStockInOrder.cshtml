@@ -68,10 +68,13 @@
     }
 
     function getProductImage(product) {
-        // if (product.productImages && product.productImages.length > 0) {
-        //     return product.productImages[0].imageUrl;
-        // }
-        return '/images/dell-xps-13-9350-2024-1731577899.png';
+        if (product.productImages && product.productImages.length) {
+            var imageUrl = product.productImages.filter(i => i.isThumbnail == true)
+            if (imageUrl.length > 0) {
+                return '\\' + imageUrl[0].imageUrl;
+            }
+        }
+        return '\\images\\dell-xps-13-9350-2024-1731577899.png';
     }
 
     function showSearch() {

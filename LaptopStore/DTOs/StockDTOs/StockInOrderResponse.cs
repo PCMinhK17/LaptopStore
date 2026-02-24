@@ -4,7 +4,7 @@ public class StockInOrderResponse
 {
     public string SupplierName { get; set; } = "";
 
-    public int StaffName { get; set; }
+    public string StaffName { get; set; }
 
     public string Status { get; set; } = "";
 
@@ -22,6 +22,8 @@ public class  StockInItemResponse
     public int ProductId { get; set; }
 
     public string ProductName { get; set; } = "";
+
+    public string ImageUrl { get; set; } = "";
 
     public int RequestedQuantity { get; set; }
 
