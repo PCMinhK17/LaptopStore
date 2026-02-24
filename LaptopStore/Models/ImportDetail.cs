@@ -11,7 +11,9 @@ public partial class ImportDetail
 
     public int? ProductId { get; set; }
 
-    public int Quantity { get; set; }
+    public int RequestedQuantity { get; set; }
+
+    public int ActualQuantity { get; set; }
 
     public decimal ImportPrice { get; set; }
 
