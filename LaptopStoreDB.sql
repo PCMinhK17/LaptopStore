@@ -123,8 +123,9 @@ CREATE TABLE Import_Receipts (
     staff_id INT FOREIGN KEY REFERENCES Users(id) NULL,
     supplier_name NVARCHAR(100),
     total_cost DECIMAL(15, 2),
-	status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'cancel', 'success')),
-    created_at DATETIME DEFAULT GETDATE()
+	status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'cancel', 'success')),
+    created_at DATETIME DEFAULT GETDATE(),
+	delivered_at DATETIME NULL
 );
 
 -- Bảng Import Details
