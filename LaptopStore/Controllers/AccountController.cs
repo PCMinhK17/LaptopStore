@@ -106,7 +106,7 @@ namespace LaptopStore.Controllers
                     case "admin":
                         return RedirectToAction("Index", "ProductManagement");
                     case "staff":
-                        return RedirectToAction("Index", "Home");
+                        return RedirectToAction("Index", "Order");
                     case "customer":
                         return RedirectToAction("Index", "Product");
                     default:

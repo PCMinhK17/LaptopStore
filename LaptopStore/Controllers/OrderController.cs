@@ -17,6 +17,18 @@ namespace LaptopStore.Controllers
             _context = context;
         }
 
+        // GET: /Order
+        public IActionResult Index()
+        {
+            var orders = _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderDetails)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToList();
+
+            return View(orders);
+        }
+
         // GET: /Order/Checkout?userId=...
         public IActionResult Checkout(int? userId = 2)
         {

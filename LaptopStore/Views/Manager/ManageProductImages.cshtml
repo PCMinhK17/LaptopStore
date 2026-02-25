@@ -1,0 +1,92 @@
+@model LaptopStore.Models.Product
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Quản lý hình ảnh</h2>
+            <p class="text-muted mb-0">Sản phẩm: <strong>@Model.Name</strong> (ID: @Model.Id)</p>
+        </div>
+        <div>
+            <a asp-controller="ProductManagement" asp-action="ProductDetails" asp-route-id="@Model.Id" class="btn btn-outline-secondary me-2">
+                ← Quay lại chi tiết
+            </a>
+            <a asp-controller="ProductManagement" asp-action="UpdateProduct" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                Cập nhật sản phẩm
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Tải thêm hình ảnh</h5>
+        </div>
+        <div class="card-body">
+            <form asp-controller="ProductManagement" asp-action="UploadProductImages" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Chọn hình ảnh (có thể chọn nhiều)</label>
+                        <input type="file" name="imageFiles" class="form-control" accept="image/*" multiple />
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button type="submit" class="btn btn-primary px-4 mt-3 mt-md-0">Tải lên</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Danh sách hình ảnh</h5>
+            <small class="text-muted">@Model.ProductImages.Count() hình ảnh</small>
+        </div>
+        <div class="card-body">
+            @if (Model.ProductImages == null || !Model.ProductImages.Any())
+            {
+                <p class="text-muted mb-0">Chưa có hình ảnh nào cho sản phẩm này.</p>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var img in Model.ProductImages.OrderByDescending(i => i.IsThumbnail == true))
+                    {
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <div class="card h-100 border-@(img.IsThumbnail == true ? "primary" : "light")">
+                                <img src="@img.ImageUrl" class="card-img-top" style="height: 120px; object-fit: contain;" />
+                                <div class="card-body p-2">
+                                    @if (img.IsThumbnail == true)
+                                    {
+                                        <span class="badge bg-primary w-100 mb-2">Ảnh chính</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-dark w-100 mb-2">Ảnh phụ</span>
+                                    }
+                                    <div class="d-flex flex-column gap-1">
+                                        @if (img.IsThumbnail != true)
+                                        {
+                                            <form asp-controller="ProductManagement" asp-action="SetMainProductImage" method="post" class="d-grid">
+                                                <input type="hidden" name="productId" value="@Model.Id" />
+                                                <input type="hidden" name="imageId" value="@img.Id" />
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">Đặt làm ảnh chính</button>
+                                            </form>
+                                        }
+                                        <form asp-controller="ProductManagement" asp-action="DeleteProductImage" method="post" class="d-grid">
+                                            <input type="hidden" name="productId" value="@Model.Id" />
+                                            <input type="hidden" name="imageId" value="@img.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bạn chắc chắn muốn xóa hình này?');">
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
