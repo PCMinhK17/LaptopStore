@@ -7,7 +7,8 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <label for="input-supplier-name" class="form-label fw-bold">Nhà cung cấp <span class="text-danger">*</span></label>
-                    <input id="input-supplier-name" class="form-control" placeholder="Nhập tên nhà cung cấp..." />
+                    <input id="input-supplier-name" class="form-control" placeholder="Nhập tên nhà cung cấp..."
+                           oninput="this.value = this.value.substring(0, 100)" />
                 </div>
 
                 <div class="col-md-6">
