@@ -9,8 +9,15 @@
 
 @if (Model == null || Model.Count == 0)
 {
-    <div class="alert alert-warning" role="alert">
-        Không có sản phẩm nào trong hệ thống.
+    <div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 60vh;">
+        <div class="text-center">
+            <i class="bi bi-box-seam text-muted" style="font-size: 4rem;"></i>
+            <h3 class="mt-3 text-muted">Không có sản phẩm nào trong hệ thống</h3>
+            <p class="text-secondary">Vui lòng thêm sản phẩm mới để bắt đầu quản lý.</p>
+            <a asp-controller="ProductManagement" asp-action="AddNewProduct" class="btn btn-primary mt-2">
+                + Thêm sản phẩm ngay
+            </a>
+        </div>
     </div>
 }
 else
@@ -25,12 +32,6 @@ else
                     <th>Thương hiệu</th>
                     <th>Giá bán</th>
                     <th>Số lượng</th>
-                    <th>Cpu</th>
-                    <th>Ram</th>
-                    <th>Ổ cứng</th>
-                    <th>Gpu</th>
-                    <th>Kích cỡ màn</th>
-                    <th>Cân nặng</th>
                     <th>Trạng thái</th>
                 </tr>
             </thead>
@@ -56,12 +57,6 @@ else
                                 @product.StockQuantity
                             </span>
                         </td>
-                        <td>@(product.Cpu ?? "Không có")</td>
-                        <td>@(product.Ram ?? "Không có")</td>
-                        <td>@(product.HardDrive ?? "Không có")</td>
-                        <td>@(product.Gpu ?? "Không có")</td>
-                        <td>@(product.ScreenSize ?? "Không có")</td>
-                        <td>@(product.Weight ?? "Không có")</td>
                         <td>
                             @if (product.IsActive.Value)
                             {

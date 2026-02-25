@@ -45,6 +45,7 @@
             </div>
 
             <div class="mt-4 text-end">
+                <a asp-controller="StockManagement" asp-action="Index" class="btn btn-outline-secondary me-2 px-4">Hủy</a>
                 <button class="btn btn-primary btn-lg px-5" onclick="submitData()">Tạo đơn</button>
             </div>
         </div>
@@ -109,7 +110,7 @@
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between">
                             <strong>${p.name}</strong>
-                            <span class="text-danger fw-bold">${p.price.toLocaleString()}đ</span>
+                            <span class="text-danger fw-bold">Giá bán: ${p.price.toLocaleString()}đ</span>
                         </div>
                         <small class="text-muted">SKU: ${p.sku || 'N/A'} | Thương hiệu: ${p.brandName || 'N/A'}</small>
                     </div>
@@ -137,15 +138,6 @@
         document.getElementById('productInput').value = '';
         resultPanel.classList.add('d-none');
         renderCards();
-    }
-
-    function updateQuantity(id, delta) {
-        const item = selectedList.find(p => p.id === id);
-        if (item) {
-            item.quantity = Math.min(999, Math.max(1, item.quantity + delta));
-            document.getElementById(`${id}-quantity`).value = item.quantity;
-            document.getElementById(`${id}-total`).innerText = (item.price * item.quantity).toLocaleString() + 'đ';
-        }
     }
 
     function removeItem(id) {
@@ -179,25 +171,18 @@
                             <small class="text-muted">SKU: ${item.sku || 'N/A'}</small>
                         </div>
 
-                        <div class="col-md-2 text-center">
-                            <span class="text-danger fw-bold">${item.price.toLocaleString()}đ</span>
-                            <div class="small text-muted">Đơn giá</div>
-                        </div>
-
                         <div class="col-md-3">
                             <div class="input-group input-group-sm justify-content-center">
-                                <button type="button" class="btn btn-outline-secondary" onclick="updateQuantity(${item.id}, -1)">-</button>
+                                <label for="${item.id}-quantity" class="form-label text-center mx-2">Số lượng: </label>
                                 <input id="${item.id}-quantity" type="text" class="form-control text-center bg-white fw-bold" style="max-width: 60px" value="${item.quantity}"
                                     onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, ''); handleInputQuantity(${item.id}, this)">
-                                <button type="button" class="btn btn-outline-secondary" onclick="updateQuantity(${item.id}, 1)">+</button>
                             </div>
                         </div>
 
                         <div class="col-md-2 text-end">
-                            <div id="${item.id}-total" class="fw-bold text-dark">${(item.price * item.quantity).toLocaleString()}đ</div>
-                            <button type="button" class="btn btn-link btn-sm text-danger p-0 border-0" onclick="removeItem(${item.id})">
-                                <i class="bi bi-trash"></i> Xóa
+                            <button type="button" class="btn btn-outline-danger btn-lg px-4" onclick="removeItem(${item.id})">
+                                <i class="bi bi-trash"></i> xóa
                             </button>
                         </div>
                     </div>
@@ -210,8 +195,8 @@
         let val = element.value;
 
         if (val === '') {
-            element.value = 1;
-            return;
+            val = 1;
+            element.value = val;
         } else {
             val = parseInt(val);
             val = Math.min(999, Math.max(1, val));
@@ -221,7 +206,6 @@
         const item = selectedList.find(p => p.id === id);
         if (item) {
             item.quantity = parseInt(val);
-            document.getElementById(`${id}-total`).innerText = (item.price * item.quantity).toLocaleString() + 'đ';
         }
     }
 

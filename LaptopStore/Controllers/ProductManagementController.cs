@@ -66,6 +66,14 @@ public class ProductManagementController : Controller
             }
         }
 
+        if (decimal.TryParse(newProduct.Weight, out var weight))
+        {
+            if (weight < 1 || weight > 100)
+            {
+                ModelState.AddModelError("Weight", "Cân nặng phải nằm trong khoảng 1 đến 100");
+            }
+        }
+
         if (_context.Products.Select(p => p.Sku).Contains(newProduct.Sku))
         {
             ModelState.AddModelError("Sku", "Mã SKU này đã được dùng bởi sản phẩm khác");
