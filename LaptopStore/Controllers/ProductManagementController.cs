@@ -129,7 +129,7 @@ public class ProductManagementController : Controller
             await newProduct.ImageFile.CopyToAsync(fileStream);
         }
 
-        context.ProductImages.Add(new ProductImage
+        _context.ProductImages.Add(new ProductImage
         {
             ProductId = product.Id,
             ImageUrl = "images/" + fileName, // Dùng forward slash cho URL web

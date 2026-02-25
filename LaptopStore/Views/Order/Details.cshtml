@@ -65,7 +65,6 @@
 
             <div class="text-end">
                 <p>Tạm tính: <strong>@Model.Subtotal?.ToString("N0") đ</strong></p>
-                <p>Phí vận chuyển: <strong>@(Model.ShippingFee.HasValue && Model.ShippingFee.Value > 0 ? Model.ShippingFee.Value.ToString("N0") + " đ" : "Miễn phí")</strong></p>
                 <h4>Tổng thanh toán: <strong>@Model.TotalMoney.ToString("N0") đ</strong></h4>
             </div>
 
