@@ -77,22 +77,18 @@ namespace LaptopStore.Controllers
             var user = _context.Users.FirstOrDefault(u => u.Id == model.Id);
             if (user == null) return NotFound();
 
-            // Update thông tin thường
             user.FullName = model.FullName;
             user.PhoneNumber = model.PhoneNumber;
             user.Address = model.Address;
 
-            // 👉 ĐỔI MẬT KHẨU (nếu có nhập)
+            // Đổi mật khẩu nếu có nhập
             if (!string.IsNullOrWhiteSpace(model.Password))
             {
-                
                 user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
             }
 
-            _context.Users.Update(user);
             _context.SaveChanges();
             return RedirectToAction("Profile");
         }
-
     }
 }

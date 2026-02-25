@@ -251,28 +251,6 @@ namespace LaptopStore.Controllers
 
             return View(order);
         }
-
-        //[HttpPost]
-        //public async Task<IActionResult> Cancel(int id)
-        //{
-        //    var order = await _context.Orders.FindAsync(id);
-
-        //    if (order == null)
-        //        return Json(new { success = false });
-
-        //    var status = order.Status?.Trim().ToLower();
-
-        //    if (status == "pending" || status == "confirmed")
-        //    {
-        //        order.Status = "Cancelled";
-
-        //        await _context.SaveChangesAsync();
-
-        //        return Json(new { success = true });
-        //    }
-
-        //    return Json(new { success = false });
-        //}
         public IActionResult OrderHistory(string? status)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
