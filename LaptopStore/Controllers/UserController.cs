@@ -74,15 +74,21 @@ namespace LaptopStore.Controllers
         [HttpPost]
         public IActionResult Profile(User model)
         {
-            var user = _context.Users.First(x => x.Id == model.Id);
+            var user = _context.Users.FirstOrDefault(u => u.Id == model.Id);
+            if (user == null) return NotFound();
+
             user.FullName = model.FullName;
             user.PhoneNumber = model.PhoneNumber;
             user.Address = model.Address;
 
-            _context.SaveChanges();
+            // Đổi mật khẩu nếu có nhập
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
+            }
 
+            _context.SaveChanges();
             return RedirectToAction("Profile");
         }
-
     }
 }

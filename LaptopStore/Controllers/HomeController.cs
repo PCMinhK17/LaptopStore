@@ -15,7 +15,13 @@ namespace LaptopStore.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            if (User.IsInRole("admin"))
+            {
+                return RedirectToAction("Index", "ProductManagement");
+            } else
+            {
+                return RedirectToAction("Index", "Product");
+            }
         }
 
         public IActionResult Privacy()
