@@ -1,0 +1,122 @@
+﻿@using LaptopStore.DTOs.StockDTOs
+@model StockInOrderResponse
+
+@{
+    ViewData["Title"] = "Xác nhận nhập hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Xác nhận nhập hàng</h5>
+
+            <span class="badge @(Model.Status.Equals("Success", StringComparison.OrdinalIgnoreCase)
+                                                  ? "bg-success"
+                                                  : "bg-warning text-dark")">
+                @Model.Status.ToUpper()
+            </span>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Thông tin đơn -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <label class="text-muted small d-block">Nhà cung cấp</label>
+                    <p class="fw-bold fs-5">@Model.SupplierName</p>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="text-muted small d-block">Ngày tạo</label>
+                    <p class="fw-bold">
+                        @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                </div>
+
+                <div class="col-md-4 text-md-end">
+                    <label class="text-muted small d-block">Tổng tiền</label>
+                    <p class="text-danger fw-bold fs-4">
+                        @(Model.TotalCost != null
+                                                ? $"{Model.TotalCost.Value.ToString("N0")}đ"
+                                                : "---")
+                    </p>
+                </div>
+            </div>
+
+            <hr />
+
+            <h6 class="fw-bold mb-3">
+                <i class="bi bi-box-seam me-2"></i>Danh sách sản phẩm
+            </h6>
+
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                <form asp-controller="StockManagement" asp-action="UpdateAll" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="StockId" value="@Model.ReceiptId" />
+
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                     <input type="hidden" name="Items[@i].DetailId" value="@Model.Items[i].DetailId" />
+                     <div class="card border-0 bg-light mb-3 shadow-sm">
+                     <div class="card-body py-3">
+                          <div class="row align-items-center">
+                               <div class="col">
+                                    <h6 class="mb-0 fw-bold text-primary">
+                                    @Model.Items[i].ProductName
+                                    </h6>
+                               </div>
+                          <div class="col-md-3 text-center">
+                               <div class="small text-muted">Yêu cầu</div>
+                               <span class="badge bg-secondary px-3 py-2">
+                                     @Model.Items[i].RequestedQuantity
+                               </span>
+                          </div>
+                               <div class="col-md-3 text-center">
+                               <div class="small text-muted">Thực nhập</div>
+                                    <input type="number"
+                                    name="Items[@i].ActualQuantity"
+                                    value="@Model.Items[i].ActualQuantity"
+                                    min="0"
+                                    class="form-control form-control-sm text-center"
+                                    required />
+                               </div>
+                          </div>
+                     </div>
+                     </div>
+                }
+                    <button type="submit" class="btn btn-success">Cập nhật tất cả</button>
+                </form>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    Không có sản phẩm nào.
+                </div>
+            }
+
+            <div class="mt-4 text-end">
+                <a asp-action="ByStaff"
+                   asp-controller="StockManagement"
+                   class="btn btn-outline-secondary">
+                    ← Quay lại danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-body label {
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bg-light:hover {
+        background-color: #eef2f7 !important;
+        transition: 0.2s;
+    }
+</style>

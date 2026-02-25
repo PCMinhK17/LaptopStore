@@ -4,7 +4,8 @@ using LaptopStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 namespace LaptopStore.Controllers;
 
 public class StockManagementController : Controller
@@ -133,6 +134,153 @@ public class StockManagementController : Controller
         }
 
         return View("~/Views/Manager/StockDetails.cshtml", orderDto);
+    }
+    [Authorize]
+    public IActionResult ByStaff(int page = 1)
+    {
+        int pageSize = 10;
+
+        var staffIdClaim = User.FindFirst("UserId");
+
+        if (staffIdClaim == null)
+        {
+            return Unauthorized();
+        }
+
+        int staffId = int.Parse(staffIdClaim.Value);
+
+        var query = _context.ImportReceipts
+            .Where(r => r.StaffId == staffId)
+            .OrderByDescending(r => r.CreatedAt);
+
+        int totalItems = query.Count();
+
+        var receipts = query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return View("~/Views/Staff/StockManagementStaff.cshtml", receipts);
+    }
+
+    [HttpGet]
+    public IActionResult StockComfirmStaff(int id)
+    {
+        Console.WriteLine($"!!!!!!!Stock ID: {id}");
+        var order = _context.ImportReceipts
+            .Include(r => r.ImportDetails)
+            .ThenInclude(d => d.Product)
+            .FirstOrDefault(r => r.Id == id);
+
+        if (order == null)
+        {
+            return NotFound();
+        }
+
+        var orderDto = new StockInOrderResponse
+        {
+            ReceiptId = order.Id,
+            SupplierName = order.SupplierName ?? "",
+            TotalCost = order.TotalCost,
+            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            DeliveredAt = order.DeliveredAt,
+            Items = order.ImportDetails.Select(d => new StockInItemResponse
+            {
+                DetailId = d.Id,
+                ProductId = d.ProductId ?? 0,
+                ProductName = d.Product != null ? d.Product.Name : "Không thấy",
+                RequestedQuantity = d.RequestedQuantity,
+                ActualQuantity = d.ActualQuantity,
+                ImportPrice = d.ImportPrice,
+            }).ToList()
+        };
+
+        return View("~/Views/Staff/StockComfirmStaff.cshtml", orderDto);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateAll(UpdateStockRequest request)
+    {
+        _logger.LogInformation("StockId nhận được: " + request.StockId);
+        // Log thông tin để kiểm tra dữ liệu nhận được
+        _logger.LogInformation("Action UpdateAllAsync được gọi.");
+        _logger.LogInformation($"StockId: {request.StockId}");
+        if (request.Items != null)
+        {
+            foreach (var item in request.Items)
+            {
+                _logger.LogInformation($"DetailId: {item.DetailId}, ActualQuantity: {item.ActualQuantity}");
+            }
+        }
+        else
+        {
+            _logger.LogError("Không nhận được danh sách Items từ form.");
+        }
+
+        // Kiểm tra xem đơn hàng có tồn tại không
+        var receipt = await _context.ImportReceipts
+            .Include(r => r.ImportDetails)
+            .FirstOrDefaultAsync(r => r.Id == request.StockId);
+
+        if (receipt == null)
+        {
+            _logger.LogError("Không tìm thấy đơn hàng với ID: {StockId}", request.StockId);
+            return NotFound("Không tìm thấy đơn hàng.");
+        }
+
+        // Kiểm tra trạng thái đơn hàng
+        if (receipt.Status.Equals("Success", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogError("Đơn hàng đã hoàn tất, không thể cập nhật. ID: {StockId}", request.StockId);
+            return BadRequest("Đơn hàng đã hoàn tất, không thể cập nhật.");
+        }
+
+        // Cập nhật số lượng thực nhập cho từng sản phẩm
+        foreach (var item in request.Items)
+        {
+            var detail = receipt.ImportDetails
+                .FirstOrDefault(d => d.Id == item.DetailId);
+
+            if (detail == null)
+            {
+                _logger.LogWarning($"Không tìm thấy chi tiết nhập hàng với ID: {item.DetailId}");
+                continue;
+            }
+
+            detail.ActualQuantity = item.ActualQuantity;
+        }
+
+        // Kiểm tra xem đơn hàng đã hoàn thành hay chưa
+        bool isCompleted = receipt.ImportDetails
+            .All(d => d.ActualQuantity >= d.RequestedQuantity);
+
+        if (isCompleted)
+        {
+            receipt.Status = "Success";
+            receipt.DeliveredAt = DateTime.Now;
+
+            // Cập nhật số lượng tồn kho của sản phẩm
+            foreach (var detail in receipt.ImportDetails)
+            {
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(p => p.Id == detail.ProductId);
+
+                if (product == null)
+                {
+                    _logger.LogWarning($"Không tìm thấy sản phẩm với ID: {detail.ProductId}");
+                    continue;
+                }
+
+                product.StockQuantity += detail.ActualQuantity;
+            }
+        }
+
+        // Lưu thay đổi vào cơ sở dữ liệu
+        await _context.SaveChangesAsync();
+
+        // Chuyển hướng về trang danh sách đơn hàng của nhân viên
+        return RedirectToAction("ByStaff");
     }
 
 }

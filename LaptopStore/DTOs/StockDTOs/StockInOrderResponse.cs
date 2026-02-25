@@ -2,6 +2,7 @@
 
 public class StockInOrderResponse
 {
+    public int ReceiptId { get; set; }
     public string SupplierName { get; set; } = "";
 
     public int StaffName { get; set; }
@@ -19,6 +20,7 @@ public class StockInOrderResponse
 
 public class  StockInItemResponse
 {
+    public int DetailId { get; set; }
     public int ProductId { get; set; }
 
     public string ProductName { get; set; } = "";
