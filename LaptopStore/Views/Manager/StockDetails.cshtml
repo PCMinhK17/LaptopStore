@@ -1,0 +1,119 @@
+﻿@using LaptopStore.DTOs.StockDTOs
+@model StockInOrderResponse
+
+@{
+    ViewData["Title"] = "Chi tiết đơn nhập hàng";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Chi tiết đơn nhập hàng</h5>
+            <span class="badge @(Model.Status == "completed" ? "bg-success" : "bg-warning text-dark") uppercase">
+                @Model.Status.ToUpper()
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <label class="text-muted small d-block">Nhà cung cấp</label>
+                    <p class="fw-bold fs-5">@Model.SupplierName</p>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-muted small d-block">Nhân viên quản lý</label>
+                    <p class="fw-bold fs-5">@Model.StaffName</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <label class="text-muted small d-block">Tổng giá trị đơn hàng</label>
+                    <p class="text-danger fw-bold fs-4">@(Model.TotalCost != null ? $"{Model.TotalCost.Value.ToString("N0")}đ" : "Chưa có")</p>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <label class="text-muted small d-block">Ngày tạo đơn</label>
+                    <p class="fw-bold">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-muted small d-block">Ngày giao hàng</label>
+                    <p class="fw-bold">
+                        @(Model.DeliveredAt.HasValue? Model.DeliveredAt.Value.ToString("dd/MM/yyyy HH:mm") : "---")
+                    </p>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h6 class="fw-bold mb-3"><i class="bi bi-box-seam me-2"></i>Danh sách sản phẩm</h6>
+
+            <div class="d-flex flex-column gap-2">
+                @if (Model.Items != null && Model.Items.Any())
+                {
+                    foreach (var item in Model.Items)
+                    {
+                        <div class="card border-0 bg-light">
+                            <div class="card-body py-2">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <img src="\@item.ImageUrl" class="rounded border bg-white"
+                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                    </div>
+
+                                    <div class="col">
+                                        <h6 class="mb-0 fw-bold text-primary">
+                                            <a asp-controller="ProductManagement" asp-action="ProductDetails" asp-route-id="@item.ProductId" class="text-decoration-none fw-bold">
+                                                @item.ProductName
+                                            </a>
+                                        </h6>
+                                    </div>
+
+                                    <div class="col-md-2 text-center text-nowrap">
+                                        <div class="small text-muted">Giá nhập</div>
+                                        <span class="fw-bold">@(item.ImportPrice.HasValue ? $"{item.ImportPrice.Value.ToString("N0")}đ" : "Chưa có")</span>
+                                    </div>
+
+                                    <div class="col-md-3 text-center">
+                                        <div class="small text-muted">Số lượng (Yêu cầu / Thực nhập)</div>
+                                        <span class="badge bg-secondary">@item.RequestedQuantity</span>
+                                        <i class="bi bi-arrow-right mx-2"></i>
+                                        <span class="badge bg-primary">@item.ActualQuantity</span>
+                                    </div>
+
+                                    <div class="col-md-2 text-end">
+                                        <div class="small text-muted">Thành tiền</div>
+                                        <div class="fw-bold text-dark">@(($"{(item.ImportPrice * item.ActualQuantity)?.ToString("N0")}đ") ?? "Chưa có")</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-4 text-muted">
+                        Không có chi tiết sản phẩm nào.
+                    </div>
+                }
+            </div>
+
+            <div class="mt-5 d-flex justify-content-end align-items-center">
+                <a href="@Url.Action("Index", "StockManagement")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-body label {
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bg-light:hover {
+        background-color: #e9ecef !important;
+        transition: background-color 0.2s ease;
+    }
+</style>
