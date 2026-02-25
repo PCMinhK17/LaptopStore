@@ -51,7 +51,7 @@ else
                         </td>
                         <td>@product.CategoryName</td>
                         <td>@product.BrandName</td>
-                        <td>@product.Price.ToString("C")</td>
+                        <td>@String.Format("{0:N0}đ", product.Price)</td>
                         <td>
                             <span class="badge @(product.StockQuantity > 0 ? "bg-success" : "bg-danger")">
                                 @product.StockQuantity
