@@ -202,84 +202,118 @@ public class StockManagementController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateAll(UpdateStockRequest request)
     {
-        _logger.LogInformation("StockId nhận được: " + request.StockId);
-        // Log thông tin để kiểm tra dữ liệu nhận được
-        _logger.LogInformation("Action UpdateAllAsync được gọi.");
-        _logger.LogInformation($"StockId: {request.StockId}");
-        if (request.Items != null)
-        {
-            foreach (var item in request.Items)
-            {
-                _logger.LogInformation($"DetailId: {item.DetailId}, ActualQuantity: {item.ActualQuantity}");
-            }
-        }
-        else
-        {
-            _logger.LogError("Không nhận được danh sách Items từ form.");
-        }
+        if (request == null || request.Items == null || !request.Items.Any())
+            return BadRequest("Không có dữ liệu.");
 
-        // Kiểm tra xem đơn hàng có tồn tại không
         var receipt = await _context.ImportReceipts
             .Include(r => r.ImportDetails)
             .FirstOrDefaultAsync(r => r.Id == request.StockId);
 
         if (receipt == null)
-        {
-            _logger.LogError("Không tìm thấy đơn hàng với ID: {StockId}", request.StockId);
-            return NotFound("Không tìm thấy đơn hàng.");
-        }
+            return NotFound("Không tìm thấy đơn nhập.");
 
-        // Kiểm tra trạng thái đơn hàng
-        if (receipt.Status.Equals("Success", StringComparison.OrdinalIgnoreCase))
-        {
-            _logger.LogError("Đơn hàng đã hoàn tất, không thể cập nhật. ID: {StockId}", request.StockId);
-            return BadRequest("Đơn hàng đã hoàn tất, không thể cập nhật.");
-        }
+        if (receipt.Status == "Success")
+            return BadRequest("Đơn đã hoàn tất.");
 
-        // Cập nhật số lượng thực nhập cho từng sản phẩm
+        decimal totalCost = 0;
+
         foreach (var item in request.Items)
         {
             var detail = receipt.ImportDetails
                 .FirstOrDefault(d => d.Id == item.DetailId);
 
             if (detail == null)
-            {
-                _logger.LogWarning($"Không tìm thấy chi tiết nhập hàng với ID: {item.DetailId}");
                 continue;
-            }
 
+            if (item.ActualQuantity < 0 || item.ImportPrice < 0)
+                return BadRequest("Dữ liệu không hợp lệ.");
+
+            // Cập nhật số lượng và giá
             detail.ActualQuantity = item.ActualQuantity;
+            detail.ImportPrice = item.ImportPrice;
+
+            // Tính thành tiền từng dòng
+            decimal lineTotal = item.ActualQuantity * item.ImportPrice;
+
+            totalCost += lineTotal;
+
+            // Cập nhật tồn kho
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.Id == detail.ProductId);
+
+            if (product != null)
+            {
+                product.StockQuantity += item.ActualQuantity;
+            }
         }
 
-        // Kiểm tra xem đơn hàng đã hoàn thành hay chưa
-        bool isCompleted = receipt.ImportDetails
-            .All(d => d.ActualQuantity >= d.RequestedQuantity);
+        // Cập nhật tổng tiền đơn
+        receipt.TotalCost = totalCost;
 
-        if (isCompleted)
+        receipt.Status = "Success";
+        receipt.DeliveredAt = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction("ByStaff");
+    }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var receipt = await _context.ImportReceipts
+            .Include(r => r.ImportDetails)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (receipt == null)
+            return NotFound();
+
+        // 🔒 Chỉ xóa trong ngày tạo
+        if (receipt.CreatedAt == null || receipt.CreatedAt.Value.Date != DateTime.Today)
         {
-            receipt.Status = "Success";
-            receipt.DeliveredAt = DateTime.Now;
+            return BadRequest("Chỉ được xóa đơn trong ngày tạo.");
+        }
 
-            // Cập nhật số lượng tồn kho của sản phẩm
+        // Nếu đã hoàn tất thì kiểm tra tồn kho
+        if (receipt.Status == "Success")
+        {
             foreach (var detail in receipt.ImportDetails)
             {
                 var product = await _context.Products
                     .FirstOrDefaultAsync(p => p.Id == detail.ProductId);
 
                 if (product == null)
-                {
-                    _logger.LogWarning($"Không tìm thấy sản phẩm với ID: {detail.ProductId}");
                     continue;
-                }
 
-                product.StockQuantity += detail.ActualQuantity;
+                // 🔒 Không cho xóa nếu kho không đủ để trừ
+                if (product.StockQuantity < detail.ActualQuantity)
+                {
+                    return BadRequest(
+                        $"Không thể xóa. Sản phẩm {product.Name} không đủ tồn kho để hoàn tác."
+                    );
+                }
+            }
+
+            // Nếu tất cả hợp lệ → trừ kho
+            foreach (var detail in receipt.ImportDetails)
+            {
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(p => p.Id == detail.ProductId);
+
+                if (product != null)
+                {
+                    product.StockQuantity -= detail.ActualQuantity;
+                }
             }
         }
 
-        // Lưu thay đổi vào cơ sở dữ liệu
+        _context.ImportDetails.RemoveRange(receipt.ImportDetails);
+        _context.ImportReceipts.Remove(receipt);
+
         await _context.SaveChangesAsync();
 
-        // Chuyển hướng về trang danh sách đơn hàng của nhân viên
         return RedirectToAction("ByStaff");
     }
 

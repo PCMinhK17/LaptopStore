@@ -81,9 +81,23 @@
                         </td>
 
                         <td>
-                            <button class="btn btn-outline-danger btn-sm">
-                                Delete
-                            </button>
+                            @if (stock.CreatedAt.HasValue && stock.CreatedAt.Value.Date == DateTime.Today)
+                            {
+                                <form asp-action="Delete"
+                                      asp-controller="StockManagement"
+                                      method="post"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa đơn này?');">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden" name="id" value="@stock.Id" />
+
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        Delete
+                                    </button>
+                                </form>
+                            }
                         </td>
                     </tr>
                 }

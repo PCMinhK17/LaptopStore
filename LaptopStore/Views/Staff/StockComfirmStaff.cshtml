@@ -53,42 +53,65 @@
 
             @if (Model.Items != null && Model.Items.Any())
             {
-                <form asp-controller="StockManagement" asp-action="UpdateAll" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="StockId" value="@Model.ReceiptId" />
-
-                @for (int i = 0; i < Model.Items.Count; i++)
+                if (!Model.Status.Equals("Success", StringComparison.OrdinalIgnoreCase))
                 {
-                     <input type="hidden" name="Items[@i].DetailId" value="@Model.Items[i].DetailId" />
-                     <div class="card border-0 bg-light mb-3 shadow-sm">
-                     <div class="card-body py-3">
-                          <div class="row align-items-center">
-                               <div class="col">
-                                    <h6 class="mb-0 fw-bold text-primary">
-                                    @Model.Items[i].ProductName
-                                    </h6>
-                               </div>
-                          <div class="col-md-3 text-center">
-                               <div class="small text-muted">Yêu cầu</div>
-                               <span class="badge bg-secondary px-3 py-2">
-                                     @Model.Items[i].RequestedQuantity
-                               </span>
-                          </div>
-                               <div class="col-md-3 text-center">
-                               <div class="small text-muted">Thực nhập</div>
-                                    <input type="number"
-                                    name="Items[@i].ActualQuantity"
-                                    value="@Model.Items[i].ActualQuantity"
-                                    min="0"
-                                    class="form-control form-control-sm text-center"
-                                    required />
-                               </div>
-                          </div>
-                     </div>
+                    <form asp-controller="StockManagement" asp-action="UpdateAll" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="StockId" value="@Model.ReceiptId" />
+
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            <input type="hidden" name="Items[@i].DetailId" value="@Model.Items[i].DetailId" />
+                                <div class="card border-0 bg-light mb-3 shadow-sm">
+                                   <div class="card-body py-3">
+                                       <div class="row align-items-center">
+                                       <div class="col">
+                                            <h6 class="mb-0 fw-bold text-primary">
+                                            @Model.Items[i].ProductName
+                                            </h6>
+                                       </div>
+                                        <div class="col-md-3 text-center">
+                                            <div class="small text-muted">Giá nhập</div>
+                                            <input type="text"
+                                                   name="Items[@i].ImportPrice"
+                                                   value="@Model.Items[i].ImportPrice"
+                                                   min="0"
+                                                   step="0.01"
+                                                   class="form-control form-control-sm text-center"
+                                                   required />
+                                        </div>
+
+                                       <div class="col-md-3 text-center">
+                                       <div class="small text-muted">Yêu cầu</div>
+                                       <span class="badge bg-secondary px-3 py-2">
+                                            @Model.Items[i].RequestedQuantity
+                                       </span>
+                                       </div>
+
+                                       <div class="col-md-3 text-center">
+                                       <div class="small text-muted">Thực nhập</div>
+                                       <input type="number"
+                                              name="Items[@i].ActualQuantity"
+                                              value="@Model.Items[i].ActualQuantity"
+                                              min="0"
+                                              class="form-control form-control-sm text-center"
+                                              required />
+                                       </div>
+                                   </div>
+                                </div>
+                            </div>
+                        }
+                        <button type="submit" class="btn btn-success">
+                        Cập nhật và hoàn tất
+                        </button>
+                    </form>
+                }
+                else
+                {
+                     <div class="alert alert-success text-center">
+                          Đơn nhập đã hoàn tất và không thể chỉnh sửa.
                      </div>
                 }
-                    <button type="submit" class="btn btn-success">Cập nhật tất cả</button>
-                </form>
             }
             else
             {
@@ -96,14 +119,6 @@
                     Không có sản phẩm nào.
                 </div>
             }
-
-            <div class="mt-4 text-end">
-                <a asp-action="ByStaff"
-                   asp-controller="StockManagement"
-                   class="btn btn-outline-secondary">
-                    ← Quay lại danh sách
-                </a>
-            </div>
         </div>
     </div>
 </div>
@@ -120,3 +135,27 @@
         transition: 0.2s;
     }
 </style>
+<script>
+    document.querySelectorAll('.price-input').forEach(input => {
+
+        input.addEventListener('input', function (e) {
+
+            let value = this.value.replace(/[^0-9]/g, '');
+
+            if (value === "") {
+                this.value = "";
+                return;
+            }
+
+            this.value = new Intl.NumberFormat('vi-VN').format(value);
+        });
+
+        // Khi submit form → bỏ dấu phẩy
+        input.closest("form").addEventListener("submit", function () {
+            document.querySelectorAll('.price-input').forEach(i => {
+                i.value = i.value.replace(/,/g, '');
+            });
+        });
+
+    });
+</script>

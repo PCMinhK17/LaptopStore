@@ -5,5 +5,6 @@
         public int DetailId { get; set; }
 
         public int ActualQuantity { get; set; }
+        public decimal ImportPrice { get; set; }
     }
 }
