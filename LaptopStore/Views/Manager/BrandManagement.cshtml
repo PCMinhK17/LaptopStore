@@ -1,0 +1,69 @@
+﻿@model List<LaptopStore.DTOs.BrandDTOs.BrandResponse>
+
+<div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+    <h2 class="m-0">Quản lý thương hiệu</h2>
+    <a asp-controller="BrandManagement"
+       asp-action="AddNewBrand"
+       class="btn btn-primary mb-3">
+        <i class="bi bi-plus-circle"></i> + Thêm thương hiệu mới
+    </a>
+
+
+</div>
+
+@if (Model == null || Model.Count == 0)
+{
+    <div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 60vh;">
+        <div class="text-center">
+            <i class="bi bi-tags text-muted" style="font-size: 4rem;"></i>
+            <h3 class="mt-3 text-muted">Không có thương hiệu nào trong hệ thống</h3>
+            <p class="text-secondary">Vui lòng thêm thương hiệu mới để bắt đầu quản lý.</p>
+            <a asp-controller="BrandManagement" asp-action="AddNewBrand" class="btn btn-primary mt-2">
+                + Thêm thương hiệu ngay
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Logo</th>
+                    <th>Tên thương hiệu</th>
+                    <th>Xuất xứ</th>
+                    <th>Tổng sản phẩm</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var brand in Model)
+                {
+                    <tr>
+                        <td>
+                            <img style="width:3rem; object-fit: contain;"
+                                 class="rounded"
+                                 src="@brand.LogoUrl"
+                                 alt="@brand.Name" />
+                        </td>
+                        <td>
+                            <a asp-controller="BrandManagement"
+                               asp-action="BrandDetails"
+                               asp-route-id="@brand.Id"
+                               class="text-decoration-none fw-bold">
+                                @brand.Name
+                            </a>
+                        </td>
+                        <td>@brand.Origin</td>
+                        <td>
+                            <span class="badge bg-info">
+                                @brand.TotalProducts
+                            </span>
+                        </td>
+                        
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

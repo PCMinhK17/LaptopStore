@@ -1,0 +1,51 @@
+﻿@model UpdateCategoryRequest
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning">
+            <h4 class="mb-0">Cập nhật phân loại</h4>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="UpdateCategory" method="post">
+
+                <input asp-for="Id" type="hidden" />
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-bold"></label><span class="text-danger">*</span>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description"
+                           class="form-label fw-bold"></label>
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="3"></textarea>
+                </div>
+
+                
+
+                <div class="text-end">
+                    <a asp-action="CategoryDetails"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-secondary me-2">
+                        Hủy
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-warning px-4">
+                        Cập nhật
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

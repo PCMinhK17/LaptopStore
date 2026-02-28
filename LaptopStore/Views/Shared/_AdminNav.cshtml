@@ -21,6 +21,19 @@
             <a class="nav-link @(currentController == "StockManagement" ? "active" : "text-dark")"
                asp-controller="StockManagement" asp-action="Index">📦 Quản lý nhập hàng</a>
         </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "BrandManagement" ? "active" : "text-dark")"
+               asp-controller="BrandManagement" asp-action="Index">® Quản lý thương hiệu
+            </a>
+        </li>
+
+        <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "CategoryManagement" ? "active" : "text-dark")"
+               asp-controller="CategoryManagement" asp-action="Index">🏷️ Quản lý phân loại
+            </a>
+        </li>
+
+
     </ul>
 
     <div class="mt-auto px-3 pb-4">
