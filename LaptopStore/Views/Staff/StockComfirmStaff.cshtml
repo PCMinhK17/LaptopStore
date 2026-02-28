@@ -94,6 +94,7 @@
                                               name="Items[@i].ActualQuantity"
                                               value="@Model.Items[i].ActualQuantity"
                                               min="0"
+                                              max="999"
                                               class="form-control form-control-sm text-center"
                                               required />
                                        </div>
@@ -135,27 +136,25 @@
         transition: 0.2s;
     }
 </style>
+
 <script>
-    document.querySelectorAll('.price-input').forEach(input => {
-
-        input.addEventListener('input', function (e) {
-
-            let value = this.value.replace(/[^0-9]/g, '');
-
-            if (value === "") {
-                this.value = "";
-                return;
+    document.querySelectorAll('input[name*="ActualQuantity"]').forEach(input => {
+        // Ngăn nhập số âm
+        input.addEventListener('input', function () {
+            if (this.value < 0) {
+                this.value = 0;
             }
-
-            this.value = new Intl.NumberFormat('vi-VN').format(value);
+            // Giới hạn số tối đa là 999
+            if (this.value > 999) {
+                this.value = 999;
+            }
         });
 
-        // Khi submit form → bỏ dấu phẩy
-        input.closest("form").addEventListener("submit", function () {
-            document.querySelectorAll('.price-input').forEach(i => {
-                i.value = i.value.replace(/,/g, '');
-            });
+        // Ngăn không cho nhập dấu trừ
+        input.addEventListener('keydown', function (e) {
+            if (e.key === '-' || e.keyCode === 189) {
+                e.preventDefault();
+            }
         });
-
     });
 </script>

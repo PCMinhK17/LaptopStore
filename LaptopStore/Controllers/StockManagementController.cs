@@ -20,8 +20,9 @@ public class StockManagementController : Controller
     }
     public IActionResult Index(int page = 1)
     {
-        int pageSize = 99;
+        int pageSize = 9;
         var allStockEntries = _context.ImportReceipts
+            .OrderByDescending(r => r.CreatedAt)
             .ToList();
 
         int totalStockEntries = allStockEntries.Count;
@@ -96,7 +97,6 @@ public class StockManagementController : Controller
 
         return Ok(new { message = "Lưu đơn hàng thành công"});
     }
-
     [HttpGet]
     public IActionResult StockDetails(int id)
     {
