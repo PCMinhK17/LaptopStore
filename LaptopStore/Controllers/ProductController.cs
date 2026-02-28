@@ -14,19 +14,25 @@ namespace LaptopStore.Controllers
             _logger = logger;
             _context = context;
         }
-        public IActionResult Index()
+        public IActionResult Index(int page = 1)
         {
+            int pageSize = 9;
             //Lấy tất cả product
             var allProducts = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.ProductImages)
                 .ToList();
+            //Lấy tổng số lượng sản phẩm
+            int totalProducts = allProducts.Count;
+            var products = allProducts.Skip((page - 1) * pageSize).Take(pageSize).ToList();
             //Log số lượng đồ chơi
             ViewBag.Categories = _context.Categories.ToList();
             ViewBag.Brands = _context.Brands.ToList();
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
 
-            return View("~/Views/Store/Product.cshtml", allProducts);
+            return View("~/Views/Store/Product.cshtml", products);
         }
 
         public IActionResult SearchByCategoryAndBrand(int? brandId, int? categoryId, int? priceRange)

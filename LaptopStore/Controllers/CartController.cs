@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LaptopStore.Models;
 using LaptopStore.Extensions;
@@ -14,8 +14,9 @@ namespace LaptopStore.Controllers
             _context = context;
         }
 
-        public IActionResult CartView(int? userId = 2)
-        {
+        public IActionResult CartView()
+        {   
+            int? userId = null;
             int? cookieUserId = Identity.GetUserId(User);
             if (cookieUserId.HasValue)
             {
@@ -47,6 +48,74 @@ namespace LaptopStore.Controllers
             }
 
             return View(cart);
+        }
+
+        [HttpPost]
+        public IActionResult AddToCart(int productId)
+        {
+            int? userId = Identity.GetUserId(User);
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Detail", "Product", new { id = productId }) });
+            }
+
+            var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+            if (product == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy sản phẩm.";
+                return RedirectToAction("Index", "Product");
+            }
+
+            if (product.StockQuantity.HasValue && product.StockQuantity.Value < 1)
+            {
+                TempData["ErrorMessage"] = "Sản phẩm đã hết hàng.";
+                return RedirectToAction("Detail", "Product", new { id = productId });
+            }
+
+            var cart = _context.Carts
+                .Include(c => c.CartItems)
+                .FirstOrDefault(c => c.UserId == userId);
+
+            if (cart == null)
+            {
+                cart = new Cart
+                {
+                    UserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    CartItems = new List<CartItem>()
+                };
+                _context.Carts.Add(cart);
+                _context.SaveChanges();
+            }
+
+            var existingItem = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == productId);
+            if (existingItem != null)
+            {
+                var newQuantity = (existingItem.Quantity ?? 0) + 1;
+                if (product.StockQuantity.HasValue && newQuantity > product.StockQuantity.Value)
+                {
+                    TempData["ErrorMessage"] = $"Chỉ còn {product.StockQuantity.Value} sản phẩm trong kho.";
+                    return RedirectToAction("Detail", "Product", new { id = productId });
+                }
+                existingItem.Quantity = newQuantity;
+            }
+            else
+            {
+                cart.CartItems!.Add(new CartItem
+                {
+                    CartId = cart.Id,
+                    ProductId = productId,
+                    Quantity = 1,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            cart.UpdatedAt = DateTime.UtcNow;
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = $"Đã thêm \"{product.Name}\" vào giỏ hàng.";
+            return RedirectToAction("Detail", "Product", new { id = productId });
         }
 
         [HttpPost]

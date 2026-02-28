@@ -9,6 +9,63 @@
     var userId = Model.Id;
 }
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ===== VALIDATE PASSWORD =====
+        function isValidPassword(password) {
+            const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+            return regex.test(password);
+        }
+
+        const form = document.querySelector("form");
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const password = document.getElementById("password")?.value || "";
+                const confirmPassword = document.getElementById("confirmPassword")?.value || "";
+                const error = document.getElementById("passwordError");
+
+                // Không đổi mật khẩu
+                if (password === "" && confirmPassword === "") {
+                    form.submit();
+                    return;
+                }
+
+                if (!isValidPassword(password)) {
+                    error.innerText = "Mật khẩu phải ≥8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.";
+                    error.style.display = "block";
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    error.innerText = "Mật khẩu xác nhận không khớp.";
+                    error.style.display = "block";
+                    return;
+                }
+
+                error.style.display = "none";
+                form.submit();
+            });
+        }
+
+        // ===== TOGGLE PASSWORD (GLOBAL) =====
+        window.togglePassword = function (inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerHTML = "🙈";
+            } else {
+                input.type = "password";
+                icon.innerHTML = "👁️";
+            }
+        };
+    });
+</script>
+
 <style>
     .profile-container {
         max-width: 900px;
