@@ -17,7 +17,7 @@ namespace LaptopStore.Controllers
         public IActionResult CartView()
         {   
             int? userId = null;
-            int? cookieUserId = Identity.GetUserId(User);
+            int? cookieUserId = User.GetUserId();
             if (cookieUserId.HasValue)
             {
                 userId = cookieUserId;
@@ -53,7 +53,7 @@ namespace LaptopStore.Controllers
         [HttpPost]
         public IActionResult AddToCart(int productId)
         {
-            int? userId = Identity.GetUserId(User);
+            int? userId = User.GetUserId();
             if (!userId.HasValue)
             {
                 return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Detail", "Product", new { id = productId }) });

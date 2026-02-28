@@ -2,301 +2,34 @@
 @{
     ViewData["Title"] = "Tài khoản của tôi";
     var isEditMode = ViewBag.EditMode as bool? ?? false;
-    
+
     // Get avatar URL or generate initial
     var avatarUrl = Model.AvatarUrl;
     var avatarLetter = !string.IsNullOrEmpty(Model.FullName) ? Model.FullName.Substring(0, 1).ToUpper() : "U";
     var userId = Model.Id;
 }
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-        // ===== VALIDATE PASSWORD =====
-        function isValidPassword(password) {
-            const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-            return regex.test(password);
-        }
-
-        const form = document.querySelector("form");
-        if (form) {
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-
-                const password = document.getElementById("password")?.value || "";
-                const confirmPassword = document.getElementById("confirmPassword")?.value || "";
-                const error = document.getElementById("passwordError");
-
-                // Không đổi mật khẩu
-                if (password === "" && confirmPassword === "") {
-                    form.submit();
-                    return;
-                }
-
-                if (!isValidPassword(password)) {
-                    error.innerText = "Mật khẩu phải ≥8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.";
-                    error.style.display = "block";
-                    return;
-                }
-
-                if (password !== confirmPassword) {
-                    error.innerText = "Mật khẩu xác nhận không khớp.";
-                    error.style.display = "block";
-                    return;
-                }
-
-                error.style.display = "none";
-                form.submit();
-            });
-        }
-
-        // ===== TOGGLE PASSWORD (GLOBAL) =====
-        window.togglePassword = function (inputId, icon) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
-
-            if (input.type === "password") {
-                input.type = "text";
-                icon.innerHTML = "🙈";
-            } else {
-                input.type = "password";
-                icon.innerHTML = "👁️";
-            }
-        };
-    });
-</script>
-
 <style>
-    .profile-container {
-        max-width: 900px;
-        margin: 30px auto;
-    }
-
-    .profile-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
-
-    /* Header Styles */
-    .profile-header {
+    /* Chỉ giữ lại những CSS không có sẵn trong Bootstrap hoặc cần custom đặc thù */
+    .bg-gradient-custom {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        text-align: center;
-        position: relative;
     }
 
-    .profile-avatar-wrapper {
-        position: relative;
-        display: inline-block;
+    .hover-scale {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-        font-size: 48px;
-        font-weight: 600;
-        border: 5px solid rgba(255, 255, 255, 0.3);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
 
-    .profile-avatar:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .profile-avatar img {
+    .avatar-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    /* Camera icon button */
-    .avatar-camera-btn {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        width: 36px;
-        height: 36px;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        border: none;
-    }
-
-    .avatar-camera-btn:hover {
-        transform: scale(1.1);
-        background: #fff;
-    }
-
-    .avatar-camera-btn i {
-        color: #667eea;
-        font-size: 16px;
-    }
-
-    .avatar-upload-input {
-        display: none;
-    }
-
-    .profile-name {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .profile-email {
-        font-size: 14px;
-        opacity: 0.9;
-    }
-
-    .profile-body {
-        padding: 30px;
-    }
-
-    .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .info-row {
-        display: flex;
-        padding: 15px 0;
-        border-bottom: 1px solid #f5f5f5;
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        width: 150px;
-        color: #666;
-        font-size: 14px;
-        flex-shrink: 0;
-    }
-
-    .info-value {
-        flex: 1;
-        color: #333;
-        font-weight: 500;
-    }
-
-    .info-value.empty {
-        color: #aaa;
-        font-style: italic;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: block;
-        font-weight: 500;
-        color: #444;
-        margin-bottom: 8px;
-    }
-
-    .form-group .form-control {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .form-group .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-group .form-control:disabled {
-        background: #f8f9fa;
-        cursor: not-allowed;
-    }
-
-    .btn-save {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 8px;
-        padding: 12px 30px;
-        color: white;
-        font-weight: 500;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-
-    .btn-cancel {
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 12px 30px;
-        color: #666;
-        font-weight: 500;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-cancel:hover {
-        background: #f5f5f5;
-        color: #666;
-    }
-
-    .btn-edit {
-        background: #fff;
-        border: 1px solid #667eea;
-        color: #667eea;
-        border-radius: 8px;
-        padding: 10px 25px;
-        font-weight: 500;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-edit:hover {
-        background: #667eea;
-        color: white;
-    }
-
-    .validation-msg {
-        font-size: 12px;
-        color: #e53e3e;
-        margin-top: 5px;
-    }
-
-    .text-muted-info {
-        font-size: 12px;
-        color: #999;
-        margin-top: 5px;
-    }
-
+    /* Giữ nguyên loading overlay vì Bootstrap không có component tương đương (trừ Modal) */
     .loading-overlay {
         position: fixed;
         top: 0;
@@ -304,16 +37,15 @@
         width: 100%;
         height: 100%;
         background: rgba(255, 255, 255, 0.9);
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
         z-index: 9999;
-        display: none;
     }
 
-    .loading-overlay.show {
-        display: flex;
-    }
+        .loading-overlay.show {
+            display: flex;
+        }
 
     .spinner-lg {
         width: 50px;
@@ -323,171 +55,136 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
     }
-
     @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
+        0% {
+            transform: rotate(0deg);
+        }
 
-    @@media (max-width: 768px) {
-        .profile-container {
-            margin: 15px;
-        }
-        
-        .info-row {
-            flex-direction: column;
-        }
-        
-        .info-label {
-            width: auto;
-            margin-bottom: 5px;
-        }
-        
-        .profile-body {
-            padding: 20px;
-        }
-        
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            font-size: 40px;
-        }
-        
-        .avatar-camera-btn {
-            width: 32px;
-            height: 32px;
-        }
-        
-        .avatar-camera-btn i {
-            font-size: 14px;
+        100% {
+            transform: rotate(360deg);
         }
     }
 </style>
 
-<div class="container profile-container">
-    <div class="profile-card">
-        <!-- Header with Avatar -->
-        <div class="profile-header">
-            <div class="profile-avatar-wrapper">
-                <div class="profile-avatar" id="headerAvatar">
+<div class="container my-4 my-md-5" style="max-width: 900px;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+        <div class="bg-gradient-custom text-white p-4 p-md-5 text-center position-relative">
+            <div class="position-relative d-inline-block hover-scale" style="margin-bottom: 1rem;">
+
+                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto overflow-hidden shadow"
+                     id="headerAvatar"
+                     style="width: 120px; height: 120px; background: rgba(255, 255, 255, 0.2); font-size: 48px; font-weight: 600; border: 5px solid rgba(255, 255, 255, 0.3);">
                     @if (!string.IsNullOrEmpty(avatarUrl))
                     {
-                        <img src="~/uploads/avatars/@avatarUrl" alt="@Model.FullName" id="avatarImg" />
+                        <img src="~/uploads/avatars/@avatarUrl" alt="@Model.FullName" id="avatarImg" class="avatar-img" />
                     }
                     else
                     {
                         <span id="avatarLetter">@avatarLetter</span>
                     }
                 </div>
-                
-                <!-- Camera button for direct upload -->
-                <button type="button" class="avatar-camera-btn" onclick="document.getElementById('directAvatarInput').click()" 
+
+                <button type="button" class="position-absolute bottom-0 end-0 bg-white text-primary rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center hover-scale"
+                        style="width: 36px; height: 36px; right: 5px !important; bottom: 5px !important;"
+                        onclick="document.getElementById('directAvatarInput').click()"
                         title="Thay đổi ảnh đại diện">
                     <i class="fas fa-camera"></i>
                 </button>
-                
-                <!-- Hidden file input for direct avatar upload -->
-                <input type="file" id="directAvatarInput" name="directAvatar" class="avatar-upload-input" 
+
+                <input type="file" id="directAvatarInput" name="directAvatar" class="d-none"
                        accept="image/jpeg,image/png,image/gif,image/webp" onchange="uploadAvatarDirect(this)">
             </div>
-            
-            <div class="profile-name">@Model.FullName</div>
-            <div class="profile-email">@Model.Email</div>
+
+            <h3 class="fw-bold mb-1">@Model.FullName</h3>
+            <p class="mb-0 text-white opacity-75">@Model.Email</p>
         </div>
 
-        <!-- Body -->
-        <div class="profile-body">
+        <div class="card-body p-4 p-md-5">
             @if (!isEditMode)
             {
-                <!-- View Mode -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="section-title mb-0">Thông tin cá nhân</h5>
-                    <a href="/User/Profile?edit=true" class="btn-edit">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h5 class="fw-bold text-dark mb-0">Thông tin cá nhân</h5>
+                    <a href="/User/Profile?edit=true" class="btn btn-outline-primary rounded-pill px-4 fw-medium hover-scale">
                         <i class="fas fa-edit me-2"></i>Chỉnh sửa
                     </a>
                 </div>
 
-                <div class="info-row">
-                    <div class="info-label">Họ và tên</div>
-                    <div class="info-value @(string.IsNullOrEmpty(Model.FullName) ? "empty" : "")">
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Họ và tên</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium @(string.IsNullOrEmpty(Model.FullName) ? "text-muted fst-italic" : "")">
                         @(Model.FullName ?? "Chưa cập nhật")
                     </div>
                 </div>
 
-                <div class="info-row">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">@Model.Email</div>
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Email</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium">@Model.Email</div>
                 </div>
 
-                <div class="info-row">
-                    <div class="info-label">Số điện thoại</div>
-                    <div class="info-value @(string.IsNullOrEmpty(Model.PhoneNumber) ? "empty" : "")">
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Số điện thoại</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium @(string.IsNullOrEmpty(Model.PhoneNumber) ? "text-muted fst-italic" : "")">
                         @(Model.PhoneNumber ?? "Chưa cập nhật")
                     </div>
                 </div>
 
-                <div class="info-row">
-                    <div class="info-label">Địa chỉ</div>
-                    <div class="info-value @(string.IsNullOrEmpty(Model.Address) ? "empty" : "")">
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Địa chỉ</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium @(string.IsNullOrEmpty(Model.Address) ? "text-muted fst-italic" : "")">
                         @(Model.Address ?? "Chưa cập nhật")
                     </div>
                 </div>
 
-                <div class="info-row">
-                    <div class="info-label">Ngày tạo</div>
-                    <div class="info-value">
-                        @(Model.CreatedAt.HasValue ? Model.CreatedAt.Value.ToString("dd/MM/yyyy") : "Không có thông tin")
+                <div class="row py-3 mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Ngày tạo</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium">
+                        @(Model.CreatedAt.HasValue? Model.CreatedAt.Value.ToString("dd/MM/yyyy") : "Không có thông tin")
                     </div>
                 </div>
             }
             else
             {
-                <!-- Edit Mode -->
                 <form id="profileForm">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="Id" value="@Model.Id" />
 
-                    <h5 class="section-title">Chỉnh sửa thông tin</h5>
+                    <h5 class="fw-bold text-dark mb-4 border-bottom pb-3">Chỉnh sửa thông tin</h5>
 
-                    <!-- Full Name -->
-                    <div class="form-group">
-                        <label for="fullName">Họ và tên <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="fullName" name="FullName" 
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label fw-medium text-dark">Họ và tên <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg fs-6" id="fullName" name="FullName"
                                value="@Model.FullName" placeholder="Nhập họ và tên" required>
-                        <div class="validation-msg" id="fullNameError"></div>
+                        <div class="text-danger small mt-1" id="fullNameError"></div>
                     </div>
 
-                    <!-- Phone -->
-                    <div class="form-group">
-                        <label for="phoneNumber">Số điện thoại</label>
-                        <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" 
+                    <div class="mb-3">
+                        <label for="phoneNumber" class="form-label fw-medium text-dark">Số điện thoại</label>
+                        <input type="tel" class="form-control form-control-lg fs-6" id="phoneNumber" name="PhoneNumber"
                                value="@Model.PhoneNumber" placeholder="Nhập số điện thoại">
-                        <div class="validation-msg" id="phoneNumberError"></div>
-                        <div class="text-muted-info">Bỏ trống nếu muốn giữ nguyên</div>
+                        <div class="text-danger small mt-1" id="phoneNumberError"></div>
+                        <div class="form-text">Bỏ trống nếu muốn giữ nguyên</div>
                     </div>
 
-                    <!-- Email (Read-only) -->
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" value="@Model.Email" disabled readonly>
-                        <div class="text-muted-info">Email không thể thay đổi</div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-medium text-dark">Email</label>
+                        <input type="email" class="form-control form-control-lg fs-6 bg-light text-muted" id="email" value="@Model.Email" disabled readonly>
+                        <div class="form-text">Email không thể thay đổi</div>
                     </div>
 
-                    <!-- Address -->
-                    <div class="form-group">
-                        <label for="address">Địa chỉ</label>
-                        <input type="text" class="form-control" id="address" name="Address" 
+                    <div class="mb-3">
+                        <label for="address" class="form-label fw-medium text-dark">Địa chỉ</label>
+                        <input type="text" class="form-control form-control-lg fs-6" id="address" name="Address"
                                value="@Model.Address" placeholder="Nhập địa chỉ">
-                        <div class="validation-msg" id="addressError"></div>
+                        <div class="text-danger small mt-1" id="addressError"></div>
                     </div>
 
-                    <!-- Buttons -->
-                    <div class="d-flex gap-3 mt-4">
-                        <button type="button" class="btn-save" id="saveBtn" onclick="saveProfile()">
+                    <div class="d-flex gap-3 mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-primary rounded-pill px-4 fw-medium border-0 hover-scale shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" id="saveBtn" onclick="saveProfile()">
                             <span class="spinner-border spinner-border-sm me-2 d-none" id="saveSpinner"></span>
                             <span id="saveBtnText"><i class="fas fa-save me-2"></i>Lưu thay đổi</span>
                         </button>
-                        <a href="/User/Profile" class="btn-cancel">
+                        <a href="/User/Profile" class="btn btn-light border rounded-pill px-4 fw-medium text-secondary hover-scale">
                             <i class="fas fa-times me-2"></i>Hủy
                         </a>
                     </div>
@@ -497,7 +194,6 @@
     </div>
 </div>
 
-<!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner-lg"></div>
 </div>

@@ -12,7 +12,6 @@ public class ProductManagementController : Controller
 {
     private readonly LaptopStoreDbContext _context;
     private readonly IWebHostEnvironment _webHostEnvironment;
-    private readonly LaptopStoreDbContext _context = new LaptopStoreDbContext();
 
     public ProductManagementController(IWebHostEnvironment webHostEnvironment, LaptopStoreDbContext context)
     {
@@ -36,7 +35,11 @@ public class ProductManagementController : Controller
                 CategoryName = p.Category.Name,
                 Price = p.Price,
                 StockQuantity = p.StockQuantity,
-                ProductImages = p.ProductImages,
+                ProductImages = p.ProductImages.Select(i => new ProductImageResponse
+                {
+                    ImageUrl = i.ImageUrl,
+                    IsThumbnail = i.IsThumbnail ?? false
+                }).ToList(),
                 IsActive = p.IsActive
             })
             .OrderByDescending(p => p.Id);
