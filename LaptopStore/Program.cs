@@ -1,4 +1,4 @@
-﻿using LaptopStore.Models;
+using LaptopStore.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -12,6 +12,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<LaptopStoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 builder.Services.AddSignalR();
+builder.Services.AddScoped<LaptopStore.Services.IAuthService, LaptopStore.Services.AuthService>();
+builder.Services.AddScoped<LaptopStore.Services.IEmailService, LaptopStore.Services.EmailService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
