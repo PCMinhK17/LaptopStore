@@ -280,21 +280,21 @@ INSERT INTO Order_Details (order_id, product_id, quantity, price) VALUES
 (10, 10, 1, 45000000);
 
 -- Import Receipts (Phiếu nhập kho)
-INSERT INTO Import_Receipts (staff_id, supplier_name, total_cost) VALUES 
-(2, N'FPT Trading', 500000000),
-(2, N'Digiworld', 300000000),
-(2, N'Viễn Sơn', 150000000),
-(2, N'Petrosetco', 200000000),
-(2, N'FPT Trading', 100000000),
-(2, N'Synnex FPT', 400000000),
-(2, N'Nhà Phân Phối A', 50000000),
-(2, N'Nhà Phân Phối B', 80000000),
-(2, N'Samsung Vina', 120000000),
-(2, N'LG VN', 150000000);
+INSERT INTO Import_Receipts (staff_id, supplier_name, total_cost, status) VALUES 
+(2, N'FPT Trading', 212000000, 'success'),
+(2, N'Digiworld', 300000000, 'success'),
+(2, N'Viễn Sơn', 150000000, 'success'),
+(2, N'Petrosetco', 200000000, 'success'),
+(2, N'FPT Trading', 100000000, 'success'),
+(2, N'Synnex FPT', 400000000, 'success'),
+(2, N'Nhà Phân Phối A', 50000000, 'success'),
+(2, N'Nhà Phân Phối B', 80000000, 'success'),
+(2, N'Samsung Vina', 120000000, 'success'),
+(2, N'LG VN', 0, 'cancel');
 
 -- Import Details
 INSERT INTO Import_Details (receipt_id, product_id, requested_quantity, actual_quantity, import_price) VALUES 
-(1, 1, 10, 10, 20000000), -- Nhập Dell XPS giá vốn 20tr
+(1, 1, 10, 10, 20000000), 
 (1, 2, 5, 4, 28000000),
 (2, 3, 20, 20, 15000000),
 (3, 4, 3, 2, 25000000),
@@ -303,7 +303,7 @@ INSERT INTO Import_Details (receipt_id, product_id, requested_quantity, actual_q
 (6, 7, 20, 20, 11000000),
 (7, 8, 5, 4, 30000000),
 (8, 9, 10, 8, 18000000),
-(9, 10, 5, 0, 38000000);
+(9, 10, 0, 0, 0);
 
 -- Reviews
 INSERT INTO Reviews (user_id, product_id, rating, comment, is_approved) VALUES 

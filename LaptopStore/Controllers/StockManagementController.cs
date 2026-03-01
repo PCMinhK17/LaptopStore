@@ -118,7 +118,7 @@ public class StockManagementController : Controller
             {
                 ProductId = d.ProductId ?? 0,
                 ProductName = d.Product != null ? d.Product.Name : "Không thấy",
-                ImageUrl = d.Product?.ProductImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? "images\\dell-xps-13-9350-2024-1731577899.png",
+                ImageUrl = d.Product?.ProductImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? "/images/image-not-found.jpg",
                 RequestedQuantity = d.RequestedQuantity,
                 ActualQuantity = d.ActualQuantity,
                 ImportPrice = d.ImportPrice
