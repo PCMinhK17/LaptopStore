@@ -269,11 +269,19 @@ public class StockManagementController : Controller
 
         if (receipt == null)
             return NotFound();
-
-        // 🔒 Chỉ xóa trong ngày tạo
-        if (receipt.CreatedAt == null || receipt.CreatedAt.Value.Date != DateTime.Today)
+        // Chỉ cho xóa khi đã confirm
+        if (receipt.Status != "Success")
         {
-            return BadRequest("Chỉ được xóa đơn trong ngày tạo.");
+            TempData["Error"] = "Chỉ được xóa đơn đã được xác nhận!";
+            return RedirectToAction("ByStaff");
+        }
+
+        // 🔒 Chỉ xóa trong ngày confirm
+        if (receipt.DeliveredAt == null ||
+        receipt.DeliveredAt.Value.Date != DateTime.Today)
+        {
+            TempData["Error"] = "Chỉ được xóa trong ngày xác nhận đơn!";
+            return RedirectToAction("ByStaff");
         }
 
         // Nếu đã hoàn tất thì kiểm tra tồn kho
@@ -290,9 +298,9 @@ public class StockManagementController : Controller
                 // 🔒 Không cho xóa nếu kho không đủ để trừ
                 if (product.StockQuantity < detail.ActualQuantity)
                 {
-                    return BadRequest(
-                        $"Không thể xóa. Sản phẩm {product.Name} không đủ tồn kho để hoàn tác."
-                    );
+                    TempData["Error"] = $"Không thể xóa. Sản phẩm {product.Name} không đủ tồn kho để hoàn tác.";
+
+                    return RedirectToAction("ByStaff");
                 }
             }
 
@@ -314,6 +322,7 @@ public class StockManagementController : Controller
 
         await _context.SaveChangesAsync();
 
+        TempData["Success"] = "Xóa đơn thành công!";
         return RedirectToAction("ByStaff");
     }
 

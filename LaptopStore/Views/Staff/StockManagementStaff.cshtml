@@ -11,6 +11,19 @@
     <div>
         <h2 style="display:inline-block">Các đơn nhập hàng</h2>
     </div>
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
     @if (Model == null || Model.Count == 0)
     {
         <p>Không có đơn nhập hàng nào.</p>
@@ -22,7 +35,8 @@
                 <tr>
                     <th>Nhà cung cấp</th>
                     <th>Giá</th>
-                    <th>Ngày</th>
+                    <th>Ngày Tạo Đơn</th>
+                    <th>Ngày Xác Nhận</th>
                     <th>Trạng thái</th>
                     <th></th>
                     <th></th>
@@ -44,9 +58,11 @@
                         <td class="text-danger fw-bold">
                             @string.Format("{0:N0} đ", stock.TotalCost)
                         </td>
-
                         <td>
                             @stock.CreatedAt?.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @stock.DeliveredAt?.ToString("dd/MM/yyyy")
                         </td>
 
                         <td>
@@ -81,7 +97,9 @@
                         </td>
 
                         <td>
-                            @if (stock.CreatedAt.HasValue && stock.CreatedAt.Value.Date == DateTime.Today)
+                            @if (stock.Status == "Success"
+                                                && stock.DeliveredAt.HasValue
+                                                && stock.DeliveredAt.Value.Date == DateTime.Today)
                             {
                                 <form asp-action="Delete"
                                       asp-controller="StockManagement"
