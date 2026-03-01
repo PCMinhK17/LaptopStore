@@ -110,7 +110,7 @@ public class ProductManagementController : Controller
         var product = await _context.Products.OrderByDescending(p => p.Id).FirstOrDefaultAsync();
 
         //Lưu file ảnh
-        string folder = "images\\";
+        string folder = "images";
         string serverFolder = Path.Combine(_webHostEnvironment.WebRootPath, folder);
         Console.WriteLine(serverFolder);
 

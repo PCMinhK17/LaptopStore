@@ -130,10 +130,10 @@ public class StockManagementController : Controller
             case "pending":
                 orderDto.Status = "Đang chờ xử lý";
                 break;
-            case "delivered":
+            case "success":
                 orderDto.Status = "Đã giao hàng";
                 break;
-            case "canceled":
+            case "cancel":
                 orderDto.Status = "Đã hủy";
                 break;
         }

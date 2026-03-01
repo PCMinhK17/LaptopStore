@@ -33,7 +33,18 @@
                         <td><a asp-controller="StockManagement" asp-action="StockDetails" asp-route-id="@stock.Id">@stock.SupplierName</a></td>
                         <td>@stock.TotalCost</td>
                         <td>@stock.CreatedAt</td>
-                        
+                        @switch (stock.Status)
+                        {
+                            case "pending":
+                                <td><span class="badge bg-warning text-dark">Đang chờ</span></td>
+                                break;
+                            case "success":
+                                <td><span class="badge bg-success">Hoàn thành</span></td>
+                                break;
+                            case "cancel":
+                                <td><span class="badge bg-danger">Đã hủy</span></td>
+                                break;
+                        }
                     </tr>
                 }
             </tbody>
