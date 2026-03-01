@@ -135,7 +135,7 @@
                             <td>
                                 <div class="table-product">
                                     <div class="table-product-img">
-                                        <img src="@(product.ProductImages?.FirstOrDefault(i => i.IsThumbnail ?? false)?.ImageUrl ?? "/images/default-product.png")" 
+                                        <img src="@(product.ProductImages?.FirstOrDefault(i => i.IsThumbnail)?.ImageUrl ?? "/images/default-product.png")" 
                                              alt="@product.Name" />
                                     </div>
                                     <div class="table-product-info">
