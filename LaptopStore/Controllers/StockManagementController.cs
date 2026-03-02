@@ -258,6 +258,49 @@ public class StockManagementController : Controller
         return RedirectToAction("ByStaff");
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ConfirmDelete(int id)
+    {
+        var receipt = await _context.ImportReceipts
+            .Include(r => r.ImportDetails)
+            .ThenInclude(d => d.Product)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (receipt == null)
+            return NotFound();
+
+        // 🔒 CHECK ĐIỀU KIỆN GIỐNG DELETE
+        if (receipt.Status != "Success")
+        {
+            TempData["Error"] = "Chỉ được xóa đơn đã được xác nhận!";
+            return RedirectToAction("ByStaff");
+        }
+
+        if (receipt.DeliveredAt == null ||
+            receipt.DeliveredAt.Value.Date != DateTime.Today)
+        {
+            TempData["Error"] = "Chỉ được xóa trong ngày xác nhận đơn!";
+            return RedirectToAction("ByStaff");
+        }
+
+        // 🔒 Kiểm tra tồn kho
+        foreach (var detail in receipt.ImportDetails)
+        {
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.Id == detail.ProductId);
+
+            if (product != null &&
+                product.StockQuantity < detail.ActualQuantity)
+            {
+                TempData["Error"] =
+                    $"Không thể xóa. Sản phẩm {product.Name} không đủ tồn kho để hoàn tác.";
+
+                return RedirectToAction("ByStaff");
+            }
+        }
+
+        return View("~/Views/Staff/StockConfirmDeleteStaff.cshtml", receipt); // Trả về view ConfirmDelete
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]

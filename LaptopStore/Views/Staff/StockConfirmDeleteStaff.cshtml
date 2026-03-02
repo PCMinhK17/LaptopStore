@@ -1,0 +1,135 @@
+﻿@model ImportReceipt
+
+@{
+    ViewData["Title"] = "Xác nhận xóa đơn nhập hàng";
+}
+
+<div class="container mt-5">
+    <div class="card shadow border-danger">
+
+        <!-- HEADER -->
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                XÁC NHẬN XÓA ĐƠN NHẬP
+            </h5>
+            <span class="badge bg-light text-danger">DELETE MODE</span>
+        </div>
+
+        <div class="card-body">
+
+            <!-- WARNING -->
+            <div class="alert alert-danger">
+                ⚠ Hành động này sẽ:
+                <ul class="mb-0 mt-2">
+                    <li>Xóa toàn bộ đơn nhập</li>
+                    <li>Hoàn tác số lượng đã cộng vào kho</li>
+                    <li>Không thể khôi phục lại dữ liệu</li>
+                </ul>
+            </div>
+
+            <!-- ORDER INFO -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <label class="text-muted small d-block">Nhà cung cấp</label>
+                    <p class="fw-bold fs-5">@Model.SupplierName</p>
+                </div>
+
+                <div class="col-md-6 text-md-end">
+                    <label class="text-muted small d-block">Ngày xác nhận</label>
+                    <p class="fw-bold">
+                        @(Model.DeliveredAt?.ToString("dd/MM/yyyy HH:mm") ?? "---")
+                    </p>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <!-- PRODUCT LIST -->
+            <h6 class="fw-bold mb-3 text-danger">
+                <i class="bi bi-box-seam me-2"></i>
+                Sản phẩm sẽ bị hoàn tác tồn kho
+            </h6>
+
+            <div class="d-flex flex-column gap-2">
+
+                @if (Model.ImportDetails != null && Model.ImportDetails.Any())
+                {
+                    foreach (var item in Model.ImportDetails)
+                    {
+                        <div class="card border border-danger-subtle bg-light">
+                            <div class="card-body py-2">
+                                <div class="row align-items-center">
+
+                                    <div class="col">
+                                        <h6 class="mb-0 fw-bold text-dark">
+                                            @item.Product?.Name
+                                        </h6>
+                                    </div>
+
+                                    <div class="col-md-3 text-center">
+                                        <div class="small text-muted">
+                                            Số lượng sẽ bị trừ
+                                        </div>
+                                        <span class="badge bg-danger">
+                                            -@item.ActualQuantity
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-4 text-muted">
+                        Không có sản phẩm nào.
+                    </div>
+                }
+
+            </div>
+
+            <hr class="my-4" />
+
+            <!-- ACTION BUTTONS -->
+            <div class="d-flex justify-content-between align-items-center">
+
+                <a asp-action="ByStaff"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Hủy
+                </a>
+
+                <form asp-action="Delete"
+                      method="post"
+                      onsubmit="return confirm('Bạn chắc chắn muốn xóa đơn này?');">
+
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>
+                        XÓA ĐƠN NHẬP
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-body label {
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bg-light:hover {
+        background-color: #f8d7da !important;
+        transition: background-color 0.2s ease;
+    }
+</style>

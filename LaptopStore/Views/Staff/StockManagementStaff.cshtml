@@ -101,20 +101,12 @@
                                                 && stock.DeliveredAt.HasValue
                                                 && stock.DeliveredAt.Value.Date == DateTime.Today)
                             {
-                                <form asp-action="Delete"
-                                      asp-controller="StockManagement"
-                                      method="post"
-                                      style="display:inline;"
-                                      onsubmit="return confirm('Bạn có chắc muốn xóa đơn này?');">
-
-                                    @Html.AntiForgeryToken()
-
-                                    <input type="hidden" name="id" value="@stock.Id" />
-
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                                        Delete
-                                    </button>
-                                </form>
+                                <a asp-action="ConfirmDelete"
+                                   asp-controller="StockManagement"
+                                   asp-route-id="@stock.Id"
+                                   class="btn btn-outline-danger btn-sm">
+                                    Delete
+                                </a>
                             }
                         </td>
                     </tr>
