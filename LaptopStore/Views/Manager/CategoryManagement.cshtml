@@ -1,5 +1,11 @@
 ﻿@model IEnumerable<LaptopStore.Models.Category>
 
+@{
+    ViewData["Title"] = "Quản lý phân loại";
+    ViewData["Subtitle"] = "Danh sách phân loại";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3>Quản lý phân loại</h3>

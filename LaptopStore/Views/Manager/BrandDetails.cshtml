@@ -1,6 +1,12 @@
 ﻿@model LaptopStore.Models.Brand
 
 @{
+    ViewData["Title"] = "Quản lý thương hiệu";
+    ViewData["Subtitle"] = "Chi tiết thương hiệu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@{
     ViewData["Title"] = "Chi tiết thương hiệu - Quản lý";
     var logo = !string.IsNullOrEmpty(Model.LogoUrl)
         ? Model.LogoUrl
