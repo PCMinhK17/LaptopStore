@@ -146,8 +146,8 @@ namespace LaptopStore.Controllers
                 // Tính toán giá
                 var subtotal = cart.CartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
 
-                decimal shippingFee = 0m;
-                var totalMoney = subtotal + shippingFee;
+                var totalMoney = subtotal;
+
                 var fullAddress = $"{address}, {district}, {province}";
 
                 // Tạo order (gán status và paymentStatus theo mã DB)

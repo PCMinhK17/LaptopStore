@@ -437,19 +437,30 @@
                             @if (User.IsInRole("admin") || User.IsInRole("staff"))
                             {
                                 <li class="nav-item d-flex align-items-center me-3">
-                                    <a class="nav-link text-primary fw-bold" asp-controller="AdminDashboard" asp-action="Index">
-                                        <i class="fas fa-user-shield me-1"></i> Quản trị
-                                    </a>
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <a class="nav-link text-primary fw-bold" asp-controller="AdminDashboard" asp-action="Index">
+                                            <i class="fas fa-user-shield me-1"></i> Quản trị
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="nav-link text-primary fw-bold" asp-controller="StaffDashboard" asp-action="Index">
+                                            <i class="fas fa-user-cog me-1"></i> Nhân viên
+                                        </a>
+                                    }
                                 </li>
                             }
-                            <li class="nav-item d-flex align-items-center me-4">
-                                <span class="navbar-text">
-                                    <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none">
-                                        <i class="fas fa-shopping-cart me-1"></i><strong>Giỏ hàng</strong>
-                                    </a>
-                                </span>
-                            </li>
-                            
+                            else 
+                            {
+                                <li class="nav-item d-flex align-items-center me-4">
+                                    <span class="navbar-text">
+                                        <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none">
+                                            <i class="fas fa-shopping-cart me-1"></i><strong>Giỏ hàng</strong>
+                                        </a>
+                                    </span>
+                                </li>
+                            }
                             <!-- Profile Dropdown -->
                             <li class="nav-item profile-dropdown">
                                 <div class="user-avatar" id="profileAvatar" role="button" 

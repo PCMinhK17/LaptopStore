@@ -34,10 +34,10 @@ public class ProductManagementController : Controller
                 CategoryName = p.Category.Name,
                 Price = p.Price,
                 StockQuantity = p.StockQuantity,
-                ProductImages = p.ProductImages.Select(pi => new ProductImageResponse
+                ProductImages = p.ProductImages.Select(i => new ProductImageResponse
                 {
-                    ImageUrl = pi.ImageUrl,
-                    IsThumbnail = pi.IsThumbnail ?? false
+                    ImageUrl = i.ImageUrl,
+                    IsThumbnail = i.IsThumbnail ?? false
                 }).ToList(),
                 IsActive = p.IsActive
             })
