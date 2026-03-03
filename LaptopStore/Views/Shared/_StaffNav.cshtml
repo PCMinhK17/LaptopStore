@@ -1,0 +1,35 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
+<div class="d-flex flex-column flex-grow-1">
+
+    <a class="navbar-brand d-flex align-items-center mb-4 px-3 text-decoration-none" asp-controller="StockManagement" asp-action="ByStaff">
+        <span class="fs-4 fw-bold text-primary">LaptopStore</span>
+    </a>
+
+    <ul class="nav flex-column nav-pills mb-auto px-2">
+        <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "StockManagement" ? "active" : "text-dark")"
+               asp-controller="StockManagement" asp-action="ByStaff">📦 Quản lý nhập hàng</a>
+        </li>
+    </ul>
+
+    <div class="mt-auto px-3 pb-4">
+        <hr class="mb-3 text-secondary">
+        <div class="d-flex align-items-center mb-3">
+            <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center me-2"
+                 style="min-width: 35px; height: 35px; font-size: 1rem;">
+                <strong>@(User.Identity!.Name?.Substring(0, 1).ToUpper() ?? "U")</strong>
+            </div>
+            <strong class="text-dark text-truncate" title="@User.Identity!.Name">
+                @User.Identity!.Name
+            </strong>
+        </div>
+
+        <a class="btn btn-outline-danger btn-sm w-100 fw-bold"
+           asp-controller="Account" asp-action="Logout">
+            Đăng xuất
+        </a>
+    </div>
+</div>

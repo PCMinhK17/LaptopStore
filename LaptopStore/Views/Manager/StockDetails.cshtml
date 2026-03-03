@@ -97,12 +97,14 @@
                     </div>
                 }
             </div>
-
-            <div class="mt-5 d-flex justify-content-end align-items-center">
-                <a href="@Url.Action("Index", "StockManagement")" class="btn btn-outline-secondary">
+            @if (User.IsInRole("admin"))
+            {
+                <div class="mt-5 d-flex justify-content-end align-items-center">
+                    <a href="@Url.Action("Index", "StockManagement")" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
                 </a>
             </div>
+            }
         </div>
     </div>
 </div>

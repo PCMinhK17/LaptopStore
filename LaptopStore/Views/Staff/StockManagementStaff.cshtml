@@ -1,0 +1,123 @@
+﻿@model List<ImportReceipt>
+@using LaptopStore.Models
+
+@{
+    ViewData["Title"] = "Quản Lý Đơn nhập hàng";
+    ViewData["Subtitle"] = "Theo dõi và xử lý đơn hàng";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
+
+    var currentStatus = ViewBag.CurrentStatus as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
+}
+<html>
+<body>
+    <div>
+        <h2 style="display:inline-block">Các đơn nhập hàng</h2>
+    </div>
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+    @if (Model == null || Model.Count == 0)
+    {
+        <p>Không có đơn nhập hàng nào.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nhà cung cấp</th>
+                    <th>Giá</th>
+                    <th>Ngày Tạo Đơn</th>
+                    <th>Ngày Xác Nhận</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var stock in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="StockManagement"
+                               asp-action="StockDetails"
+                               asp-route-id="@stock.Id"
+                               class="fw-semibold text-decoration-none">
+                                @stock.SupplierName
+                            </a>
+                        </td>
+
+                        <td class="text-danger fw-bold">
+                            @string.Format("{0:N0} đ", stock.TotalCost)
+                        </td>
+                        <td>
+                            @stock.CreatedAt?.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @stock.DeliveredAt?.ToString("dd/MM/yyyy")
+                        </td>
+
+                        <td>
+                            @if (stock.Status == "Success")
+                            {
+                                <span class="badge bg-success">Hoàn thành</span>
+                            }
+                            else if (stock.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">Đang xử lý</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@stock.Status</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (stock.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <a asp-controller="StockManagement"
+                                   asp-action="StockComfirmStaff"
+                                   asp-route-id="@stock.Id"
+                                   class="btn btn-success btn-sm">
+                                    Xác nhận
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (stock.Status == "Success"
+                                                && stock.DeliveredAt.HasValue
+                                                && stock.DeliveredAt.Value.Date == DateTime.Today)
+                            {
+                                <a asp-action="ConfirmDelete"
+                                   asp-controller="StockManagement"
+                                   asp-route-id="@stock.Id"
+                                   class="btn btn-outline-danger btn-sm">
+                                    Delete
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    }
+
+</body>
+</html>
