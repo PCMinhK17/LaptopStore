@@ -1,0 +1,278 @@
+@model LaptopStore.Controllers.StaffDashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = "Tổng quan công việc";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+
+<!-- Stat Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card stat-info animate-slideUp">
+            <div class="stat-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-details">
+                <div class="stat-label">Tổng đơn hàng</div>
+                <div class="stat-value">@Model.TotalOrders.ToString("N0")</div>
+                <div class="stat-change">
+                    <span class="text-success">@Model.CompletedOrders hoàn thành</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card stat-warning animate-slideUp">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-details">
+                <div class="stat-label">Chờ xử lý</div>
+                <div class="stat-value">@Model.PendingOrders.ToString("N0")</div>
+                @if (Model.PendingOrders > 0)
+                {
+                    <div class="stat-change negative">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Cần xử lý ngay</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="stat-change">
+                        <span class="text-success">Không có đơn chờ</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card stat-success animate-slideUp">
+            <div class="stat-icon">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="stat-details">
+                <div class="stat-label">Đang giao hàng</div>
+                <div class="stat-value">@Model.ShippingOrders.ToString("N0")</div>
+                <div class="stat-change">
+                    <span>@Model.ProcessingOrders đang xử lý</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Row -->
+<div class="row g-4 mb-4">
+    <!-- Order Status Chart -->
+    <div class="col-12 col-xl-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Tình trạng đơn hàng
+                </h5>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="chart-container flex-grow-1" style="max-height: 200px;">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+                <div class="mt-3">
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="status-dot" style="background: #f59e0b;"></span>
+                                <span class="small">Chờ xác nhận</span>
+                            </div>
+                            <span class="fw-bold">@Model.PendingOrders</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="status-dot" style="background: #3b82f6;"></span>
+                                <span class="small">Đang xử lý</span>
+                            </div>
+                            <span class="fw-bold">@Model.ProcessingOrders</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="status-dot" style="background: #8b5cf6;"></span>
+                                <span class="small">Đang giao</span>
+                            </div>
+                            <span class="fw-bold">@Model.ShippingOrders</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="status-dot" style="background: #10b981;"></span>
+                                <span class="small">Hoàn thành</span>
+                            </div>
+                            <span class="fw-bold">@Model.CompletedOrders</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="col-12 col-xl-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-receipt"></i>
+                    Đơn hàng gần đây
+                </h5>
+                <a href="@Url.Action("Index", "OrderManagement")" class="btn btn-sm btn-secondary">
+                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentOrders != null && Model.RecentOrders.Any())
+                        {
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                var statusClass = order.Status switch
+                                {
+                                    "pending" => "badge-warning",
+                                    "processing" => "badge-info",
+                                    "shipping" => "badge-primary",
+                                    "delivered" => "badge-success",
+                                    "cancelled" => "badge-danger",
+                                    _ => "badge-light"
+                                };
+                                var statusText = order.Status switch
+                                {
+                                    "pending" => "Chờ xác nhận",
+                                    "processing" => "Đang xử lý",
+                                    "shipping" => "Đang giao",
+                                    "delivered" => "Đã giao",
+                                    "cancelled" => "Đã hủy",
+                                    _ => order.Status
+                                };
+                                <tr>
+                                    <td>
+                                        <span class="fw-semibold">#@order.Id.ToString("D6")</span>
+                                    </td>
+                                    <td>
+                                        <div class="table-user">
+                                            <div class="table-user-avatar">
+                                                @(order.User?.FullName?.Substring(0, 1).ToUpper() ?? "?")
+                                            </div>
+                                            <div class="table-user-info">
+                                                <div class="table-user-name">@order.User?.FullName</div>
+                                                <div class="table-user-email">@order.User?.PhoneNumber</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>@order.CreatedAt?.ToString("dd/MM/yyyy")</div>
+                                        <small class="text-muted">@order.CreatedAt?.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-primary">@order.TotalMoney.ToString("#,##0") ₫</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @statusClass">
+                                            @statusText
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="@Url.Action("Details", "OrderManagement", new { id = order.Id })" 
+                                           class="btn btn-icon btn-sm btn-secondary" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">
+                                            <i class="fas fa-inbox"></i>
+                                        </div>
+                                        <div class="empty-state-title">Chưa có đơn hàng nào</div>
+                                        <p class="empty-state-text">Các đơn hàng mới sẽ hiển thị tại đây</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+    .list-group-item {
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.875rem 1rem;
+        transition: background var(--transition-fast);
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+    
+    .list-group-item:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .chart-container {
+        position: relative;
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+        
+        // Order Status Chart
+        const orderStatusCtx = document.getElementById('orderStatusChart');
+        if (orderStatusCtx) {
+            new Chart(orderStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Chờ xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành'],
+                    datasets: [{
+                        data: [@Model.PendingOrders, @Model.ProcessingOrders, @Model.ShippingOrders, @Model.CompletedOrders],
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+}

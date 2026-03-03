@@ -147,6 +147,7 @@ namespace LaptopStore.Controllers
                 var subtotal = cart.CartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
 
                 var totalMoney = subtotal;
+
                 var fullAddress = $"{address}, {district}, {province}";
 
                 // Tạo order (gán status và paymentStatus theo mã DB)

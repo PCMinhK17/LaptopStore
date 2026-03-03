@@ -187,8 +187,9 @@ GO
 
 -- Users (1 Admin, 9 Customers)
 INSERT INTO Users (email, password, full_name, phone_number, address, role) VALUES 
-('admin@store.com', 'hash_admin_123', N'Nguyễn Văn Quản Lý', '0909000001', N'Hà Nội', 'admin'),
-('user1@gmail.com', 'hash_pass_1', N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'staff'),
+('admin@store.com', 'hash_admin_123', N'Nguyễn Quản Lý', '0909000001', N'Hà Nội', 'admin'),
+('staff@gmail.com', 'hash_staff_123', N'Trần Nhân Viên', '0910000001', N'Sao Hỏa', 'staff'),
+('user1@gmail.com', 'hash_pass_1', N'Trần Thị Khách 1', '0912000001', N'Hồ Chí Minh', 'customer'),
 ('user2@gmail.com', 'hash_pass_2', N'Lê Văn Khách 2', '0912000002', N'Đà Nẵng', 'customer'),
 ('user3@gmail.com', 'hash_pass_3', N'Phạm Thị C', '0912000003', N'Cần Thơ', 'customer'),
 ('user4@gmail.com', 'hash_pass_4', N'Hoàng Văn D', '0912000004', N'Hải Phòng', 'customer'),
@@ -235,7 +236,8 @@ INSERT INTO Product_Images (product_id, image_url, is_thumbnail) VALUES
 (2, '/images/asus-rog-1.jpg', 1), (2, '/images/asus-rog-2.jpg', 0),
 (3, '/images/mac-m1-1.jpg', 1), (4, '/images/hp-spectre-1.jpg', 1),
 (5, '/images/lenovo-legion-1.jpg', 1), (6, '/images/acer-nitro-1.jpg', 1),
-(7, '/images/msi-modern-1.jpg', 1), (8, '/images/lg-gram-1.jpg', 1);
+(7, '/images/msi-modern-1.jpg', 1), (8, '/images/lg-gram-1.jpg', 1),
+(9, '/images/gigabyte-g5-1.jpg', 1), (10, '/images/macbook-m1-1.jpg', 1);
 
 -- Coupons
 INSERT INTO Coupons (code, discount_type, discount_value, min_order_value, usage_limit, end_date) VALUES 
@@ -278,21 +280,21 @@ INSERT INTO Order_Details (order_id, product_id, quantity, price) VALUES
 (10, 10, 1, 45000000);
 
 -- Import Receipts (Phiếu nhập kho)
-INSERT INTO Import_Receipts (staff_id, supplier_name, total_cost) VALUES 
-(2, N'FPT Trading', 500000000),
-(2, N'Digiworld', 300000000),
-(2, N'Viễn Sơn', 150000000),
-(2, N'Petrosetco', 200000000),
-(2, N'FPT Trading', 100000000),
-(2, N'Synnex FPT', 400000000),
-(2, N'Nhà Phân Phối A', 50000000),
-(2, N'Nhà Phân Phối B', 80000000),
-(2, N'Samsung Vina', 120000000),
-(2, N'LG VN', 150000000);
+INSERT INTO Import_Receipts (staff_id, supplier_name, total_cost, status) VALUES 
+(2, N'FPT Trading', 212000000, 'success'),
+(2, N'Digiworld', 300000000, 'success'),
+(2, N'Viễn Sơn', 150000000, 'success'),
+(2, N'Petrosetco', 200000000, 'success'),
+(2, N'FPT Trading', 100000000, 'success'),
+(2, N'Synnex FPT', 400000000, 'success'),
+(2, N'Nhà Phân Phối A', 50000000, 'success'),
+(2, N'Nhà Phân Phối B', 80000000, 'success'),
+(2, N'Samsung Vina', 120000000, 'success'),
+(2, N'LG VN', 0, 'cancel');
 
 -- Import Details
 INSERT INTO Import_Details (receipt_id, product_id, requested_quantity, actual_quantity, import_price) VALUES 
-(1, 1, 10, 10, 20000000), -- Nhập Dell XPS giá vốn 20tr
+(1, 1, 10, 10, 20000000), 
 (1, 2, 5, 4, 28000000),
 (2, 3, 20, 20, 15000000),
 (3, 4, 3, 2, 25000000),
@@ -301,7 +303,7 @@ INSERT INTO Import_Details (receipt_id, product_id, requested_quantity, actual_q
 (6, 7, 20, 20, 11000000),
 (7, 8, 5, 4, 30000000),
 (8, 9, 10, 8, 18000000),
-(9, 10, 5, 0, 38000000);
+(9, 10, 0, 0, 0);
 
 -- Reviews
 INSERT INTO Reviews (user_id, product_id, rating, comment, is_approved) VALUES 
@@ -336,11 +338,11 @@ INSERT INTO Cart_Items (cart_id, product_id, quantity) VALUES
 -- --- DỮ LIỆU MẪU CHO NOTIFICATIONS ---
 
 INSERT INTO Notifications (user_id, title, message, type, is_read, created_at) VALUES 
-(2, N'Đặt hàng thành công', N'Đơn hàng #1 của bạn đã được ghi nhận và đang chờ xử lý.', 'order', 1, GETDATE()),
-(2, N'Đang giao hàng', N'Đơn hàng #1 đang được giao bởi Shipper Nguyễn Văn A.', 'order', 0, GETDATE()),
-(3, N'Khuyến mãi Tết', N'Nhập mã TET2024 để được giảm giá 15% cho Laptop Gaming.', 'promotion', 0, GETDATE()),
-(2, N'Cảnh báo bảo mật', N'Có thiết bị lạ vừa đăng nhập vào tài khoản của bạn.', 'system', 0, GETDATE()),
-(4, N'Hoàn tiền thành công', N'Yêu cầu hoàn tiền cho đơn hàng #5 đã được chấp nhận.', 'order', 1, GETDATE());
+(3, N'Đặt hàng thành công', N'Đơn hàng #1 của bạn đã được ghi nhận và đang chờ xử lý.', 'order', 1, GETDATE()),
+(3, N'Đang giao hàng', N'Đơn hàng #1 đang được giao bởi Shipper Nguyễn Văn A.', 'order', 0, GETDATE()),
+(4, N'Khuyến mãi Tết', N'Nhập mã TET2024 để được giảm giá 15% cho Laptop Gaming.', 'promotion', 0, GETDATE()),
+(3, N'Cảnh báo bảo mật', N'Có thiết bị lạ vừa đăng nhập vào tài khoản của bạn.', 'system', 0, GETDATE()),
+(5, N'Hoàn tiền thành công', N'Yêu cầu hoàn tiền cho đơn hàng #5 đã được chấp nhận.', 'order', 1, GETDATE());
 
 GO
 GO

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Staff Panel</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <!-- Bootstrap (for grid system only) -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Admin CSS (shared styles) -->
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-body">
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <a href="@Url.Action("Index", "StaffDashboard")" class="brand-logo">
+                <div class="brand-icon">
+                    <i class="fas fa-laptop-code"></i>
+                </div>
+                <span class="brand-text">LaptopStore</span>
+            </a>
+            <button class="sidebar-toggle d-none d-lg-flex" onclick="toggleSidebar()">
+                <i class="fas fa-chevron-left" id="toggleIcon"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-menu">
+            <!-- Main Section -->
+            <div class="menu-section">
+                <div class="menu-label">Tổng quan</div>
+                <div class="nav-item">
+                    <a href="@Url.Action("Index", "StaffDashboard")" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StaffDashboard" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Management Section -->
+            <div class="menu-section">
+                <div class="menu-label">Công việc</div>
+                <div class="nav-item">
+                    <a href="@Url.Action("Index", "OrderManagement")" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "OrderManagement" ? "active" : "")">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Đơn hàng</span>
+                        @{
+                            var pendingOrders = ViewBag.PendingOrdersCount ?? 0;
+                            if ((int)pendingOrders > 0)
+                            {
+                                <span class="nav-badge">@pendingOrders</span>
+                            }
+                        }
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="@Url.Action("ByStaff", "StockManagement")" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "StockManagement" ? "active" : "")">
+                        <i class="fas fa-box-open"></i>
+                        <span>Quản Lý Kho</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="adminMain">
+        <!-- Topbar -->
+        <header class="admin-topbar">
+            <div class="topbar-left">
+                <button class="topbar-btn d-lg-none" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-title">
+                    <h1 class="page-title">@ViewData["Title"]</h1>
+                    @if (ViewData["Subtitle"] != null)
+                    {
+                        <p class="page-subtitle">@ViewData["Subtitle"]</p>
+                    }
+                </div>
+            </div>
+            
+            <div class="topbar-right">
+                <!-- Notifications -->
+                <button class="topbar-btn" title="Thông báo">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge-dot"></span>
+                </button>
+                
+                <!-- Theme Toggle -->
+                <button class="topbar-btn theme-toggle" onclick="toggleTheme()" title="Chế độ sáng/tối">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </button>
+                
+                <!-- User Dropdown -->
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-dropdown-toggle" onclick="toggleUserDropdown()">
+                        <div class="user-avatar">
+                            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "S")
+                        </div>
+                        <div class="user-dropdown-info">
+                            <div class="user-dropdown-name">@User.Identity?.Name</div>
+                            <div class="user-dropdown-role">Nhân viên</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-custom">
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user"></i>
+                            Thông tin cá nhân
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/" class="dropdown-item">
+                            <i class="fas fa-store"></i>
+                            Xem trang chủ
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a asp-controller="Account" asp-action="Logout" class="dropdown-item text-danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Đăng xuất
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="admin-content">
+            <!-- Toast Messages -->
+            @if (TempData["ToastMessage"] != null)
+            {
+                <div class="toast-container" id="toastContainer">
+                    <div class="toast toast-@(TempData["ToastType"]?.ToString() == "success" ? "success" : "danger")">
+                        <i class="fas @(TempData["ToastType"]?.ToString() == "success" ? "fa-check-circle text-success" : "fa-exclamation-circle text-danger")"></i>
+                        <div>
+                            <strong>@(TempData["ToastType"]?.ToString() == "success" ? "Thành công!" : "Lỗi!")</strong>
+                            <div>@TempData["ToastMessage"]</div>
+                        </div>
+                        <button onclick="closeToast()" style="background: none; border: none; margin-left: auto; cursor: pointer; color: var(--text-muted);">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+            
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const main = document.getElementById('adminMain');
+            const icon = document.getElementById('toggleIcon');
+            
+            sidebar.classList.toggle('collapsed');
+            document.body.classList.toggle('sidebar-collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+            }
+            
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('show');
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('open');
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('userDropdown');
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('adminTheme', newTheme);
+        }
+
+        function closeToast() {
+            const container = document.getElementById('toastContainer');
+            if (container) {
+                container.style.opacity = '0';
+                setTimeout(() => container.remove(), 300);
+            }
+        }
+
+        setTimeout(closeToast, 5000);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('adminTheme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+
+            if (window.innerWidth >= 1200) {
+                const sidebarCollapsed = localStorage.getItem('adminSidebarCollapsed') === 'true';
+                if (sidebarCollapsed) {
+                    const sidebar = document.getElementById('adminSidebar');
+                    const icon = document.getElementById('toggleIcon');
+                    sidebar.classList.add('collapsed');
+                    document.body.classList.add('sidebar-collapsed');
+                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.add('fa-chevron-right');
+                }
+            }
+        });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

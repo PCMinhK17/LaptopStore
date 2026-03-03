@@ -3,6 +3,8 @@
 
 @{
     ViewData["Title"] = "Chi tiết đơn nhập hàng";
+    ViewData["Subtitle"] = "Chi tiết đơn nhập hàng";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container mt-5">
@@ -55,7 +57,7 @@
                             <div class="card-body py-2">
                                 <div class="row align-items-center">
                                     <div class="col-auto">
-                                        <img src="\@item.ImageUrl" class="rounded border bg-white"
+                                        <img src="@item.ImageUrl" class="rounded border bg-white"
                                              style="width: 50px; height: 50px; object-fit: cover;">
                                     </div>
 
@@ -95,12 +97,14 @@
                     </div>
                 }
             </div>
-
-            <div class="mt-5 d-flex justify-content-end align-items-center">
-                <a href="@Url.Action("Index", "StockManagement")" class="btn btn-outline-secondary">
+            @if (User.IsInRole("admin"))
+            {
+                <div class="mt-5 d-flex justify-content-end align-items-center">
+                    <a href="@Url.Action("Index", "StockManagement")" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
                 </a>
             </div>
+            }
         </div>
     </div>
 </div>

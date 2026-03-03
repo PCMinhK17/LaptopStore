@@ -1,6 +1,13 @@
-﻿<div class="container mt-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+﻿@{
+    ViewData["Title"] = "Chi tiết đơn nhập hàng";
+    ViewData["Subtitle"] = "Chi tiết đơn nhập hàng";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-black text-white">
             <h5 class="mb-0">Đơn nhập hàng mới</h5>
         </div>
         <div class="card-body">
@@ -46,7 +53,7 @@
             </div>
 
             <div class="mt-4 text-end">
-                <a asp-controller="StockManagement" asp-action="Index" class="btn btn-outline-secondary me-2 px-4">Hủy</a>
+                <a asp-controller="StockManagement" asp-action="Index" class="btn btn-outline-secondary border border-2  me-2 px-4">Hủy</a>
                 <button class="btn btn-primary btn-lg px-5" onclick="submitData()">Tạo đơn</button>
             </div>
         </div>
@@ -73,10 +80,10 @@
         if (product.productImages && product.productImages.length) {
             var imageUrl = product.productImages.filter(i => i.isThumbnail == true)
             if (imageUrl.length > 0) {
-                return '\\' + imageUrl[0].imageUrl;
+                return imageUrl[0].imageUrl;
             }
         }
-        return '\\images\\dell-xps-13-9350-2024-1731577899.png';
+        return '/images/image-not-found.jpg';
     }
 
     function showSearch() {
