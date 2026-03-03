@@ -3,6 +3,8 @@
 
 @{
     ViewData["Title"] = "Chi tiết đơn nhập hàng";
+    ViewData["Subtitle"] = "Chi tiết đơn nhập hàng";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container mt-5">

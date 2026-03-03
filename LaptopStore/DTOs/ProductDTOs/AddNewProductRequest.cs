@@ -1,4 +1,4 @@
-﻿using LaptopStore.Models;
+using LaptopStore.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace LaptopStore.DTOs.ProductDTOs;

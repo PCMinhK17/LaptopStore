@@ -1,144 +1,393 @@
-﻿@model LaptopStore.Models.User
+@model LaptopStore.Models.User
+@{
+    ViewData["Title"] = "Tài khoản của tôi";
+    var isEditMode = ViewBag.EditMode as bool? ?? false;
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    // Get avatar URL or generate initial
+    var avatarUrl = Model.AvatarUrl;
+    var avatarLetter = !string.IsNullOrEmpty(Model.FullName) ? Model.FullName.Substring(0, 1).ToUpper() : "U";
+    var userId = Model.Id;
+}
 
 <style>
-    body {
-        background-color: #f5f6f7;
+    /* Chỉ giữ lại những CSS không có sẵn trong Bootstrap hoặc cần custom đặc thù */
+    .bg-gradient-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
-    .profile-sidebar .list-group-item {
-        border: none;
-        cursor: pointer;
-        font-size: 14px;
+    .hover-scale {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .profile-sidebar .list-group-item.active {
-        background-color: #fff0f0;
-        color: #d70018;
-        font-weight: 600;
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
-    .profile-card {
-        border-radius: 10px;
-    }
-
-    .profile-label {
-        width: 200px;
-        color: #6c757d;
-    }
-
-    .avatar {
-        width: 90px;
-        height: 90px;
-        background: #ffe3d5;
-        border-radius: 50%;
-        display: flex;
+    /* Giữ nguyên loading overlay vì Bootstrap không có component tương đương (trừ Modal) */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
         align-items: center;
         justify-content: center;
-        margin: auto;
-        font-size: 30px;
-        color: #ff6a00;
+        z-index: 9999;
+    }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+    .spinner-lg {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>
 
-<div class="container mt-4">
-    <div class="row">
+<div class="container my-4 my-md-5" style="max-width: 900px;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
 
-        <!-- LEFT SIDEBAR -->
-        <div class="col-md-3">
-            <div class="card profile-sidebar shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="fw-bold mb-0">@Model.FullName</h6>
-                    <small class="text-muted">@Model.PhoneNumber</small>
+        <div class="bg-gradient-custom text-white p-4 p-md-5 text-center position-relative">
+            <div class="position-relative d-inline-block hover-scale" style="margin-bottom: 1rem;">
+
+                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto overflow-hidden shadow"
+                     id="headerAvatar"
+                     style="width: 120px; height: 120px; background: rgba(255, 255, 255, 0.2); font-size: 48px; font-weight: 600; border: 5px solid rgba(255, 255, 255, 0.3);">
+                    @if (!string.IsNullOrEmpty(avatarUrl))
+                    {
+                        <img src="~/uploads/avatars/@avatarUrl" alt="@Model.FullName" id="avatarImg" class="avatar-img" />
+                    }
+                    else
+                    {
+                        <span id="avatarLetter">@avatarLetter</span>
+                    }
                 </div>
 
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item active">Thông tin cá nhân</li>
-                    <li class="list-group-item">Đơn hàng của tôi</li>
-                    <li class="list-group-item">Thông báo của tôi</li>
-                    @* <li class="list-group-item text-danger">Đăng xuất</li> *@
-                </ul>
+                <button type="button" class="position-absolute bottom-0 end-0 bg-white text-primary rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center hover-scale"
+                        style="width: 36px; height: 36px; right: 5px !important; bottom: 5px !important;"
+                        onclick="document.getElementById('directAvatarInput').click()"
+                        title="Thay đổi ảnh đại diện">
+                    <i class="fas fa-camera"></i>
+                </button>
+
+                <input type="file" id="directAvatarInput" name="directAvatar" class="d-none"
+                       accept="image/jpeg,image/png,image/gif,image/webp" onchange="uploadAvatarDirect(this)">
             </div>
+
+            <h3 class="fw-bold mb-1">@Model.FullName</h3>
+            <p class="mb-0 text-white opacity-75">@Model.Email</p>
         </div>
 
-        <!-- RIGHT CONTENT -->
-        <div class="col-md-9">
-
-            <!-- VIEW PROFILE -->
-            @if (ViewBag.EditMode == null)
+        <div class="card-body p-4 p-md-5">
+            @if (!isEditMode)
             {
-                <div class="card profile-card shadow-sm p-4">
-                    <h5 class="fw-bold mb-4">Thông tin cá nhân</h5>
-
-                    <table class="table table-borderless">
-                        <tr>
-                            <td class="profile-label">Họ và tên</td>
-                            <td class="fw-semibold">@Model.FullName</td>
-                        </tr>
-                        <tr>
-                            <td class="profile-label">Số điện thoại</td>
-                            <td>@Model.PhoneNumber</td>
-                        </tr>
-                        <tr>
-                            <td class="profile-label">Email</td>
-                            <td>@Model.Email</td>
-                        </tr>
-                        <tr>
-                            <td class="profile-label">Địa chỉ</td>
-                            <td>@Model.Address</td>
-                        </tr>
-                    </table>
-
-                    @* <a href="/User/Profile/@Model.Id?edit=true" *@
-                    <a href="/User/Profile?edit=true"
-                       class="btn btn-danger px-4">
-                        Chỉnh sửa thông tin
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h5 class="fw-bold text-dark mb-0">Thông tin cá nhân</h5>
+                    <a href="/User/Profile?edit=true" class="btn btn-outline-primary rounded-pill px-4 fw-medium hover-scale">
+                        <i class="fas fa-edit me-2"></i>Chỉnh sửa
                     </a>
                 </div>
-            }
 
-            <!-- EDIT PROFILE -->
-            @if (ViewBag.EditMode != null)
-            {
-                <div class="card profile-card shadow-sm p-4">
-                    <h5 class="fw-bold mb-4">Chỉnh sửa thông tin</h5>
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Họ và tên</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium @(string.IsNullOrEmpty(Model.FullName) ? "text-muted fst-italic" : "")">
+                        @(Model.FullName ?? "Chưa cập nhật")
+                    </div>
+                </div>
 
-                    <form method="post" action="/User/Profile">
-                        <input type="hidden" name="Id" value="@Model.Id" />
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Email</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium">@Model.Email</div>
+                </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Họ và tên</label>
-                            <input name="FullName" class="form-control" value="@Model.FullName" />
-                        </div>
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Số điện thoại</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium @(string.IsNullOrEmpty(Model.PhoneNumber) ? "text-muted fst-italic" : "")">
+                        @(Model.PhoneNumber ?? "Chưa cập nhật")
+                    </div>
+                </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Số điện thoại</label>
-                            <input name="PhoneNumber" class="form-control" value="@Model.PhoneNumber" />
-                        </div>
+                <div class="row py-3 border-bottom mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Địa chỉ</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium @(string.IsNullOrEmpty(Model.Address) ? "text-muted fst-italic" : "")">
+                        @(Model.Address ?? "Chưa cập nhật")
+                    </div>
+                </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input class="form-control" value="@Model.Email" disabled />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Địa chỉ</label>
-                            <input name="Address" class="form-control" value="@Model.Address" />
-                        </div>
-
-                        <div class="d-flex gap-3">
-                            <button class="btn btn-danger px-4">Lưu</button>
-                            @* <a href="/User/Profile/@Model.Id" *@
-                            <a href="/User/Profile"
-                               class="btn btn-outline-secondary px-4">
-                                Hủy
-                            </a>
-                        </div>
-                    </form>
+                <div class="row py-3 mb-0">
+                    <div class="col-sm-4 col-md-3 text-muted fw-medium">Ngày tạo</div>
+                    <div class="col-sm-8 col-md-9 text-dark fw-medium">
+                        @(Model.CreatedAt.HasValue? Model.CreatedAt.Value.ToString("dd/MM/yyyy") : "Không có thông tin")
+                    </div>
                 </div>
             }
+            else
+            {
+                <form id="profileForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@Model.Id" />
 
+                    <h5 class="fw-bold text-dark mb-4 border-bottom pb-3">Chỉnh sửa thông tin</h5>
+
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label fw-medium text-dark">Họ và tên <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg fs-6" id="fullName" name="FullName"
+                               value="@Model.FullName" placeholder="Nhập họ và tên" required>
+                        <div class="text-danger small mt-1" id="fullNameError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phoneNumber" class="form-label fw-medium text-dark">Số điện thoại</label>
+                        <input type="tel" class="form-control form-control-lg fs-6" id="phoneNumber" name="PhoneNumber"
+                               value="@Model.PhoneNumber" placeholder="Nhập số điện thoại">
+                        <div class="text-danger small mt-1" id="phoneNumberError"></div>
+                        <div class="form-text">Bỏ trống nếu muốn giữ nguyên</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-medium text-dark">Email</label>
+                        <input type="email" class="form-control form-control-lg fs-6 bg-light text-muted" id="email" value="@Model.Email" disabled readonly>
+                        <div class="form-text">Email không thể thay đổi</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label fw-medium text-dark">Địa chỉ</label>
+                        <input type="text" class="form-control form-control-lg fs-6" id="address" name="Address"
+                               value="@Model.Address" placeholder="Nhập địa chỉ">
+                        <div class="text-danger small mt-1" id="addressError"></div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-primary rounded-pill px-4 fw-medium border-0 hover-scale shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" id="saveBtn" onclick="saveProfile()">
+                            <span class="spinner-border spinner-border-sm me-2 d-none" id="saveSpinner"></span>
+                            <span id="saveBtnText"><i class="fas fa-save me-2"></i>Lưu thay đổi</span>
+                        </button>
+                        <a href="/User/Profile" class="btn btn-light border rounded-pill px-4 fw-medium text-secondary hover-scale">
+                            <i class="fas fa-times me-2"></i>Hủy
+                        </a>
+                    </div>
+                </form>
+            }
         </div>
     </div>
 </div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner-lg"></div>
+</div>
+
+<script>
+    // Show toast notification
+    function showToast(message, type) {
+        const toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(container);
+            
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center border-0 toast-custom ${type === 'error' ? 'text-bg-danger' : 'text-bg-success'}`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            container.appendChild(toastEl);
+            
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+        } else {
+            const toastClass = type === 'error' ? 'text-bg-danger' : 'text-bg-success';
+            toastContainer.innerHTML = `
+                <div class="toast align-items-center border-0 toast-custom ${toastClass}" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            const toastEl = toastContainer.querySelector('.toast');
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+        }
+    }
+
+    // Direct avatar upload from header
+    function uploadAvatarDirect(input) {
+        if (input.files && input.files[0]) {
+            var file = input.files[0];
+            var validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            
+            // Validate file type
+            if (!validTypes.includes(file.type.toLowerCase())) {
+                showToast('Chỉ chấp nhận file ảnh (JPEG, PNG, GIF, WebP)', 'error');
+                input.value = '';
+                return;
+            }
+            
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Kích thước ảnh không được vượt quá 2MB', 'error');
+                input.value = '';
+                return;
+            }
+
+            // Show loading
+            var loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('show');
+
+            var formData = new FormData();
+            formData.append('avatar', file);
+            formData.append('Id', '@userId');
+            formData.append('FullName', '@Model.FullName');
+            formData.append('PhoneNumber', '@(Model.PhoneNumber ?? "")');
+            formData.append('Address', '@(Model.Address ?? "")');
+
+            $.ajax({
+                url: '/User/UpdateProfile',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showToast('Cập nhật ảnh đại diện thành công!', 'success');
+                        
+                        // Update avatar preview
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var avatarImg = document.getElementById('avatarImg');
+                            if (avatarImg) {
+                                avatarImg.src = e.target.result;
+                            } else {
+                                var headerAvatar = document.getElementById('headerAvatar');
+                                headerAvatar.innerHTML = '<img src="' + e.target.result + '" id="avatarImg" />';
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        showToast(response.message || 'Có lỗi xảy ra', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    var errorMsg = 'Có lỗi xảy ra. Vui lòng thử lại.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    showToast(errorMsg, 'error');
+                },
+                complete: function() {
+                    loadingOverlay.classList.remove('show');
+                    input.value = '';
+                }
+            });
+        }
+    }
+
+    // Save profile via AJAX
+    function saveProfile() {
+        var form = document.getElementById('profileForm');
+        var formData = new FormData(form);
+        var saveBtn = document.getElementById('saveBtn');
+        var saveSpinner = document.getElementById('saveSpinner');
+        var saveBtnText = document.getElementById('saveBtnText');
+        var loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Clear previous errors
+        document.querySelectorAll('.validation-msg').forEach(function(el) {
+            el.textContent = '';
+        });
+
+        // Validate FullName
+        var fullName = document.getElementById('fullName').value.trim();
+        if (!fullName) {
+            document.getElementById('fullNameError').textContent = 'Họ và tên không được để trống';
+            return;
+        }
+        if (fullName.length < 2 || fullName.length > 100) {
+            document.getElementById('fullNameError').textContent = 'Họ và tên phải từ 2 đến 100 ký tự';
+            return;
+        }
+
+        // Validate Phone
+        var phoneNumber = document.getElementById('phoneNumber').value.trim();
+        if (phoneNumber) {
+            var phoneRegex = /^[0-9]{9,11}$/;
+            if (!phoneRegex.test(phoneNumber)) {
+                document.getElementById('phoneNumberError').textContent = 'Số điện thoại không hợp lệ (9-11 số)';
+                return;
+            }
+        }
+
+        // Show loading
+        saveSpinner.classList.remove('d-none');
+        saveBtnText.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+        saveBtn.disabled = true;
+        loadingOverlay.classList.add('show');
+
+        $.ajax({
+            url: '/User/UpdateProfile',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast(response.message, 'success');
+                    
+                    // Reload page after short delay
+                    setTimeout(function() {
+                        window.location.href = '/User/Profile';
+                    }, 1500);
+                } else {
+                    showToast(response.message, 'error');
+                }
+            },
+            error: function(xhr) {
+                var errorMsg = 'Có lỗi xảy ra. Vui lòng thử lại.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                showToast(errorMsg, 'error');
+            },
+            complete: function() {
+                saveSpinner.classList.add('d-none');
+                saveBtnText.innerHTML = '<i class="fas fa-save me-2"></i>Lưu thay đổi';
+                saveBtn.disabled = false;
+                loadingOverlay.classList.remove('show');
+            }
+        });
+    }
+</script>

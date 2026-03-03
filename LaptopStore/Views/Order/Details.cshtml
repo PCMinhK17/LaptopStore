@@ -65,14 +65,13 @@
 
             <div class="text-end">
                 <p>Tạm tính: <strong>@Model.Subtotal?.ToString("N0") đ</strong></p>
-                <p>Phí vận chuyển: <strong>@(Model.ShippingFee.HasValue && Model.ShippingFee.Value > 0 ? Model.ShippingFee.Value.ToString("N0") + " đ" : "Miễn phí")</strong></p>
                 <h4>Tổng thanh toán: <strong>@Model.TotalMoney.ToString("N0") đ</strong></h4>
             </div>
 
-            <div class="mt-4">
+            @* <div class="mt-4">
                 <a href="/" class="btn btn-secondary">Quay về trang chủ</a>
                 <a href="/Order/Details/@Model.Id" class="btn btn-primary">Xem lại đơn hàng</a>
-            </div>
+            </div> *@
         </div>
     </div>
 </div>
