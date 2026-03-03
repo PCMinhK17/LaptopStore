@@ -11,8 +11,6 @@ public partial class Order
 
     public decimal? Subtotal { get; set; }
 
-    public decimal? ShippingFee { get; set; }
-
     public string? CouponCode { get; set; }
 
     public decimal? DiscountAmount { get; set; }

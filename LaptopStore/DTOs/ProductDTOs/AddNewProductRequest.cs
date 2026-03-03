@@ -1,4 +1,4 @@
-﻿using LaptopStore.Models;
+using LaptopStore.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace LaptopStore.DTOs.ProductDTOs;
@@ -22,7 +22,7 @@ public class AddNewProductRequest
     [Required(ErrorMessage = "Vui lòng chọn thương hiệu cho laptop")]
     public int? BrandId { get; set; }
 
-    [Required(ErrorMessage = "Vui lòng chọn thương hiệu cho laptop")]
+    [Required(ErrorMessage = "Vui lòng nhập giá cho laptop")]
     public string? Price { get; set; }
 
     public string? Description { get; set; }
@@ -50,7 +50,6 @@ public class AddNewProductRequest
     public string? ScreenSize { get; set; }
 
     [Required(ErrorMessage = "Vui lòng nhập Cân nặng cho laptop")]
-    [StringLength(50, ErrorMessage = "Cân nặng không được dài quá 50 ký tự")]
     public string? Weight { get; set; }
 
     [Required(ErrorMessage = "Vui lòng tải ảnh thumbnail cho laptop")]

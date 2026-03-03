@@ -36,7 +36,7 @@ public class StockManagementController : Controller
     public IActionResult AddNewStockInOrder()
     {
         ViewBag.Staffs = _context.Users.Where(u => u.Role == "staff").ToList();
-        ViewBag.Products = _context.Products.Select(p => new ProductResponse
+        ViewBag.Products = _context.Products.Include(p => p.ProductImages).Select(p => new ProductResponse
         {
             Id = p.Id,
             Name = p.Name,
@@ -56,7 +56,11 @@ public class StockManagementController : Controller
             CreatedAt = p.CreatedAt,
             BrandName = p.Brand != null ? p.Brand.Name : null,
             CategoryName = p.Category != null ? p.Category.Name : null,
-            ProductImages = p.ProductImages
+            ProductImages = p.ProductImages.Select(i => new ProductImageResponse
+            {
+                ImageUrl = i.ImageUrl,
+                IsThumbnail = i.IsThumbnail ?? false
+            }).ToList()
         }).ToList();
         return View("~/Views/Manager/AddNewStockInOrder.cshtml");
     }
@@ -100,13 +104,14 @@ public class StockManagementController : Controller
     [HttpGet]
     public IActionResult StockDetails(int id)
     {
-        var order = _context.ImportReceipts.Include(r => r.ImportDetails).ThenInclude(d => d.Product).FirstOrDefault(r => r.Id == id);
+        var order = _context.ImportReceipts.Include(r => r.ImportDetails).ThenInclude(d => d.Product).ThenInclude(p => p.ProductImages).Include(r => r.Staff).FirstOrDefault(r => r.Id == id);
         if (order == null) {
             return NotFound("Không tìm thấy đơn hàng.");
         }
         var orderDto = new StockInOrderResponse
         {
             SupplierName = order.SupplierName ?? "",
+            StaffName = order.Staff?.FullName ?? "Không thấy",
             TotalCost = order.TotalCost,
             CreatedAt = order.CreatedAt ?? DateTime.Now,
             DeliveredAt = order.DeliveredAt,
@@ -114,6 +119,7 @@ public class StockManagementController : Controller
             {
                 ProductId = d.ProductId ?? 0,
                 ProductName = d.Product != null ? d.Product.Name : "Không thấy",
+                ImageUrl = d.Product?.ProductImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? "/images/image-not-found.jpg",
                 RequestedQuantity = d.RequestedQuantity,
                 ActualQuantity = d.ActualQuantity,
                 ImportPrice = d.ImportPrice
@@ -125,10 +131,10 @@ public class StockManagementController : Controller
             case "pending":
                 orderDto.Status = "Đang chờ xử lý";
                 break;
-            case "delivered":
+            case "success":
                 orderDto.Status = "Đã giao hàng";
                 break;
-            case "canceled":
+            case "cancel":
                 orderDto.Status = "Đã hủy";
                 break;
         }

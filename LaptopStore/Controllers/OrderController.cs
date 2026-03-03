@@ -1,8 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using LaptopStore.Extensions;
+using LaptopStore.Models;
+using LaptopStore.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using LaptopStore.Models;
+using System;
+using System.Linq;
 
 namespace LaptopStore.Controllers
 {
@@ -13,6 +15,18 @@ namespace LaptopStore.Controllers
         public OrderController(LaptopStoreDbContext context)
         {
             _context = context;
+        }
+
+        // GET: /Order
+        public IActionResult Index()
+        {
+            var orders = _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderDetails)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToList();
+
+            return View(orders);
         }
 
         // GET: /Order/Checkout?userId=...
@@ -132,10 +146,8 @@ namespace LaptopStore.Controllers
                 // Tính toán giá
                 var subtotal = cart.CartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
 
-                // Shipping mặc định miễn phí
-                decimal shippingFee = 0m;
+                var totalMoney = subtotal;
 
-                var totalMoney = subtotal + shippingFee;
                 var fullAddress = $"{address}, {district}, {province}";
 
                 // Tạo order (gán status và paymentStatus theo mã DB)
@@ -143,7 +155,6 @@ namespace LaptopStore.Controllers
                 {
                     UserId = userId,
                     Subtotal = subtotal,
-                    ShippingFee = shippingFee,
                     TotalMoney = totalMoney,
                     FullName = fullName,
                     PhoneNumber = phoneNumber,
@@ -249,5 +260,47 @@ namespace LaptopStore.Controllers
 
             return View(order);
         }
+        public IActionResult OrderHistory(string? status)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            var orders = _context.Orders
+                .Where(o => o.UserId == userId)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(status) && status.ToLower() != "all")
+            {
+                orders = orders.Where(o => o.Status.ToLower() == status.ToLower());
+            }
+
+            ViewBag.CurrentStatus = status?.ToLower() ?? "all";
+
+            return View(orders
+                .OrderByDescending(o => o.CreatedAt)
+                .ToList());
+        }
+        [HttpPost]
+        public async Task<IActionResult> Cancel([FromBody] CancelRequest request)
+        {
+            var order = await _context.Orders.FindAsync(request.Id);
+
+            if (order == null)
+                return Json(new { success = false });
+
+            order.Status = "Cancelled";
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
+        }
+
+        public class CancelRequest
+        {
+            public int Id { get; set; }
+        }
+
+
     }
 }
