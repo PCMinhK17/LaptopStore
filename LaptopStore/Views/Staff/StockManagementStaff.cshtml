@@ -2,9 +2,12 @@
 @using LaptopStore.Models
 
 @{
-    ViewData["Title"] = "Đơn nhập hàng";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quản Lý Đơn nhập hàng";
+    ViewData["Subtitle"] = "Theo dõi và xử lý đơn hàng";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
 
+    var currentStatus = ViewBag.CurrentStatus as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
 <html>
 <body>

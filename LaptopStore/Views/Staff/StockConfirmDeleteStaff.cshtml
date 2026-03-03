@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Xác nhận xóa đơn nhập hàng";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
+
+    var currentStatus = ViewBag.CurrentStatus as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
 
 <div class="container mt-5">
