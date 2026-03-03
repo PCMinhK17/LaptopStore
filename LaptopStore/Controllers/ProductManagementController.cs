@@ -17,7 +17,6 @@ public class ProductManagementController : Controller
     {
         _context = context;
         _webHostEnvironment = webHostEnvironment;
-        _context = context;
     }
 
     public async Task<IActionResult> Index(int? pageNumber)
