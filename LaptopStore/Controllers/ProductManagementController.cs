@@ -192,7 +192,7 @@ public class ProductManagementController : Controller
         {
             try 
             {
-                string folder = "images\\";
+                string folder = "images";
                 string serverFolder = Path.Combine(_webHostEnvironment.WebRootPath, folder);
                 
                 string fileName = Guid.NewGuid().ToString() + "_" + CleanFileName(newProduct.ImageFile.FileName);

@@ -80,10 +80,10 @@
         if (product.productImages && product.productImages.length) {
             var imageUrl = product.productImages.filter(i => i.isThumbnail == true)
             if (imageUrl.length > 0) {
-                return '\\' + imageUrl[0].imageUrl;
+                return imageUrl[0].imageUrl;
             }
         }
-        return '\\images\\dell-xps-13-9350-2024-1731577899.png';
+        return '/images/image-not-found.jpg';
     }
 
     function showSearch() {
