@@ -1,0 +1,172 @@
+﻿@model LaptopStore.Models.Brand
+
+@{
+    ViewData["Title"] = "Quản lý thương hiệu";
+    ViewData["Subtitle"] = "Chi tiết thương hiệu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "Chi tiết thương hiệu - Quản lý";
+    var logo = !string.IsNullOrEmpty(Model.LogoUrl)
+        ? Model.LogoUrl
+        : "/images/no-image.png";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Chi tiết thương hiệu</h2>
+        <div class="d-flex gap-2">
+            <a asp-controller="BrandManagement"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                ← Quay lại danh sách
+            </a>
+
+            <a asp-controller="BrandManagement"
+               asp-action="UpdateBrand"
+               asp-route-id="@Model.Id"
+               class="btn btn-primary">
+                Cập nhật thương hiệu
+            </a>
+            <button class="btn btn-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteBrandModal">
+                Xóa thương hiệu
+            </button>
+
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <div class="row g-4">
+
+                <!-- Logo -->
+                <div class="col-md-4 d-flex align-items-center justify-content-center">
+                    <img src="@logo"
+                         alt="@Model.Name"
+                         class="img-fluid rounded shadow"
+                         style="max-height: 250px; object-fit: contain;" />
+                </div>
+
+                <!-- Thông tin thương hiệu -->
+                <div class="col-md-8">
+                    <h4 class="card-title mb-4">@Model.Name</h4>
+
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="text-muted" style="width: 160px;">Quốc gia</td>
+                            <td>@(Model.Origin ?? "-")</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Tổng số sản phẩm</td>
+                            <td>@(Model.Products?.Count ?? 0)</td>
+                        </tr>
+
+                      
+
+                      
+                    </table>
+                    @if (Model.Products != null && Model.Products.Any())
+{
+    <div class="mt-5">
+        <h4 class="mb-4">Sản phẩm thuộc thương hiệu này</h4>
+
+        <div class="row g-4">
+            @foreach (var product in Model.Products)
+            {
+                var thumbnail = product.ProductImages?
+                    .FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl
+                    ?? product.ProductImages?.FirstOrDefault()?.ImageUrl
+                    ?? "/images/no-image.png";
+
+                <div class="col-md-3">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@thumbnail"
+                             class="card-img-top p-3"
+                             style="height: 180px; object-fit: contain;" />
+
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">
+                                @product.Name
+                            </h6>
+
+                            <p class="text-danger fw-bold mb-2">
+                                @String.Format("{0:N0} VND", product.Price)
+                            </p>
+
+                            <a asp-controller="Product"
+                               asp-action="Detail"
+                               asp-route-id="@product.Id"
+                               class="btn btn-sm btn-outline-primary w-100">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="mt-5">
+        <div class="alert alert-warning">
+            Thương hiệu này chưa có sản phẩm nào.
+        </div>
+    </div>
+}
+
+                    <hr />
+
+                   
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Delete Brand Modal -->
+    <div class="modal fade" id="deleteBrandModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn xóa thương hiệu
+                    <strong class="text-danger">@Model.Name</strong> ?
+                    <br />
+                    <small class="text-muted">
+                        Hành động này không thể hoàn tác.
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <form asp-action="DeleteBrandConfirmed" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Hủy
+                        </button>
+
+                        <button type="submit" class="btn btn-danger">
+                            Xóa
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>

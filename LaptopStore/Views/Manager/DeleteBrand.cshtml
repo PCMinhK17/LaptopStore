@@ -1,0 +1,35 @@
+﻿@model Brand
+
+@{
+    ViewData["Title"] = "Quản lý thương hiệu";
+    ViewData["Subtitle"] = "Xóa thương hiệu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">Xác nhận xóa thương hiệu</h4>
+        </div>
+
+        <div class="card-body">
+            <p class="fs-5">
+                Bạn có chắc chắn muốn xóa thương hiệu:
+                <strong class="text-danger">@Model.Name</strong> ?
+            </p>
+
+            <form asp-action="DeleteBrandConfirmed" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">
+                    🗑 Xóa
+                </button>
+
+                <a asp-action="BrandDetail"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-secondary ms-2">
+                    Hủy
+                </a>
+            </form>
+        </div>
+    </div>
+</div>

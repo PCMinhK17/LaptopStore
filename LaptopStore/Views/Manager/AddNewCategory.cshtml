@@ -1,0 +1,52 @@
+﻿@model LaptopStore.DTOs.CategoryDTOs.AddCategoryRequest
+
+@{
+    ViewData["Title"] = "Quản lý phân loại";
+    ViewData["Subtitle"] = "Thêm phân loại mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Thêm phân loại mới</h4>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="AddNewCategory" method="post">
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-bold"></label><span class="text-danger">*</span>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label fw-bold"></label>
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="3"></textarea>
+                </div>
+
+                
+
+                <div class="text-end">
+                    <a asp-action="Index"
+                       class="btn btn-secondary me-2">
+                        Hủy
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-success px-4">
+                        Lưu
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

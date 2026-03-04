@@ -262,7 +262,15 @@ namespace LaptopStore.Controllers
         }
         public IActionResult OrderHistory(string? status)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            int? userId = Identity.GetUserId(User);
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            ViewBag.User = user;
 
             var orders = _context.Orders
                 .Where(o => o.UserId == userId)
