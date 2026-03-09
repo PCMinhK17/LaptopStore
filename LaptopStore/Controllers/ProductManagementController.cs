@@ -1,9 +1,10 @@
+using ClosedXML.Excel;
 using LaptopStore.DTOs.ProductDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ClosedXML.Excel;
 
 namespace LaptopStore.Controllers;
 
@@ -19,12 +20,51 @@ public class ProductManagementController : Controller
         _webHostEnvironment = webHostEnvironment;
     }
 
-    public async Task<IActionResult> Index(int? pageNumber)
+    public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "", int categoryId = 0, int brandId = 0, string status = "all")
     {
+        var statusList = new List<SelectListItem>
+        {
+            new SelectListItem { Value = "all", Text = "Tất cả" },
+            new SelectListItem { Value = "active", Text = "Đang bán" },
+            new SelectListItem { Value = "inactive", Text = "Ngừng bán" },
+            new SelectListItem { Value = "low quantity", Text = "Sắp hết hàng" }
+        };
+
+        ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name", categoryId);
+        ViewBag.Brands = new SelectList(_context.Brands, "Id", "Name", brandId);
+        ViewBag.SearchString = searchString;
+        ViewBag.StatusList = new SelectList(statusList, "Value", "Text", status);
+
         var productsQuery = _context.Products
             .Include(p => p.Category)
             .Include(p => p.Brand)
             .Include(p => p.ProductImages)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            productsQuery = productsQuery.Where(p => p.Name.Contains(searchString)
+                                                  || (p.Sku != null && p.Sku.Contains(searchString)));
+        }
+
+        if (categoryId > 0)
+        {
+            productsQuery = productsQuery.Where(p => p.CategoryId == categoryId);
+        }
+
+        if (brandId > 0)
+        {
+            productsQuery = productsQuery.Where(p => p.BrandId == brandId);
+        }
+
+        if (status != "all")
+        {
+            if (status == "active") productsQuery = productsQuery.Where(p => p.IsActive == true);
+            else if (status == "inactive") productsQuery = productsQuery.Where(p => p.IsActive == false);
+            else if (status == "low quantity") productsQuery = productsQuery.Where(p => p.StockQuantity <= 5).OrderBy(p => p.StockQuantity);
+        }
+
+        var products = productsQuery
             .Select(p => new ProductResponse
             {
                 Id = p.Id,
@@ -40,11 +80,17 @@ public class ProductManagementController : Controller
                     IsThumbnail = i.IsThumbnail ?? false
                 }).ToList(),
                 IsActive = p.IsActive
-            })
-            .OrderByDescending(p => p.Id);
+            });
 
         int pageSize = 10;
-        return View("~/Views/Manager/ProductManagement.cshtml", await PaginatedList<ProductResponse>.CreateAsync(productsQuery, pageNumber ?? 1, pageSize));
+
+        return View("~/Views/Manager/ProductManagement.cshtml",
+                    await PaginatedList<ProductResponse>.CreateAsync(products, pageNumber, pageSize));
+    }
+
+    public IActionResult ResetFilter()
+    {
+        return RedirectToAction("Index");
     }
 
     // GET: /ProductManagement/ExportExcel

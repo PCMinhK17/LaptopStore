@@ -21,52 +21,44 @@
 
 <!-- Filters Card -->
 <div class="card mb-4">
-    <div class="card-body">
+    <form class="card-body">
         <div class="row g-3 align-items-end">
             <div class="col-12 col-md-4 col-lg-3">
                 <label class="form-label">Tìm kiếm</label>
                 <div class="search-input">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Tên sản phẩm, SKU...">
+                    <input type="text" name="searchString" class="form-control" value="@ViewBag.SearchString" placeholder="Tên sản phẩm, SKU...">
                 </div>
             </div>
             <div class="col-6 col-md-3 col-lg-2">
-                <label class="form-label">Danh mục</label>
-                <select class="form-control form-select" id="categoryFilter">
-                    <option value="">Tất cả</option>
-                    <option value="Laptop">Laptop</option>
-                    <option value="Accessory">Phụ kiện</option>
+                <label class="form-label">Phân loại</label>
+                <select name="categoryId" asp-items="ViewBag.Categories" class="form-control form-select" onchange="this.form.submit()">
+                    <option value="0">Tất cả</option>
                 </select>
             </div>
             <div class="col-6 col-md-3 col-lg-2">
                 <label class="form-label">Thương hiệu</label>
-                <select class="form-control form-select" id="brandFilter">
-                    <option value="">Tất cả</option>
-                    @if (ViewBag.Brands != null)
-                    {
-                        foreach (var brand in ViewBag.Brands)
-                        {
-                            <option value="@brand.Name">@brand.Name</option>
-                        }
-                    }
+                <select name="brandId" asp-items="ViewBag.Brands" class="form-control form-select" onchange="this.form.submit()">
+                    <option value="0">Tất cả</option>
                 </select>
             </div>
             <div class="col-6 col-md-3 col-lg-2">
                 <label class="form-label">Trạng thái</label>
-                <select class="form-control form-select" id="statusFilter">
-                    <option value="">Tất cả</option>
-                    <option value="active">Đang bán</option>
-                    <option value="inactive">Ngừng bán</option>
-                    <option value="lowstock">Sắp hết hàng</option>
+                <select name="status" asp-items="ViewBag.StatusList" class="form-control form-select" onchange="this.form.submit()">
                 </select>
             </div>
-            <div class="col-6 col-md-3 col-lg-2">
-                <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">
-                    <i class="fas fa-redo me-1"></i> Đặt lại
+            <div class="col-6 col-md-3 col-lg-1">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i> Tìm
                 </button>
             </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a asp-action="ResetFilter" class="btn btn-secondary w-75">
+                    <i class="fas fa-redo me-1"></i> Đặt lại
+                </a>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <!-- Products Table -->
@@ -172,13 +164,9 @@
                                        class="btn btn-icon btn-sm btn-secondary" title="Xem chi tiết">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="#" class="btn btn-icon btn-sm btn-secondary" title="Chỉnh sửa">
+                                    <a asp-action="UpdateProduct" asp-route-id="@product.Id" class="btn btn-icon btn-sm btn-secondary" title="Chỉnh sửa">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button type="button" class="btn btn-icon btn-sm btn-outline-danger" 
-                                            title="Xóa" onclick="confirmDelete(@product.Id, '@product.Name')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -245,100 +233,3 @@
         </div>
     }
 </div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal-backdrop" id="deleteModalBackdrop"></div>
-<div class="modal" id="deleteModal">
-    <div class="modal-header">
-        <h5 class="modal-title">
-            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-            Xác nhận xóa
-        </h5>
-        <button class="modal-close" onclick="closeDeleteModal()">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-    <div class="modal-body">
-        <p>Bạn có chắc chắn muốn xóa sản phẩm <strong id="deleteProductName"></strong>?</p>
-        <p class="text-muted mb-0">Hành động này không thể hoàn tác.</p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy bỏ</button>
-        <button class="btn btn-danger" id="confirmDeleteBtn">
-            <i class="fas fa-trash me-1"></i> Xóa sản phẩm
-        </button>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        let deleteProductId = null;
-
-        // Search & Filter functionality
-        document.getElementById('searchInput').addEventListener('keyup', filterProducts);
-        document.getElementById('categoryFilter').addEventListener('change', filterProducts);
-        document.getElementById('brandFilter').addEventListener('change', filterProducts);
-        document.getElementById('statusFilter').addEventListener('change', filterProducts);
-
-        function filterProducts() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
-            const brand = document.getElementById('brandFilter').value;
-            const status = document.getElementById('statusFilter').value;
-            
-            const rows = document.querySelectorAll('.product-row');
-            
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                const rowCategory = row.dataset.category;
-                const rowBrand = row.dataset.brand;
-                const rowStatus = row.dataset.status;
-                const rowStock = row.dataset.stock;
-                
-                let show = true;
-                
-                if (search && !text.includes(search)) show = false;
-                if (category && rowCategory !== category) show = false;
-                if (brand && rowBrand !== brand) show = false;
-                if (status === 'active' && rowStatus !== 'active') show = false;
-                if (status === 'inactive' && rowStatus !== 'inactive') show = false;
-                if (status === 'lowstock' && rowStock !== 'lowstock') show = false;
-                
-                row.style.display = show ? '' : 'none';
-            });
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('categoryFilter').value = '';
-            document.getElementById('brandFilter').value = '';
-            document.getElementById('statusFilter').value = '';
-            filterProducts();
-        }
-
-        // Delete Modal
-        function confirmDelete(id, name) {
-            deleteProductId = id;
-            document.getElementById('deleteProductName').textContent = name;
-            document.getElementById('deleteModal').classList.add('show');
-            document.getElementById('deleteModalBackdrop').classList.add('show');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('show');
-            document.getElementById('deleteModalBackdrop').classList.remove('show');
-            deleteProductId = null;
-        }
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            if (deleteProductId) {
-                // Implement delete logic here
-                alert('Chức năng xóa sẽ được triển khai. ID: ' + deleteProductId);
-                closeDeleteModal();
-            }
-        });
-
-        // Close modal on backdrop click
-        document.getElementById('deleteModalBackdrop').addEventListener('click', closeDeleteModal);
-    </script>
-}

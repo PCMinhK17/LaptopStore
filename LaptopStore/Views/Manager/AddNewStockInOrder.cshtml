@@ -36,13 +36,9 @@
             <hr>
 
             <div class="position-relative">
-                @* <div class="">
-                    <span class="input-group-text"><i class="fa fa-search"></i></span>
-                    <input type="text" id="productInput" class="form-control form-control-lg"
-                           placeholder="Nhập tên sản phẩm để tìm kiếm..." oninput="searchProduct()" onfocus="showSearch()">
-                </div> *@
-                <div class="search-container mb-3">
-                    <input type="text" id="productInput" class="form-control search-input" placeholder="Nhập tên sản phẩm để tìm kiếm..."
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="productInput" class="form-control" placeholder="Nhập tên sản phẩm để tìm kiếm..."
                            oninput="searchProduct()" onfocus="showSearch()">
                 </div>
                 <ul id="searchResult" class="list-group position-absolute w-100 shadow-lg d-none"
@@ -106,6 +102,7 @@
     });
 
     function searchProduct() {
+        showSearch();
         const productInputValue = productInput.value.trim().toLowerCase();
 
         if (productInputValue.length < 1) {
@@ -194,7 +191,7 @@
 
                         <div class="col-md-2 text-end">
                             <button type="button" class="btn btn-outline-danger btn-lg px-4" onclick="removeItem(${item.id})">
-                                <i class="bi bi-trash"></i> xóa
+                                <i class="fa fa-trash"></i> xóa
                             </button>
                         </div>
                     </div>
