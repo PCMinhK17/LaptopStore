@@ -51,6 +51,13 @@ namespace LaptopStore.Controllers
                     CreatedAt = u.CreatedAt
                 });
 
+            // Calculate statistics from all users
+            var allUsers = await usersQuery.ToListAsync();
+            ViewBag.TotalCount = allUsers.Count;
+            ViewBag.ActiveCount = allUsers.Count(u => u.Status == "active");
+            ViewBag.PendingCount = allUsers.Count(u => u.Status == "pending");
+            ViewBag.LockedCount = allUsers.Count(u => u.Status == "locked");
+
             int pageSize = 10;
             return View("~/Views/Manager/UserList.cshtml", await PaginatedList<UserViewModel>.CreateAsync(usersQuery, pageNumber ?? 1, pageSize));
         }
@@ -71,6 +78,13 @@ namespace LaptopStore.Controllers
                     Status = u.Status,
                     CreatedAt = u.CreatedAt
                 });
+
+            // Calculate statistics from all users
+            var allUsers = await usersQuery.ToListAsync();
+            ViewBag.TotalCount = allUsers.Count;
+            ViewBag.ActiveCount = allUsers.Count(u => u.Status == "active");
+            ViewBag.PendingCount = allUsers.Count(u => u.Status == "pending");
+            ViewBag.LockedCount = allUsers.Count(u => u.Status == "locked");
 
             int pageSize = 10;
             return View("~/Views/Manager/UserList.cshtml", await PaginatedList<UserViewModel>.CreateAsync(usersQuery, pageNumber ?? 1, pageSize));

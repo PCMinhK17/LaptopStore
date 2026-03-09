@@ -29,7 +29,7 @@
                 <i class="fas @(isStaffList ? "fa-user-tie" : "fa-users")"></i>
             </div>
             <div class="stat-label">Tổng số</div>
-            <div class="stat-value">@Model.TotalItems</div>
+            <div class="stat-value">@ViewBag.TotalCount</div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
@@ -38,7 +38,7 @@
                 <i class="fas fa-user-check"></i>
             </div>
             <div class="stat-label">Đang hoạt động</div>
-            <div class="stat-value">@Model.Count(u => u.Status == "active")</div>
+            <div class="stat-value">@ViewBag.ActiveCount</div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
@@ -47,7 +47,7 @@
                 <i class="fas fa-user-clock"></i>
             </div>
             <div class="stat-label">Chờ duyệt</div>
-            <div class="stat-value">@Model.Count(u => u.Status == "pending")</div>
+            <div class="stat-value">@ViewBag.PendingCount</div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
@@ -56,7 +56,7 @@
                 <i class="fas fa-user-lock"></i>
             </div>
             <div class="stat-label">Đã khóa</div>
-            <div class="stat-value">@Model.Count(u => u.Status == "locked")</div>
+            <div class="stat-value">@ViewBag.LockedCount</div>
         </div>
     </div>
 </div>
@@ -106,7 +106,7 @@
         <h5 class="card-title mb-0">
             <i class="fas @(isStaffList ? "fa-user-tie" : "fa-users")"></i>
             Danh sách @(isStaffList ? "nhân viên" : "người dùng")
-            <span class="badge badge-light ms-2">@Model.TotalItems người</span>
+            <span class="badge badge-light ms-2">@ViewBag.TotalCount người</span>
         </h5>
         <div class="d-flex gap-2">
             <a href="@Url.Action("ExportExcel", new { role = isStaffList ? "staff" : "customer" })" class="btn btn-sm btn-secondary">
@@ -145,7 +145,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{ 
+                    @{
                         int stt = (Model.PageIndex - 1) * 10 + 1;
                     }
                     @foreach (var user in Model)
@@ -246,7 +246,7 @@
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div class="pagination-info">
-                    Hiển thị <strong>@Model.Count</strong> trên tổng số <strong>@Model.TotalItems</strong> @(isStaffList ? "nhân viên" : "người dùng")
+                    Hiển thị <strong>@Model.Count</strong> trên tổng số <strong>@ViewBag.TotalCount</strong> @(isStaffList ? "nhân viên" : "người dùng")
                 </div>
                 <div class="pagination">
                     @if (Model.HasPreviousPage)
@@ -261,26 +261,26 @@
                             <i class="fas fa-chevron-left"></i>
                         </span>
                     }
-                    
+
                     @for (int i = 1; i <= Model.TotalPages && i <= 5; i++)
                     {
-                        <a asp-action="@actionName" 
+                        <a asp-action="@actionName"
                            asp-route-pageNumber="@i"
                            class="pagination-btn @(i == Model.PageIndex ? "active" : "")">
                             @i
                         </a>
                     }
-                    
+
                     @if (Model.TotalPages > 5)
                     {
                         <span class="pagination-btn disabled">...</span>
-                        <a asp-action="@actionName" 
+                        <a asp-action="@actionName"
                            asp-route-pageNumber="@Model.TotalPages"
                            class="pagination-btn @(Model.TotalPages == Model.PageIndex ? "active" : "")">
                             @Model.TotalPages
                         </a>
                     }
-                    
+
                     @if (Model.HasNextPage)
                     {
                         <a asp-action="@actionName" asp-route-pageNumber="@(Model.PageIndex + 1)" class="pagination-btn">
