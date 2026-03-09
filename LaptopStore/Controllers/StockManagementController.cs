@@ -1,9 +1,9 @@
 ﻿using LaptopStore.DTOs.ProductDTOs;
 using LaptopStore.DTOs.StockDTOs;
 using LaptopStore.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace LaptopStore.Controllers;
 
@@ -63,14 +63,60 @@ public class StockManagementController : Controller
         return View("~/Views/Manager/AddNewStockInOrder.cshtml");
     }
 
+    [HttpPost] 
+    public IActionResult AddNewStockInOrder(string supplierName, int staffId, string itemsJson)
+    {
+        if (string.IsNullOrEmpty(itemsJson)) return BadRequest("Danh sách trống");
+
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var items = JsonSerializer.Deserialize<List<StockInItemDto>>(itemsJson, options);
+
+        Console.WriteLine($"Have {items?.Count ?? 0} item before confirm!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+        var model = new StockInOrderRequest
+        {
+            SupplierName = supplierName,
+            StaffId = staffId,
+            StaffName = _context.Users.Where(u => u.Id == staffId).Select(u => u.FullName).FirstOrDefault() ?? "Không thấy",
+            Items = items.Select(i => new StockInItemRequest
+            {
+                Product = new ProductResponse
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Sku = i.Sku,
+                    BrandName = i.BrandName,
+                    CategoryName = i.CategoryName,
+                    Price = i.Price,
+                    OldPrice = i.OldPrice,
+                    StockQuantity = i.StockQuantity,
+                    Description = i.Description,
+                    ShortDescription = i.ShortDescription,
+                    Cpu = i.Cpu,
+                    Ram = i.Ram,
+                    HardDrive = i.HardDrive,
+                    Gpu = i.Gpu,
+                    ScreenSize = i.ScreenSize,
+                    Weight = i.Weight,
+                    IsActive = i.IsActive,
+                    ProductImages = i.ProductImages,
+                    CreatedAt = i.CreatedAt
+                },
+                Quantity = i.Quantity
+            }).ToList()
+        };
+
+        return View("~/Views/Manager/ConfirmAddNewStockInOrder.cshtml", model);
+    }
+
     [HttpPost]
-    public IActionResult AddNewStockInOrder([FromBody] StockInOrderRequest request)
+    public IActionResult ConfirmAddNewStockInOrder(StockInOrderRequest request)
     {
         if (request == null || request.Items == null || request.Items.Count == 0)
         {
             return BadRequest("Dữ liệu đơn hàng không hợp lệ.");
         }
-
+ 
         var newImportReceipt = new ImportReceipt
         {
             SupplierName = request.SupplierName,
@@ -88,7 +134,7 @@ public class StockManagementController : Controller
             var importDetail = new ImportDetail
             {
                 ReceiptId = importReceiptId,
-                ProductId = item.ProductId,
+                ProductId = item.Product.Id,
                 RequestedQuantity = item.Quantity,
                 ActualQuantity = 0
             };
@@ -99,6 +145,7 @@ public class StockManagementController : Controller
 
         return Ok(new { message = "Lưu đơn hàng thành công"});
     }
+
 
     [HttpGet]
     public IActionResult StockDetails(int id)

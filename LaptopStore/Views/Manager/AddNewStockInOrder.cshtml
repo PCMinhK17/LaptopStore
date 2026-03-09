@@ -7,7 +7,7 @@
 
 <div class="container mt-5">
     <div class="card shadow">
-        <div class="card-header bg-black text-white">
+        <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Đơn nhập hàng mới</h5>
         </div>
         <div class="card-body">
@@ -36,10 +36,14 @@
             <hr>
 
             <div class="position-relative">
-                <div class="input-group mb-3">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                @* <div class="">
+                    <span class="input-group-text"><i class="fa fa-search"></i></span>
                     <input type="text" id="productInput" class="form-control form-control-lg"
                            placeholder="Nhập tên sản phẩm để tìm kiếm..." oninput="searchProduct()" onfocus="showSearch()">
+                </div> *@
+                <div class="search-container mb-3">
+                    <input type="text" id="productInput" class="form-control search-input" placeholder="Nhập tên sản phẩm để tìm kiếm..."
+                           oninput="searchProduct()" onfocus="showSearch()">
                 </div>
                 <ul id="searchResult" class="list-group position-absolute w-100 shadow-lg d-none"
                     style="z-index: 1000; max-height: 300px; overflow-y: auto;" onmousedown="handleMouseDown()">
@@ -217,9 +221,8 @@
         }
     }
 
-    async function submitData() {
-
-        const supplierName = document.getElementById('input-supplier-name').value.trim();
+     async function submitData() {
+        const supplierName = document.getElementById('input-supplier-name').value;
         const staffId = document.getElementById('input-staff-id').value;
 
         if (!supplierName) {
@@ -235,32 +238,26 @@
             return;
         }
 
-        const orderData = {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/StockManagement/AddNewStockInOrder';
+
+
+        const data = {
             supplierName: supplierName,
-            staffId: parseInt(staffId),
-            items: selectedList.map(item => ({
-                productId: item.id,
-                quantity: item.quantity
-            }))
+            staffId: staffId,
+            itemsJson: JSON.stringify(selectedList)
         };
 
-        console.log("Dữ liệu gửi đi:", orderData);
-
-        try {
-            const response = await fetch('/StockManagement/AddNewStockInOrder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            });
-
-            if (response.ok) {
-                alert("Tạo đơn hàng thành công!");
-                window.location.href = "/StockManagement/Index";
-            } else {
-                alert("Có lỗi xảy ra khi tạo đơn.");
-            }
-        } catch (error) {
-            console.error("Lỗi:", error);
+        for (const key in data) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = data[key];
+            form.appendChild(input);
         }
+
+        document.body.appendChild(form);
+        form.submit(); 
     }
 </script>

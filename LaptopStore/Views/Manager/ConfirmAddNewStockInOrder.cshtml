@@ -1,0 +1,89 @@
+﻿@using LaptopStore.DTOs.StockDTOs;
+@model StockInOrderRequest;
+
+@{
+    ViewData["Title"] = "Chi tiết đơn nhập hàng";
+    ViewData["Subtitle"] = "Xác nhận đơn nhập hàng mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Xác nhận đơn nhập hàng mới</h5>
+        </div>
+        <form class="card-body" asp-controller="StockManagement" asp-action="ConfirmAddNewStockInOrder" enctype="multipart/form-data" method="post">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nhà cung cấp</label>
+                    <input class="form-control" asp-for="SupplierName" readonly />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nhân viên phụ trách <span class="text-danger">*</span></label>
+                    <input class="form-control" asp-for="StaffName" readonly />
+                    <input class="visually-hidden" asp-for="StaffId" readonly />
+                </div>
+            </div>
+
+            <hr>
+
+            <div id="selectedContainer" class="row row-cols-1 g-3">
+                @* @foreach (var item in Model.Items)
+                {
+                    <div class="card shadow-sm border-start border-primary border-1">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <img src="@(item.Product.ProductImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? "AAAAAAAAA")" class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                </div>
+
+                                <div class="col">
+                                    <h6 class="mb-0 fw-bold">@item.Product.Name</h6>
+                                    <small class="text-muted">SKU: @item.Product.Sku</small>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="input-group input-group-sm justify-content-center">
+                                        <label class="form-label text-center mx-2">Số lượng: </label>
+                                        <input asp-for="@item.Quantity" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                } *@
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    <div class="card shadow-sm border-start border-primary border-1">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <input class="visually-hidden" asp-for="Items[i].Product.Id" readonly />
+                                <div class="col-auto">
+                                    <img src="@(Model.Items[i].Product.ProductImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? "AAAAAAAAA")" class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                </div>
+
+                                <div class="col">
+                                    <h6 class="mb-0 fw-bold">@Model.Items[i].Product.Name</h6>
+                                    <small class="text-muted">SKU: @Model.Items[i].Product.Sku</small>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="input-group input-group-sm justify-content-center">
+                                        <label class="form-label text-center mx-2">Số lượng: </label>
+                                        <input asp-for="Items[i].Quantity" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="mt-4 text-end">
+                    <a asp-controller="StockManagement" asp-action="Index" class="btn btn-outline-secondary me-2 px-4">Hủy</a>
+                    <button class="btn btn-primary btn-lg px-5">Xác nhận</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
