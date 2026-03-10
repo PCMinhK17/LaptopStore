@@ -21,7 +21,6 @@
     </div>
 </div>
 
-<<<<<<< HEAD
 <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post" enctype="multipart/form-data" id="addProductForm">
     <div class="row g-4">
         <!-- Main Content -->
@@ -33,60 +32,6 @@
                         <i class="fas fa-info-circle"></i>
                         Thông tin cơ bản
                     </h5>
-=======
-@* @model Product;
-
-<html>
-<head>
-    <style>
-        .form-inline-block {
-            display: inline-block;
-            margin-right: 1rem
-        }
-        .form-small {
-            height: 2rem;
-            margin-top: 0.2rem
-        }
-        .form-big {
-            height: 4rem;
-            margin-top: 0.2rem
-        }
-        .form-label {
-            width: 8rem;
-        }
-        .form-field {
-            width: 10rem;
-        }
-    </style>
-</head>
-
-<body>
-    <
-    >Thêm sản phẩm mới</h2>
-    <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post">
-        <div style="display: inline-block">
-            <div class="form-inline-block">
-                <div class="form-inline-block">
-                    <div class="form-label form-small">
-                        <label for="Name">Tên sản phẩm:</label>
-                    </div>
-                    <div class="form-label form-small">
-                        <label for="Brand">Thương hiệu:</label>
-                    </div>
-                    <div class="form-label form-big">
-                        <label for="Description">Thông tin chi tiết:</label>
-                    </div>
-                    <div class="form-label form-small">
-                        <label for="Cpu">Cpu:</label>
-                    </div>
-                    <div class="form-label form-small">
-                        <label for="HardDrive">HardDrive:</label>
-                    </div>
-                    <div class="form-label form-small">
-                        <label for="ScreenSize">Kích cỡ màn hình:</label>
-                    </div>
-
->>>>>>> e22dda0 (fix: Cancel Order)
                 </div>
                 <div class="card-body">
                     <div class="row g-4">
@@ -221,14 +166,14 @@
                         <div class="col-12">
                             <div class="form-group mb-0">
                                 <label asp-for="ShortDescription" class="form-label">Mô tả ngắn</label>
-                                <textarea asp-for="ShortDescription" class="form-control" rows="2" 
+                                <textarea asp-for="ShortDescription" class="form-control" rows="2"
                                           placeholder="Mô tả ngắn gọn về sản phẩm (hiển thị ở danh sách)"></textarea>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="form-group mb-0">
                                 <label asp-for="Description" class="form-label">Mô tả chi tiết</label>
-                                <textarea asp-for="Description" class="form-control" rows="5" 
+                                <textarea asp-for="Description" class="form-control" rows="5"
                                           placeholder="Mô tả đầy đủ về sản phẩm, tính năng, ưu điểm..."></textarea>
                             </div>
                         </div>
@@ -340,47 +285,47 @@
         align-items: center;
         justify-content: center;
     }
-    
-    .upload-area:hover {
-        border-color: var(--primary-400);
-        background: var(--primary-50);
-    }
-    
-    .upload-area.has-image {
-        padding: 0;
-        border-style: solid;
-    }
-    
+
+        .upload-area:hover {
+            border-color: var(--primary-400);
+            background: var(--primary-50);
+        }
+
+        .upload-area.has-image {
+            padding: 0;
+            border-style: solid;
+        }
+
     .upload-icon {
         font-size: 3rem;
         color: var(--text-muted);
         margin-bottom: 12px;
     }
-    
+
     .upload-text {
         font-weight: 600;
         color: var(--text-secondary);
         margin-bottom: 4px;
     }
-    
+
     .upload-hint {
         font-size: 0.8rem;
         color: var(--text-muted);
     }
-    
+
     .upload-preview {
         width: 100%;
         height: 200px;
         position: relative;
     }
-    
-    .upload-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: var(--radius-lg);
-    }
-    
+
+        .upload-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: var(--radius-lg);
+        }
+
     .remove-image {
         position: absolute;
         top: 8px;
@@ -398,11 +343,11 @@
         font-size: 0.8rem;
         transition: all var(--transition-fast);
     }
-    
-    .remove-image:hover {
-        background: var(--danger-600);
-        transform: scale(1.1);
-    }
+
+        .remove-image:hover {
+            background: var(--danger-600);
+            transform: scale(1.1);
+        }
 </style>
 
 @section Scripts {
@@ -410,18 +355,18 @@
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                
+
                 reader.onload = function(e) {
                     document.getElementById('previewImg').src = e.target.result;
                     document.getElementById('uploadPreview').style.display = 'block';
                     document.getElementById('uploadPlaceholder').style.display = 'none';
                     document.getElementById('uploadArea').classList.add('has-image');
                 }
-                
+
                 reader.readAsDataURL(input.files[0]);
             }
         }
-        
+
         function removeImage(event) {
             event.stopPropagation();
             document.getElementById('imageInput').value = '';
@@ -429,24 +374,24 @@
             document.getElementById('uploadPlaceholder').style.display = 'block';
             document.getElementById('uploadArea').classList.remove('has-image');
         }
-        
+
         // Drag and drop support
         const uploadArea = document.getElementById('uploadArea');
-        
+
         uploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
             this.classList.add('dragover');
         });
-        
+
         uploadArea.addEventListener('dragleave', function(e) {
             e.preventDefault();
             this.classList.remove('dragover');
         });
-        
+
         uploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
             this.classList.remove('dragover');
-            
+
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
                 const input = document.getElementById('imageInput');
