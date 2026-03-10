@@ -299,7 +299,7 @@ namespace LaptopStore.Controllers
 
             order.Status = "Cancelled";
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();   // ❗ BẮT BUỘC
 
             return Json(new { success = true });
         }

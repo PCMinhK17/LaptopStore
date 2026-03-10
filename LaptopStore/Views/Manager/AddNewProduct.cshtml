@@ -21,6 +21,7 @@
     </div>
 </div>
 
+<<<<<<< HEAD
 <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post" enctype="multipart/form-data" id="addProductForm">
     <div class="row g-4">
         <!-- Main Content -->
@@ -32,6 +33,60 @@
                         <i class="fas fa-info-circle"></i>
                         Thông tin cơ bản
                     </h5>
+=======
+@* @model Product;
+
+<html>
+<head>
+    <style>
+        .form-inline-block {
+            display: inline-block;
+            margin-right: 1rem
+        }
+        .form-small {
+            height: 2rem;
+            margin-top: 0.2rem
+        }
+        .form-big {
+            height: 4rem;
+            margin-top: 0.2rem
+        }
+        .form-label {
+            width: 8rem;
+        }
+        .form-field {
+            width: 10rem;
+        }
+    </style>
+</head>
+
+<body>
+    <
+    >Thêm sản phẩm mới</h2>
+    <form asp-controller="ProductManagement" asp-action="AddNewProduct" method="post">
+        <div style="display: inline-block">
+            <div class="form-inline-block">
+                <div class="form-inline-block">
+                    <div class="form-label form-small">
+                        <label for="Name">Tên sản phẩm:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Brand">Thương hiệu:</label>
+                    </div>
+                    <div class="form-label form-big">
+                        <label for="Description">Thông tin chi tiết:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="Cpu">Cpu:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="HardDrive">HardDrive:</label>
+                    </div>
+                    <div class="form-label form-small">
+                        <label for="ScreenSize">Kích cỡ màn hình:</label>
+                    </div>
+
+>>>>>>> e22dda0 (fix: Cancel Order)
                 </div>
                 <div class="card-body">
                     <div class="row g-4">

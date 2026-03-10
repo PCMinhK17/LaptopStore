@@ -214,9 +214,11 @@
 
     </div>
 </div>
-@* <script>
+<script>
     function toggleDetail(id) {
         var detail = document.getElementById("detail-" + id);
+
+        if (!detail) return;
 
         if (detail.style.display === "none" || detail.style.display === "") {
             detail.style.display = "block";
@@ -224,12 +226,28 @@
             detail.style.display = "none";
         }
     }
-
     function cancelOrder(event, id) {
-        event.stopPropagation(); // tránh mở detail khi bấm huỷ
+        event.stopPropagation(); 
 
-        if (confirm("Bạn có chắc muốn huỷ đơn này?")) {
-            window.location.href = "/Order/Cancel?id=" + id;
-        }
+        if (!confirm("Bạn có chắc muốn huỷ đơn này?"))
+            return;
+
+        fetch('/Order/Cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Huỷ đơn thành công!");
+                location.reload(); // reload để cập nhật status
+            } else {
+                alert("Huỷ đơn thất bại!");
+            }
+        })
+        .catch(err => console.error(err));
     }
-</script> *@
+</script>
