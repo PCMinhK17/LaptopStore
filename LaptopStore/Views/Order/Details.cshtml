@@ -1,4 +1,4 @@
-﻿@* Views/Order/Details.cshtml *@
+@* Views/Order/Details.cshtml *@
 @model LaptopStore.Models.Order
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
@@ -27,8 +27,121 @@
             </div>
 
             <div class="mb-3">
-                <strong>Phương thức thanh toán:</strong> @Model.PaymentMethod<br />
+                <strong>Phương thức thanh toán:</strong> 
+                @if (Model.PaymentMethod == "vietqr")
+                {
+                    <span>Chuyển khoản ngân hàng (SEPay)</span>
+                }
+                else if (Model.PaymentMethod == "cod")
+                {
+                    <span>Thanh toán khi nhận hàng (COD)</span>
+                }
+                else
+                {
+                    @Model.PaymentMethod
+                }
+                <br />
+                <strong>Trạng thái thanh toán:</strong>
+                @if (Model.PaymentStatus == "paid")
+                {
+                    <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Đã thanh toán</span>
+                }
+                else
+                {
+                    <span class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i>Chưa thanh toán</span>
+                }
             </div>
+
+            @if (Model.PaymentMethod == "vietqr" && Model.PaymentStatus == "unpaid")
+            {
+                var bankId = ViewBag.SePayBankId;
+                var accountNo = ViewBag.SePayAccountNo;
+                var accountName = ViewBag.SePayAccountName;
+                var amount = Model.TotalMoney.ToString("0");
+                var addInfo = "Thanh toan don hang " + Model.Id;
+                
+                // Sử dụng trình tạo QR của SEPay
+                var qrUrl = $"https://qr.sepay.vn/img?acc={accountNo}&bank={bankId}&amount={amount}&des={addInfo}";
+
+                <div class="card mb-4 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-qrcode me-2"></i>Thông tin chuyển khoản</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <p>Vui lòng quét mã QR dưới đây qua ứng dụng ngân hàng của bạn để thanh toán:</p>
+                        <img src="@qrUrl" alt="VietQR SEPay" class="img-fluid mb-3 shadow-sm border" style="max-width: 300px; border-radius: 8px;" />
+                        <div class="text-start" style="max-width: 400px; margin: 0 auto; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                            <p class="mb-1"><strong>Ngân hàng:</strong> @bankId</p>
+                            <p class="mb-1"><strong>Số tài khoản:</strong> <span class="fw-bold text-primary">@accountNo</span></p>
+                            <p class="mb-1"><strong>Chủ tài khoản:</strong> @accountName</p>
+                            <p class="mb-1"><strong>Số tiền:</strong> <span class="text-danger fw-bold">@Model.TotalMoney.ToString("N0") đ</span></p>
+                            <p class="mb-0"><strong>Nội dung:</strong> <span class="fw-bold">@addInfo</span></p>
+                        </div>
+                        
+                        <div class="mt-3 alert alert-info text-start d-flex align-items-center" id="paymentStatusAlert">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span>Hệ thống đang chờ thanh toán. Trạng thái sẽ được cập nhật tự động. (Kiểm tra mỗi 5s)</span>
+                        </div>
+                        
+                        <button id="btnCheckPayment" class="btn btn-outline-primary mt-2">
+                            <i class="fas fa-sync-alt me-1"></i> Tôi đã chuyển khoản (Kiểm tra ngay)
+                        </button>
+                    </div>
+                </div>
+
+                <script>
+                    function checkPaymentStatus(isManual = false) {
+                        const btn = document.getElementById('btnCheckPayment');
+                        if (isManual && btn) {
+                            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang kiểm tra...';
+                            btn.disabled = true;
+                        }
+
+                        fetch('/Order/CheckPaymentStatus?orderId=@Model.Id')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success && data.isPaid) {
+                                    const alertBox = document.getElementById('paymentStatusAlert');
+                                    alertBox.className = 'mt-3 alert alert-success text-start';
+                                    alertBox.innerHTML = '<i class="fas fa-check-circle me-2"></i> Thanh toán thành công! Trình duyệt sẽ tự động tải lại trang...';
+                                    
+                                    if (btn) btn.style.display = 'none';
+
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 2000);
+                                } else {
+                                    if (isManual && btn) {
+                                        setTimeout(() => {
+                                            btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Tôi đã chuyển khoản (Kiểm tra ngay)';
+                                            btn.disabled = false;
+                                        }, 500); // delay một chút cho người dùng thấy có bấm
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error checking payment:', error);
+                                if (isManual && btn) {
+                                    btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Tôi đã chuyển khoản (Kiểm tra ngay)';
+                                    btn.disabled = false;
+                                }
+                            });
+                    }
+
+                    // Polling mỗi 5 giây
+                    const poller = setInterval(() => checkPaymentStatus(false), 5000);
+
+                    // Khi người dùng bấm nút kiểm tra
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const btnCheck = document.getElementById('btnCheckPayment');
+                        if (btnCheck) {
+                            btnCheck.addEventListener('click', () => checkPaymentStatus(true));
+                        }
+                    });
+                </script>
+            }
 
             <div class="mb-3">
                 <strong>Dự kiến giao hàng:</strong>

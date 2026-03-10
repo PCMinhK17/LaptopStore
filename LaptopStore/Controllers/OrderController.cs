@@ -1,4 +1,4 @@
-﻿using LaptopStore.Extensions;
+using LaptopStore.Extensions;
 using LaptopStore.Models;
 using LaptopStore.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +11,12 @@ namespace LaptopStore.Controllers
     public class OrderController : Controller
     {
         private readonly LaptopStoreDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public OrderController(LaptopStoreDbContext context)
+        public OrderController(LaptopStoreDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: /Order
@@ -258,6 +260,15 @@ namespace LaptopStore.Controllers
             ViewBag.EstFrom = today.AddDays(processingDays + shippingMinDays);
             ViewBag.EstTo = today.AddDays(processingDays + shippingMaxDays);
 
+            // Pass SePay settings if payment is by QR
+            if (order.PaymentMethod == "vietqr" && order.PaymentStatus == "unpaid")
+            {
+                var sePaySection = _configuration.GetSection("SePay");
+                ViewBag.SePayBankId = sePaySection["BankId"];
+                ViewBag.SePayAccountNo = sePaySection["AccountNo"];
+                ViewBag.SePayAccountName = sePaySection["AccountName"];
+            }
+
             return View(order);
         }
         public IActionResult OrderHistory(string? status)
@@ -289,6 +300,67 @@ namespace LaptopStore.Controllers
                 .OrderByDescending(o => o.CreatedAt)
                 .ToList());
         }
+        [HttpGet]
+        public async Task<IActionResult> CheckPaymentStatus(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) return Json(new { success = false, message = "Not found" });
+            if (order.PaymentStatus == "paid") return Json(new { success = true, isPaid = true });
+
+            var sepayToken = _configuration["SePay:ApiToken"];
+            if (string.IsNullOrEmpty(sepayToken) || sepayToken == "YOUR_SEPAY_API_TOKEN")
+            {
+                // Để thuận tiện test nếu chưa có token, trả về isPaid = false
+                return Json(new { success = true, isPaid = false, message = "Missing token" });
+            }
+
+            try
+            {
+                using var client = new System.Net.Http.HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + sepayToken);
+                var response = await client.GetAsync("https://my.sepay.vn/userapi/transactions/list?limit=10");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    var data = System.Text.Json.JsonDocument.Parse(responseString);
+                    if (data.RootElement.TryGetProperty("transactions", out var transactions))
+                    {
+                        var expectedAmount = order.TotalMoney;
+                        var orderIdStr = order.Id.ToString();
+
+                        foreach (var trans in transactions.EnumerateArray())
+                        {
+                            var content = trans.GetProperty("transaction_content").GetString()?.ToLower() ?? "";
+                            
+                            // Lượng tiền vào amount_in kiểu chuỗi
+                            var amountInStr = trans.GetProperty("amount_in").GetString();
+                            decimal amountIn = 0;
+                            if (!string.IsNullOrEmpty(amountInStr))
+                            {
+                                decimal.TryParse(amountInStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out amountIn);
+                            }
+
+                            // Kiểm tra nội dung chuyển khoản có chứa ID đơn hàng và số tiền bằng hoặc lớn hơn tổng tiền
+                            if (content.Contains(orderIdStr) && amountIn >= expectedAmount)
+                            {
+                                order.PaymentStatus = "paid";
+                                await _context.SaveChangesAsync();
+                                return Json(new { success = true, isPaid = true });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi tại đây
+                return Json(new { success = false, message = ex.Message });
+            }
+
+            return Json(new { success = true, isPaid = false });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Cancel([FromBody] CancelRequest request)
         {
