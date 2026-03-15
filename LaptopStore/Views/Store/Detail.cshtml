@@ -79,6 +79,108 @@
                             }
                         </form>
                     </div>
+                    <!-- Form đánh giá -->
+                    <div class="row mt-4">
+                        <p>
+                            <h4>
+                                Đánh giá trung bình:
+                                <span class="text-warning">
+                                    ⭐ @ViewBag.AvgRating / 5
+                                </span>
+                            </h4>
+                        </p>
+                        <div class="col-md-9">
+                            <p>5⭐ (@ViewBag.Rating5)</p>
+                            <p>4⭐ (@ViewBag.Rating4)</p>
+                            <p>3⭐ (@ViewBag.Rating3)</p>
+                            <p>2⭐ (@ViewBag.Rating2)</p>
+                            <p>1⭐ (@ViewBag.Rating1)</p>
+                        </div>
+                    </div>
+
+                    <h4>Viết đánh giá</h4>
+
+                    <form method="post" asp-controller="Review" asp-action="CreateReview">
+
+                        <input type="hidden" name="ProductId" value="@Model.Id" />
+
+                        <div class="mb-3">
+                            <label>Rating</label>
+                            <select name="Rating" class="form-control">
+                                <option value="5">⭐⭐⭐⭐⭐</option>
+                                <option value="4">⭐⭐⭐⭐</option>
+                                <option value="3">⭐⭐⭐</option>
+                                <option value="2">⭐⭐</option>
+                                <option value="1">⭐</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Comment</label>
+                            <textarea name="Comment" class="form-control" maxlength="100" id="commentBox"></textarea>
+                            <small id="charCount">0 / 100</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            Gửi đánh giá
+                        </button>
+
+                    </form>
+                    
+                    <!--Danh sách đánh giá-->
+                    @if (ViewBag.Reviews != null && ViewBag.Reviews.Count > 0)
+                    {
+                        <div class="mt-5">
+                            
+                            <h4>Đánh giá từ người dùng</h4>
+
+                            @foreach (var review in ViewBag.Reviews)
+                            {
+                                <div class="border rounded p-3 mb-3 bg-light">
+                                    <strong>@review.User?.FullName</strong>
+
+                                    <span class="text-warning">
+                                        @for (int i = 0; i < review.Rating; i++)
+                                        {
+                                            <span>★</span>
+                                        }
+                                    </span>
+
+                                    <br />
+
+                                    <small class="text-muted">
+                                        @review.CreatedAt?.ToString("dd/MM/yyyy")
+                                    </small>
+
+                                    <p class="mt-2 mb-0">@review.Comment</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mt-4">Chưa có đánh giá nào cho sản phẩm này.</p>
+                    }
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        <nav class="mt-3">
+                            <ul class="pagination justify-content-center">
+
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                        <a class="page-link"
+                                           asp-action="Detail"
+                                           asp-route-id="@Model.Id"
+                                           asp-route-page="@i">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                            </ul>
+                        </nav>
+                    }
                 </div>
             </div>
         </div>
@@ -90,6 +192,10 @@
         function showMainImage(url) {
             document.getElementById('mainProductImage').src = url;
         }
+        document.getElementById("commentBox").addEventListener("input", function () {
+        let length = this.value.length;
+        document.getElementById("charCount").innerText = length + " / 100";
+        });
     </script>
 }
 

@@ -40,8 +40,8 @@ namespace LaptopStore.Controllers
             ViewBag.Categories = _context.Categories.ToList();
             ViewBag.Brands = _context.Brands.ToList();
 
-            ViewBag.SelectedCategoryId = categoryId;
             ViewBag.SelectedBrandId = brandId;
+            ViewBag.SelectedCategoryId = categoryId;
             ViewBag.SelectedPriceRange = priceRange;
 
 
@@ -142,12 +142,9 @@ namespace LaptopStore.Controllers
 
             return View("~/Views/Store/Product.cshtml", searchResults);
         }
-        public IActionResult Detail(int id)
+        public IActionResult Detail(int id, int page = 1)
         {
-            if(id == null)
-            {
-                return NotFound();
-            }
+            int pageSize = 10;
 
             var productDetail = _context.Products
                 .Include(p => p.Category)
@@ -155,10 +152,47 @@ namespace LaptopStore.Controllers
                 .Include(p => p.ProductImages)
                 .FirstOrDefault(p => p.Id == id);
 
-            if(productDetail == null)
+            if (productDetail == null)
             {
                 return NotFound();
             }
+
+            // Lấy toàn bộ review để tính thống kê rating
+            var reviewsList = _context.Reviews
+                .Where(r => r.ProductId == id)
+                .ToList();
+
+            int totalReviews = reviewsList.Count;
+
+            // Query review để phân trang
+            var reviewsQuery = _context.Reviews
+                .Where(r => r.ProductId == id)
+                .Include(r => r.User)
+                .OrderByDescending(r => r.CreatedAt);
+
+            var reviews = reviewsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.Reviews = reviews;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalReviews / pageSize);
+
+            // Tính rating trung bình
+            var avgRating = _context.Reviews
+                .Where(r => r.ProductId == id)
+                .Average(r => (double?)r.Rating) ?? 0;
+
+            ViewBag.AvgRating = Math.Round(avgRating, 1);
+            ViewBag.TotalReviews = totalReviews;
+
+            // Thống kê số lượng từng mức sao
+            ViewBag.Rating5 = reviewsList.Count(r => r.Rating == 5);
+            ViewBag.Rating4 = reviewsList.Count(r => r.Rating == 4);
+            ViewBag.Rating3 = reviewsList.Count(r => r.Rating == 3);
+            ViewBag.Rating2 = reviewsList.Count(r => r.Rating == 2);
+            ViewBag.Rating1 = reviewsList.Count(r => r.Rating == 1);
 
             return View("~/Views/Store/Detail.cshtml", productDetail);
         }

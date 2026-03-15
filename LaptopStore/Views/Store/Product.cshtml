@@ -1,8 +1,12 @@
 ﻿@model List<LaptopStore.Models.Product>
+@using Azure.Core
 @using LaptopStore.Models
 
 @{
     ViewData["Title"] = "Kho Laptop";
+    int? brandId = string.IsNullOrEmpty(Context.Request.Query["brandId"]) ? (int?)null : int.Parse(Context.Request.Query["brandId"]);
+    int? categoryId = string.IsNullOrEmpty(Context.Request.Query["categoryId"]) ? (int?)null : int.Parse(Context.Request.Query["categoryId"]);
+    int? priceRange = string.IsNullOrEmpty(Context.Request.Query["priceRange"]) ? (int?)null : int.Parse(Context.Request.Query["priceRange"]);
 }
 
 @if (ViewBag.SelectedCategory != null)
@@ -48,7 +52,14 @@
                              <option value="">-- Chọn hãng --</option>
                              @foreach (var brand in ViewBag.Brands)
                              {
-                                 <option value="@brand.Id" selected="@(ViewBag.SelectedBrandId == brand.Id ? "selected" : "")">@brand.Name</option>
+                                        if (ViewBag.SelectedBrandId != null && brand.Id == ViewBag.SelectedBrandId)
+                                        {
+                                            <option value="@brand.Id" selected="@(brand.Id == (int?)ViewBag.SelectedBrandId)">@brand.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@brand.Id">@brand.Name</option>
+                                        }
                              }
                          </select>
                      </div>
@@ -58,7 +69,14 @@
                               <option value="">-- Chọn thể loại --</option>
                               @foreach (var category in ViewBag.Categories)
                               {
-                                  <option value="@category.Id" selected="@(ViewBag.SelectedCategoryId == category.Id ? "selected" : "")">@category.Name</option>
+                                        if (ViewBag.SelectedCategoryId != null && category.Id == ViewBag.SelectedCategoryId)
+                                        {
+                                            <option value="@category.Id" selected="@(category.Id == (int?)ViewBag.SelectedCategoryId)">@category.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@category.Id">@category.Name</option>
+                                        }
                               }
                           </select>
                      </div>
@@ -66,10 +84,10 @@
                                 <label for="priceRange" class="form-label">Khoảng giá</label>
                                 <select id="priceRange" name="priceRange" class="form-select">
                                     <option value="">-- Chọn khoảng giá --</option>
-                                    <option value="1">Dưới 10 triệu</option>
-                                    <option value="2">10 triệu - 20 triệu</option>
-                                    <option value="3">20 triệu - 50 triệu</option>
-                                    <option value="4">Trên 50 triệu</option>
+                                    <option value="1" selected="@(ViewBag.SelectedPriceRange?.ToString() == "1" ? "selected" : null)">Dưới 10 triệu</option>
+                                    <option value="2" selected="@(ViewBag.SelectedPriceRange?.ToString() == "2" ? "selected" : null)">10 triệu - 20 triệu</option>
+                                    <option value="3" selected="@(ViewBag.SelectedPriceRange?.ToString() == "3" ? "selected" : null)">20 triệu - 50 triệu</option>
+                                    <option value="4" selected="@(ViewBag.SelectedPriceRange?.ToString() == "4" ? "selected" : null)">Trên 50 triệu</option>
                                 </select>
                             </div>
                      <button type="submit" class="btn btn-primary w-100">Lọc</button>
@@ -207,6 +225,8 @@
         }
     </style>
 }
+
+
 
 
 
