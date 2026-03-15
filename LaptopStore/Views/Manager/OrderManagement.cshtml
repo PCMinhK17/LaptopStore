@@ -10,6 +10,8 @@
     var currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
 
+@Html.AntiForgeryToken()
+
 <!-- Stats Cards -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-4 col-xl-2">
@@ -35,13 +37,13 @@
         </a>
     </div>
     <div class="col-6 col-md-4 col-xl-2">
-        <a href="@Url.Action("Index", new { status = "processing" })" class="order-stat-card @(currentStatus == "processing" ? "active" : "")" data-status="processing">
+        <a href="@Url.Action("Index", new { status = "confirmed" })" class="order-stat-card @(currentStatus == "confirmed" ? "active" : "")" data-status="confirmed">
             <div class="order-stat-icon processing">
                 <i class="fas fa-cog"></i>
             </div>
             <div class="order-stat-content">
-                <div class="order-stat-value">@ViewBag.ProcessingCount</div>
-                <div class="order-stat-label">Đang xử lý</div>
+                <div class="order-stat-value">@ViewBag.ConfirmedCount</div>
+                <div class="order-stat-label">Đã xác nhận</div>
             </div>
         </a>
     </div>
@@ -57,12 +59,12 @@
         </a>
     </div>
     <div class="col-6 col-md-4 col-xl-2">
-        <a href="@Url.Action("Index", new { status = "delivered" })" class="order-stat-card @(currentStatus == "delivered" ? "active" : "")" data-status="delivered">
+        <a href="@Url.Action("Index", new { status = "completed" })" class="order-stat-card @(currentStatus == "completed" ? "active" : "")" data-status="completed">
             <div class="order-stat-icon delivered">
                 <i class="fas fa-check-circle"></i>
             </div>
             <div class="order-stat-content">
-                <div class="order-stat-value">@ViewBag.DeliveredCount</div>
+                <div class="order-stat-value">@ViewBag.CompletedCount</div>
                 <div class="order-stat-label">Đã giao</div>
             </div>
         </a>
@@ -99,9 +101,9 @@
                         @{
                             var statuses = new[] {
                                 ("pending", "Chờ xác nhận"),
-                                ("processing", "Đang xử lý"),
+                                ("confirmed", "Đã xác nhận"),
                                 ("shipping", "Đang giao"),
-                                ("delivered", "Đã giao"),
+                                ("completed", "Đã giao"),
                                 ("cancelled", "Đã hủy")
                             };
                         }
@@ -180,18 +182,18 @@
                         var statusClass = order.Status switch
                         {
                             "pending" => "status-pending",
-                            "processing" => "status-processing",
+                            "confirmed" => "status-processing",
                             "shipping" => "status-shipping",
-                            "delivered" => "status-delivered",
+                            "completed" => "status-delivered",
                             "cancelled" => "status-cancelled",
                             _ => ""
                         };
                         var statusText = order.Status switch
                         {
                             "pending" => "Chờ xác nhận",
-                            "processing" => "Đang xử lý",
+                            "confirmed" => "Đã xác nhận",
                             "shipping" => "Đang giao",
-                            "delivered" => "Đã giao",
+                            "completed" => "Đã giao",
                             "cancelled" => "Đã hủy",
                             _ => order.Status ?? "N/A"
                         };
@@ -262,12 +264,12 @@
                                     {
                                         <button type="button" 
                                                 class="action-btn action-confirm" 
-                                                onclick="updateStatus(@order.Id, 'processing')">
+                                                onclick="updateStatus(@order.Id, 'confirmed')">
                                             <i class="fas fa-check-circle"></i>
                                             <span>Xác nhận</span>
                                         </button>
                                     }
-                                    @if (order.Status == "processing")
+                                    @if (order.Status == "confirmed")
                                     {
                                         <button type="button" 
                                                 class="action-btn action-ship" 
@@ -280,9 +282,18 @@
                                     {
                                         <button type="button" 
                                                 class="action-btn action-complete" 
-                                                onclick="updateStatus(@order.Id, 'delivered')">
+                                                onclick="updateStatus(@order.Id, 'completed')">
                                             <i class="fas fa-box-check"></i>
                                             <span>Đã giao</span>
+                                        </button>
+                                    }
+                                    @if (order.Status == "pending" || order.Status == "confirmed")
+                                    {
+                                        <button type="button" 
+                                                class="action-btn action-cancel" 
+                                                onclick="openCancelModal(@order.Id, '@order.Id.ToString("D6")')">
+                                            <i class="fas fa-times-circle"></i>
+                                            <span>Hủy</span>
                                         </button>
                                     }
                                 </div>
@@ -350,6 +361,53 @@
             </div>
         </div>
     }
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title" id="cancelOrderModalLabel">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                    Hủy đơn hàng <span id="cancelOrderCode"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="cancelOrderId" />
+                <div class="alert alert-warning d-flex align-items-start gap-2 mb-3">
+                    <i class="fas fa-info-circle mt-1"></i>
+                    <div>
+                        <strong>Lưu ý:</strong> Hành động này sẽ hủy đơn hàng và hoàn lại số lượng tồn kho cho các sản phẩm trong đơn.
+                    </div>
+                </div>
+                
+                <label class="form-label fw-semibold">Lý do hủy <span class="text-danger">*</span></label>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary cancel-reason-btn" 
+                            onclick="selectCancelReason(this, 'Khách yêu cầu hủy')">Khách yêu cầu hủy</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary cancel-reason-btn" 
+                            onclick="selectCancelReason(this, 'Không liên lạc được khách hàng')">Không liên lạc được</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary cancel-reason-btn" 
+                            onclick="selectCancelReason(this, 'Thông tin giao hàng không chính xác')">Thông tin sai</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary cancel-reason-btn" 
+                            onclick="selectCancelReason(this, 'Hết hàng / Không đủ hàng')">Hết hàng</button>
+                </div>
+                <textarea id="cancelReasonText" class="form-control" rows="3" 
+                          placeholder="Nhập lý do hủy đơn hàng..." required></textarea>
+                <div id="cancelReasonError" class="text-danger small mt-1" style="display:none;">
+                    Vui lòng nhập lý do hủy đơn hàng.
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" onclick="submitCancelOrder()">
+                    <i class="fas fa-times me-1"></i> Xác nhận hủy đơn
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -619,6 +677,18 @@
         box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
     }
     
+    /* Cancel button - Red */
+    .action-cancel {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+    
+    .action-cancel:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
     /* Dark mode action buttons */
     [data-theme="dark"] .action-view {
         background: var(--gray-700);
@@ -698,10 +768,7 @@
 
             fetch('/OrderManagement/UpdateStatus', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${orderId}&status=${newStatus}`
             })
             .then(response => response.json())
@@ -715,6 +782,51 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi cập nhật trạng thái');
+            });
+        }
+
+        function openCancelModal(orderId, orderCode) {
+            document.getElementById('cancelOrderId').value = orderId;
+            document.getElementById('cancelOrderCode').textContent = '#' + orderCode;
+            document.getElementById('cancelReasonText').value = '';
+            document.getElementById('cancelReasonError').style.display = 'none';
+            document.querySelectorAll('.cancel-reason-btn').forEach(b => b.classList.remove('active', 'btn-secondary'));
+            var modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+            modal.show();
+        }
+
+        function selectCancelReason(btn, reason) {
+            document.getElementById('cancelReasonText').value = reason;
+            document.getElementById('cancelReasonError').style.display = 'none';
+            document.querySelectorAll('.cancel-reason-btn').forEach(b => b.classList.remove('active', 'btn-secondary'));
+            btn.classList.add('active', 'btn-secondary');
+        }
+
+        function submitCancelOrder() {
+            const orderId = document.getElementById('cancelOrderId').value;
+            const reason = document.getElementById('cancelReasonText').value.trim();
+            if (!reason) {
+                document.getElementById('cancelReasonError').style.display = 'block';
+                document.getElementById('cancelReasonText').focus();
+                return;
+            }
+
+            fetch('/OrderManagement/CancelOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${orderId}&cancelReason=${encodeURIComponent(reason)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi hủy đơn hàng');
             });
         }
     </script>
