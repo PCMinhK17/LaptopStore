@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using BCryptNet = BCrypt.Net.BCrypt;
 using System.Security.Claims;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LaptopStore.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class UserManagementController : Controller
     {
         private readonly LaptopStoreDbContext _context;
@@ -327,7 +329,8 @@ namespace LaptopStore.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ToggleStatus(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleStatus(int id, string? reason)
         {
             var currentUserId = 0;
             if (int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var currentId))
@@ -346,13 +349,25 @@ namespace LaptopStore.Controllers
                 return Json(new { success = false, message = "User not found" });
             }
 
+            if (user.Role == "admin")
+            {
+                return Json(new { success = false, message = "Không thể khóa tài khoản tài quản trị viên" });
+            }
+
+            if (user.Status == "pending")
+            {
+                return Json(new { success = false, message = "Vui lòng xác thực email cho người dùng này trước" });
+            }
+
             if (user.Status == "active")
             {
-                user.Status = "locked";
+                user.Status = "banned";
+                user.BanReason = reason;
             }
             else
             {
                 user.Status = "active";
+                user.BanReason = null;
             }
             
             user.UpdatedAt = DateTime.Now;

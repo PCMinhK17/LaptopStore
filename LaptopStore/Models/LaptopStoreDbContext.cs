@@ -502,6 +502,9 @@ public partial class LaptopStoreDbContext : DbContext
                 .IsUnicode(false)
                 .HasDefaultValue("active")
                 .HasColumnName("status");
+            entity.Property(e => e.BanReason)
+                .HasMaxLength(500)
+                .HasColumnName("ban_reason");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")

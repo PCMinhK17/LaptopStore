@@ -62,10 +62,11 @@ namespace LaptopStore.Services
 
                 if (!string.Equals(user.Status, "active", StringComparison.OrdinalIgnoreCase))
                 {
+                    var banReason = !string.IsNullOrEmpty(user.BanReason) ? $" Lý do: {user.BanReason}" : "";
                     return new AuthResult
                     {
                         Success = false,
-                        ErrorMessage = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ."
+                        ErrorMessage = $"Tài khoản của bạn đã bị khóa.{banReason} Vui lòng liên hệ hỗ trợ."
                     };
                 }
 

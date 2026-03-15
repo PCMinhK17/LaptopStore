@@ -23,6 +23,8 @@ public partial class User
 
     public string? Status { get; set; }
 
+    public string? BanReason { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
