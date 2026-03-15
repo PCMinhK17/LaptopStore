@@ -62,7 +62,7 @@
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
-            color: #d70018 !important;
+            color: #4A90D9 !important;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -84,7 +84,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4A90D9 0%, #68B8F8 100%);
             color: white;
             font-weight: 600;
             font-size: 14px;
@@ -133,7 +133,7 @@
 
         .profile-dropdown-header {
             padding: 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            background: linear-gradient(135deg, #E8F4FD 0%, #D0E8FA 100%);
             border-bottom: 1px solid #e9ecef;
         }
 
@@ -141,7 +141,7 @@
             width: 64px;
             height: 64px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4A90D9 0%, #68B8F8 100%);
             color: white;
             display: flex;
             align-items: center;
@@ -196,8 +196,8 @@
         }
 
         .profile-dropdown-item:hover {
-            background: #f7fafc;
-            color: #d70018;
+            background: #E8F4FD;
+            color: #4A90D9;
         }
 
         .profile-dropdown-item i {
@@ -207,7 +207,7 @@
         }
 
         .profile-dropdown-item:hover i {
-            color: #d70018;
+            color: #4A90D9;
         }
 
         .profile-dropdown-item.logout {
@@ -236,7 +236,7 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4A90D9 0%, #68B8F8 100%);
             color: white;
             border: none;
             padding: 20px 24px;
@@ -269,8 +269,8 @@
         }
 
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #4A90D9;
+            box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
         }
 
         .password-input-group {
@@ -405,6 +405,108 @@
                 right: -60px;
             }
         }
+        /* Header icon badges */
+        .nav-icon-link {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-icon-link:hover {
+            background: #E8F4FD;
+            color: #4A90D9;
+        }
+
+        .nav-icon-link i {
+            font-size: 18px;
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: 2px;
+            right: 0px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #EF4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .user-greeting {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .user-greeting:hover {
+            background: #E8F4FD;
+        }
+
+        .user-greeting-text {
+            font-size: 13px;
+            color: #64748B;
+            line-height: 1.2;
+        }
+
+        .user-greeting-name {
+            font-weight: 600;
+            color: #1E293B;
+            font-size: 14px;
+        }
+
+        /* Navbar search */
+        .navbar-search {
+            max-width: 300px;
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .navbar-search .input-group {
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+            transition: border-color 0.2s;
+        }
+
+        .navbar-search .input-group:focus-within {
+            border-color: #4A90D9;
+            box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.1);
+        }
+
+        .navbar-search .form-control {
+            border: none;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            box-shadow: none;
+        }
+
+        .navbar-search .btn {
+            border: none;
+            background: none;
+            color: #64748B;
+            padding: 8px 12px;
+        }
+
+        .navbar-search .btn:hover {
+            color: #4A90D9;
+        }
     </style>
 </head>
 <body>
@@ -422,7 +524,7 @@
                 </button>
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
@@ -431,42 +533,65 @@
                         </li>
                     </ul>
 
-                    <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Search Bar in Navbar -->
+                    <div class="navbar-search d-none d-md-block">
+                        <form method="get" asp-controller="Product" asp-action="Search">
+                            <div class="input-group">
+                                <input type="text" name="searchTerm" class="form-control" placeholder="Tìm kiếm laptop..." />
+                                <button type="submit" class="btn"><i class="fas fa-search"></i></button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <ul class="navbar-nav ms-auto align-items-center gap-1">
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
                             @if (User.IsInRole("admin") || User.IsInRole("staff"))
                             {
-                                <li class="nav-item d-flex align-items-center me-3">
+                                <li class="nav-item d-flex align-items-center me-2">
                                     @if (User.IsInRole("admin"))
                                     {
-                                        <a class="nav-link text-primary fw-bold" asp-controller="AdminDashboard" asp-action="Index">
+                                        <a class="nav-link fw-bold" style="color: #4A90D9;" asp-controller="AdminDashboard" asp-action="Index">
                                             <i class="fas fa-user-shield me-1"></i> Quản trị
                                         </a>
                                     }
                                     else
                                     {
-                                        <a class="nav-link text-primary fw-bold" asp-controller="StaffDashboard" asp-action="Index">
+                                        <a class="nav-link fw-bold" style="color: #4A90D9;" asp-controller="StaffDashboard" asp-action="Index">
                                             <i class="fas fa-user-cog me-1"></i> Nhân viên
                                         </a>
                                     }
                                 </li>
                             }
-                            else 
-                            {
-                                <li class="nav-item d-flex align-items-center me-4">
-                                    <span class="navbar-text">
-                                        <a asp-controller="Cart" asp-action="CartView" style="text-decoration:none">
-                                            <i class="fas fa-shopping-cart me-1"></i><strong>Giỏ hàng</strong>
-                                        </a>
-                                    </span>
-                                </li>
-                            }
-                            <!-- Profile Dropdown -->
-                            <li class="nav-item profile-dropdown">
-                                <div class="user-avatar" id="profileAvatar" role="button" 
+
+                            <!-- Wishlist Icon -->
+                            <li class="nav-item">
+                                <a href="@Url.Action("WishlistView", "Wishlist")" class="nav-icon-link" title="Yêu thích">
+                                    <i class="far fa-heart"></i>
+                                    <span class="nav-badge" id="wishlistBadgeCount" style="display:none;">0</span>
+                                </a>
+                            </li>
+
+                            <!-- Cart Icon -->
+                            <li class="nav-item">
+                                <a href="@Url.Action("CartView", "Cart")" class="nav-icon-link" title="Giỏ hàng">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <span class="nav-badge" id="cartBadgeCount" style="display:none;">0</span>
+                                </a>
+                            </li>
+
+                            <!-- Profile Dropdown with Greeting -->
+                            <li class="nav-item profile-dropdown ms-1">
+                                <div class="user-greeting" id="profileAvatar" role="button"
                                      data-bs-toggle="dropdown" aria-expanded="false"
                                      title="@userName">
-                                    @avatarLetter
+                                    <div class="user-avatar">
+                                        @avatarLetter
+                                    </div>
+                                    <div class="d-none d-lg-block">
+                                        <div class="user-greeting-text">Xin chào</div>
+                                        <div class="user-greeting-name" id="headerUserName">@userName</div>
+                                    </div>
                                 </div>
 
                                 <div class="profile-dropdown-menu" id="profileDropdownMenu">
@@ -481,6 +606,14 @@
                                         <a class="profile-dropdown-item" asp-controller="User" asp-action="Profile">
                                             <i class="fas fa-user"></i>
                                             <span>Xem tài khoản</span>
+                                        </a>
+                                        <a class="profile-dropdown-item" asp-controller="Order" asp-action="OrderHistory">
+                                            <i class="fas fa-box"></i>
+                                            <span>Đơn hàng của tôi</span>
+                                        </a>
+                                        <a class="profile-dropdown-item" asp-controller="Wishlist" asp-action="WishlistView">
+                                            <i class="far fa-heart"></i>
+                                            <span>Yêu thích</span>
                                         </a>
                                         <button class="profile-dropdown-item" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                                             <i class="fas fa-lock"></i>
@@ -500,13 +633,13 @@
                             <li class="nav-item me-2">
                                 <a class="btn btn-outline-primary btn-sm"
                                    asp-controller="Account" asp-action="Login">
-                                    Đăng nhập
+                                    <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="btn btn-primary btn-sm"
                                    asp-controller="Account" asp-action="Register">
-                                    Đăng ký
+                                    <i class="fas fa-user-plus me-1"></i> Đăng ký
                                 </a>
                             </li>
                         }
@@ -516,16 +649,11 @@
         </nav>
     </header>
 
-        <main role="main" class="pb-3">
+        <main role="main">
             @RenderBody()
         </main>
 
-    <footer class="border-top footer text-muted mt-5">
-        <div class="container">
-            &copy; 2026 - LaptopStore -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    <!-- Default footer hidden when homepage has its own footer -->
 
     <!-- Change Password Modal -->
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
@@ -654,30 +782,63 @@
                     if (response.success && response.data) {
                         var data = response.data;
                         
-                        // Update header avatar
-                        var profileAvatar = document.getElementById('profileAvatar');
+                        // Update header avatar (inside user-greeting)
+                        var avatarElements = document.querySelectorAll('.user-avatar');
                         var dropdownAvatar = document.getElementById('dropdownAvatar');
                         
                         if (data.avatarUrl) {
                             var avatarUrl = '/uploads/avatars/' + data.avatarUrl;
                             
-                            if (profileAvatar) {
-                                profileAvatar.innerHTML = '<img src="' + avatarUrl + '" alt="" />';
-                            }
+                            avatarElements.forEach(function(el) {
+                                el.innerHTML = '<img src="' + avatarUrl + '" alt="" />';
+                            });
                             if (dropdownAvatar) {
                                 dropdownAvatar.innerHTML = '<img src="' + avatarUrl + '" alt="" />';
                             }
                         }
                         
-                        // Update dropdown info
+                        // Update dropdown info & header greeting
                         var dropdownName = document.getElementById('dropdownUserName');
+                        var headerName = document.getElementById('headerUserName');
                         if (dropdownName && data.fullName) {
                             dropdownName.textContent = data.fullName;
+                        }
+                        if (headerName && data.fullName) {
+                            headerName.textContent = data.fullName;
                         }
                     }
                 },
                 error: function() {
                     console.log('Could not load user info');
+                }
+            });
+        }
+
+        // Load badge counts for wishlist and cart
+        function loadBadgeCounts() {
+            // Cart count
+            $.ajax({
+                url: '/Cart/GetCartCount',
+                type: 'GET',
+                success: function(response) {
+                    var badge = document.getElementById('cartBadgeCount');
+                    if (badge && response.count !== undefined) {
+                        badge.textContent = response.count;
+                        badge.style.display = response.count > 0 ? 'flex' : 'none';
+                    }
+                }
+            });
+
+            // Wishlist count
+            $.ajax({
+                url: '/Wishlist/GetWishlistCount',
+                type: 'GET',
+                success: function(response) {
+                    var badge = document.getElementById('wishlistBadgeCount');
+                    if (badge && response.count !== undefined) {
+                        badge.textContent = response.count;
+                        badge.style.display = response.count > 0 ? 'flex' : 'none';
+                    }
                 }
             });
         }
@@ -688,6 +849,7 @@
             var isAuthenticated = @((User?.Identity?.IsAuthenticated ?? false).ToString().ToLower());
             if (isAuthenticated) {
                 loadUserInfo();
+                loadBadgeCounts();
             }
 
             const profileAvatar = document.getElementById('profileAvatar');

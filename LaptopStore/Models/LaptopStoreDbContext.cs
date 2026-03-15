@@ -40,6 +40,10 @@ public partial class LaptopStoreDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<Wishlist> Wishlists { get; set; }
+
+    public virtual DbSet<WishlistItem> WishlistItems { get; set; }
+
     public virtual DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -531,6 +535,49 @@ public partial class LaptopStoreDbContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_EmailVerificationTokens_Users");
+        });
+
+        modelBuilder.Entity<Wishlist>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasIndex(e => e.UserId).IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithOne(p => p.Wishlist)
+                .HasForeignKey<Wishlist>(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<WishlistItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("Wishlist_Items");
+
+            entity.HasIndex(e => new { e.WishlistId, e.ProductId }).IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.WishlistId).HasColumnName("wishlist_id");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+
+            entity.HasOne(d => d.Wishlist).WithMany(p => p.WishlistItems)
+                .HasForeignKey(d => d.WishlistId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.Product).WithMany(p => p.WishlistItems)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         OnModelCreatingPartial(modelBuilder);

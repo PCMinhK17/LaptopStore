@@ -1,6 +1,125 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+@{
+    ViewData["Title"] = "Chính sách bảo mật";
+    Layout = "_Layout";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+@section Styles {
+    <style>
+        .privacy-header {
+            background: linear-gradient(135deg, #4A90D9 0%, #68B8F8 100%);
+            padding: 60px 0;
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .privacy-header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .privacy-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .privacy-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 60px;
+        }
+
+        .privacy-content h3 {
+            color: #1E3A5F;
+            font-weight: 700;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            font-size: 1.4rem;
+        }
+
+        .privacy-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .privacy-content p {
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .privacy-content ul {
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .privacy-content li {
+            margin-bottom: 8px;
+        }
+
+        .update-date {
+            color: #64748B;
+            font-style: italic;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E2E8F0;
+        }
+    </style>
+}
+
+<section class="privacy-header">
+    <div class="container">
+        <h1>Chính sách bảo mật & Điều khoản sử dụng</h1>
+        <p>Cam kết bảo vệ thông tin cá nhân và quyền lợi của khách hàng tại LaptopStore</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="privacy-content">
+                <h3>1. Mục đích thu thập thông tin cá nhân</h3>
+                <p>LaptopStore thu thập thông tin cá nhân của khách hàng nhằm mục đích:</p>
+                <ul>
+                    <li>Xử lý đơn đặt hàng, giao hàng và thanh toán.</li>
+                    <li>Cung cấp dịch vụ chăm sóc khách hàng, hỗ trợ kỹ thuật và bảo hành sản phẩm.</li>
+                    <li>Cung cấp thông tin sản phẩm mới, chương trình khuyến mãi (nếu khách hàng đăng ký nhận tin).</li>
+                    <li>Nâng cao chất lượng dịch vụ và trải nghiệm mua sắm trên website.</li>
+                </ul>
+
+                <h3>2. Phạm vi sử dụng thông tin</h3>
+                <p>Thông tin thu thập bao gồm: Họ tên, Số điện thoại, Email, Địa chỉ giao hàng. LaptopStore cam kết không bán, chia sẻ hay trao đổi thông tin cá nhân của khách hàng cho bất kỳ bên thứ ba nào khác, ngoại trừ:</p>
+                <ul>
+                    <li>Các đối tác vận chuyển để thực hiện việc giao nhận hàng hoá.</li>
+                    <li>Các cổng thanh toán điện tử để xử lý giao dịch an toàn.</li>
+                    <li>Khi có yêu cầu từ cơ quan pháp luật có thẩm quyền.</li>
+                </ul>
+
+                <h3>3. Thời gian lưu trữ thông tin</h3>
+                <p>Dữ liệu cá nhân của khách hàng sẽ được lưu trữ cho đến khi có yêu cầu hủy bỏ hoặc tự khách hàng đăng nhập và thực hiện hủy bỏ. Trong mọi trường hợp thông tin cá nhân khách hàng sẽ được bảo mật trên máy chủ của LaptopStore.</p>
+
+                <h3>4. Bảo mật thông tin</h3>
+                <p>LaptopStore sử dụng các biện pháp bảo mật và mã hóa hiện đại để bảo vệ thông tin cá nhân và dữ liệu thanh toán của khách hàng khỏi việc truy cập, sử dụng hoặc tiết lộ trái phép.</p>
+
+                <h3>5. Chính sách bảo hành và đổi trả</h3>
+                <p>Tất cả các sản phẩm laptop bán ra tại LaptopStore đều được bảo hành chính hãng từ 12 đến 24 tháng. Khách hàng có quyền "1 Đổi 1" trong vòng 30 ngày đầu tiên nếu sản phẩm gặp lỗi phần cứng từ nhà sản xuất.</p>
+
+                <h3>6. Thông tin liên hệ</h3>
+                <p>Nếu có bất kỳ thắc mắc hay phản hồi nào về Chính sách bảo mật, quý khách vui lòng liên hệ trực tiếp với chúng tôi qua:</p>
+                <ul>
+                    <li><strong>Hotline:</strong> 0123 456 789</li>
+                    <li><strong>Email:</strong> contact@laptopstore.vn</li>
+                    <li><strong>Địa chỉ:</strong> Đại học FPT Hà Nội, Thạch Hoà, Thạch Thất</li>
+                </ul>
+
+                <div class="update-date">
+                    Cập nhật lần cuối: Tháng 3 năm 2026.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
