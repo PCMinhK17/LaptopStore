@@ -173,7 +173,14 @@
                                                 <img src="@thumbnail" alt="@product?.Name" />
                                             </div>
                                             <div class="table-product-info">
-                                                <div class="table-product-name">@product?.Name</div>
+                                                <div class="table-product-name">
+                                                    <a asp-controller="Product"
+                                                       asp-action="Details"
+                                                       asp-route-id="@product?.Id"
+                                                       style="color: var(--text-primary); text-decoration:none; font-weight:600;">
+                                                        @product?.Name
+                                                    </a>
+                                                </div>
                                                 <div class="table-product-sku">SKU: @product?.Sku</div>
                                             </div>
                                         </div>
@@ -182,7 +189,12 @@
                                         <span class="badge badge-light">x@item.Quantity</span>
                                     </td>
                                     <td class="text-end">@item.Price.ToString("#,##0") ₫</td>
-                                    <td class="text-end fw-bold">@itemTotal.ToString("#,##0") ₫</td>
+                                    <div class="d-flex justify-content-between pt-2 border-top">
+                                        <span class="fw-bold">Total Order Amount:</span>
+                                        <span class="fw-bold text-primary" style="font-size: 1.25rem;">
+                                            @Model.TotalMoney.ToString("#,##0") ₫
+                                        </span>
+                                    </div>
                                 </tr>
                             }
                         }
