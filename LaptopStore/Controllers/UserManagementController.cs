@@ -151,7 +151,7 @@ namespace LaptopStore.Controllers
                 worksheet.Cell(row, 5).Value = user.Address ?? "";
                 worksheet.Cell(row, 6).Value = roleText;
                 worksheet.Cell(row, 7).Value = statusText;
-                worksheet.Cell(row, 8).Value = user.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
+                worksheet.Cell(row, 8).Value = user.CreatedAt.ToString("dd/MM/yyyy HH:mm") ?? "";
 
                 if (row % 2 == 0)
                 {

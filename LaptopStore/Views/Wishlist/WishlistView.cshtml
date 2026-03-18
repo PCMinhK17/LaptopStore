@@ -78,7 +78,7 @@
                 var productImage = product.ProductImages?.FirstOrDefault()?.ImageUrl ?? "/images/laptop-dell-xps-13-9350-black-6.webp";
                 var hasDiscount = product.OldPrice.HasValue && product.OldPrice > product.Price;
                 var discountPercent = hasDiscount ? (int)Math.Round(100 - ((double)product.Price / (double)product.OldPrice.Value * 100)) : 0;
-                var isInStock = product.StockQuantity.HasValue && product.StockQuantity > 0;
+                var isInStock = product.StockQuantity > 0;
 
                 <div class="product-card" id="wishlist-card-@product.Id">
                     <div class="product-card-image">

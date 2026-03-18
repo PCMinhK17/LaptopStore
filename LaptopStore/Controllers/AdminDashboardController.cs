@@ -67,7 +67,7 @@ namespace LaptopStore.Controllers
             // Revenue for last 7 days (for chart)
             var revenueByDay = await _context.Orders
                 .Where(o => o.Status == "delivered" && o.CreatedAt >= last7Days)
-                .GroupBy(o => o.CreatedAt!.Value.Date)
+                .GroupBy(o => o.CreatedAt.Date)
                 .Select(g => new { Date = g.Key, Revenue = g.Sum(o => o.TotalMoney) })
                 .OrderBy(x => x.Date)
                 .ToListAsync();
@@ -78,7 +78,7 @@ namespace LaptopStore.Controllers
             // Orders for last 7 days
             var ordersByDay = await _context.Orders
                 .Where(o => o.CreatedAt >= last7Days)
-                .GroupBy(o => o.CreatedAt!.Value.Date)
+                .GroupBy(o => o.CreatedAt.Date)
                 .Select(g => new { Date = g.Key, Count = g.Count() })
                 .OrderBy(x => x.Date)
                 .ToListAsync();

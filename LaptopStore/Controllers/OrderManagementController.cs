@@ -143,7 +143,7 @@ namespace LaptopStore.Controllers
                 worksheet.Cell(row, 2).Value = order.FullName ?? "";
                 worksheet.Cell(row, 3).Value = order.PhoneNumber ?? "";
                 worksheet.Cell(row, 4).Value = order.Address ?? "";
-                worksheet.Cell(row, 5).Value = order.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
+                worksheet.Cell(row, 5).Value = order.CreatedAt.ToString("dd/MM/yyyy HH:mm");
                 worksheet.Cell(row, 6).Value = order.TotalMoney;
                 worksheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0";
                 worksheet.Cell(row, 7).Value = paymentMethodText;
@@ -263,7 +263,7 @@ namespace LaptopStore.Controllers
                 {
                     if (item.Product != null)
                     {
-                        item.Product.StockQuantity = (item.Product.StockQuantity ?? 0) + item.Quantity;
+                        item.Product.StockQuantity = (item.Product?.StockQuantity ?? 0) + item.Quantity;
                     }
                 }
             }

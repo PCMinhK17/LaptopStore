@@ -60,7 +60,7 @@
                 {
                     <form asp-controller="StockManagement" asp-action="UpdateAll" method="post">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="StockId" value="@Model.ReceiptId" />
+                    <input type="hidden" name="StockId" value="@Model.Id" />
 
                         @for (int i = 0; i < Model.Items.Count; i++)
                         {

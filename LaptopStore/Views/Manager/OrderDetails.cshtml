@@ -218,7 +218,7 @@
                             foreach (var item in Model.OrderDetails)
                             {
                                 var product = item.Product;
-                                var thumbnail = product?.ProductImages?.FirstOrDefault(i => i.IsThumbnail ?? false)?.ImageUrl ?? "/images/default-product.png";
+                                var thumbnail = product?.ProductImages?.FirstOrDefault(i => i.IsThumbnail)?.ImageUrl ?? "/images/default-product.png";
                                 var itemTotal = item.Quantity * item.Price;
                                 
                                 <tr>
@@ -262,7 +262,7 @@
                         <div class="d-flex flex-column gap-2">
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Tạm tính:</span>
-                                <span>@Model.Subtotal?.ToString("#,##0") ₫</span>
+                                <span>@Model.Subtotal.ToString("#,##0") ₫</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Phí vận chuyển:</span>
@@ -380,7 +380,7 @@
                 <div class="d-flex flex-column gap-2">
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Ngày đặt</span>
-                        <span>@Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
 
                 </div>

@@ -16,7 +16,7 @@
                 <small class="text-muted">Trạng thái: @Model.Status</small>
             </div>
             <div class="text-end">
-                <small>Ngày đặt: @Model.CreatedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+                <small>Ngày đặt: @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
             </div>
         </div>
         <div class="card-body">
@@ -177,7 +177,7 @@
             </table>
 
             <div class="text-end">
-                <p>Tạm tính: <strong>@Model.Subtotal?.ToString("N0") đ</strong></p>
+                <p>Tạm tính: <strong>@Model.Subtotal.ToString("N0") đ</strong></p>
                 <h4>Tổng thanh toán: <strong>@Model.TotalMoney.ToString("N0") đ</strong></h4>
             </div>
 

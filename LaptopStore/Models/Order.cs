@@ -9,11 +9,11 @@ public partial class Order
 
     public int? UserId { get; set; }
 
-    public decimal? Subtotal { get; set; }
+    public decimal Subtotal { get; set; }
 
     public string? CouponCode { get; set; }
 
-    public decimal? DiscountAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
 
     public decimal TotalMoney { get; set; }
 
@@ -31,7 +31,7 @@ public partial class Order
 
     public string? PaymentStatus { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 

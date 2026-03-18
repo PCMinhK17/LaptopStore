@@ -128,25 +128,25 @@ namespace LaptopStore.Controllers
                 foreach (var ci in cart.CartItems)
                 {
                     var prod = ci.Product;
-                    var qty = ci.Quantity ?? 1;
+                    var qty = ci.Quantity;
                     if (prod == null)
                     {
                         return Json(new { success = false, message = $"Sản phẩm (id {ci.ProductId}) không tồn tại" });
                     }
-                    if (prod.StockQuantity.HasValue && qty > prod.StockQuantity.Value)
+                    if (qty > prod.StockQuantity)
                     {
                         return Json(new
                         {
                             success = false,
-                            message = $"Sản phẩm \"{prod.Name}\" chỉ còn {prod.StockQuantity.Value} cái",
+                            message = $"Sản phẩm \"{prod.Name}\" chỉ còn {prod.StockQuantity} cái",
                             productId = prod.Id,
-                            maxQuantity = prod.StockQuantity.Value
+                            maxQuantity = prod.StockQuantity
                         });
                     }
                 }
 
                 // Tính toán giá
-                var subtotal = cart.CartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
+                var subtotal = cart.CartItems.Sum(ci => (ci.Quantity) * (ci.Product?.Price ?? 0));
 
                 var totalMoney = subtotal;
 
@@ -175,7 +175,7 @@ namespace LaptopStore.Controllers
                 foreach (var cartItem in cart.CartItems)
                 {
                     var prod = cartItem.Product!;
-                    var qty = cartItem.Quantity ?? 1;
+                    var qty = cartItem.Quantity;
 
                     var orderDetail = new OrderDetail
                     {
@@ -186,11 +186,7 @@ namespace LaptopStore.Controllers
                     };
                     _context.OrderDetails.Add(orderDetail);
 
-                    // Cập nhật tồn kho nếu có
-                    if (prod.StockQuantity.HasValue)
-                    {
-                        prod.StockQuantity -= qty;
-                    }
+                    prod.StockQuantity -= qty;
                 }
 
                 // Xóa cart items

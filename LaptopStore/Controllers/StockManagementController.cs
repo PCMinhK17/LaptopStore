@@ -7,6 +7,7 @@ using System.Text.Json;
 
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 namespace LaptopStore.Controllers;
 
 public class StockManagementController : Controller
@@ -60,7 +61,7 @@ public class StockManagementController : Controller
             ProductImages = p.ProductImages.Select(i => new ProductImageResponse
             {
                 ImageUrl = i.ImageUrl,
-                IsThumbnail = i.IsThumbnail ?? false
+                IsThumbnail = i.IsThumbnail
             }).ToList()
         }).ToList();
         return View("~/Views/Manager/AddNewStockInOrder.cshtml");
@@ -163,7 +164,7 @@ public class StockManagementController : Controller
             StaffAvatarUrl = order.Staff?.AvatarUrl ?? "/images/image-not-found.jpg",
             StaffEmail = order.Staff?.Email ?? "Không thấy",
             TotalCost = order.TotalCost,
-            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            CreatedAt = order.CreatedAt,
             Status = order.Status,
             DeliveredAt = order.DeliveredAt,
             Items = order.ImportDetails.Select(d => new StockInItemResponse
@@ -193,6 +194,7 @@ public class StockManagementController : Controller
 
         return RedirectToAction("Index");
     }
+
     [Authorize]
     public IActionResult ByStaff(int page = 1)
     {
@@ -237,10 +239,10 @@ public class StockManagementController : Controller
 
         var orderDto = new StockInOrderResponse
         {
-            ReceiptId = order.Id,
+            Id = order.Id,
             SupplierName = order.SupplierName ?? "",
             TotalCost = order.TotalCost,
-            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            CreatedAt = order.CreatedAt,
             DeliveredAt = order.DeliveredAt,
             Items = order.ImportDetails.Select(d => new StockInItemResponse
             {

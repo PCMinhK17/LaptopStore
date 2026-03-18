@@ -78,7 +78,7 @@ public class ProductManagementController : Controller
                 ProductImages = p.ProductImages.Select(i => new ProductImageResponse
                 {
                     ImageUrl = i.ImageUrl,
-                    IsThumbnail = i.IsThumbnail ?? false
+                    IsThumbnail = i.IsThumbnail
                 }).ToList(),
                 IsActive = p.IsActive
             });
@@ -149,7 +149,7 @@ public class ProductManagementController : Controller
             worksheet.Cell(row, 12).Value = product.ScreenSize ?? "";
             worksheet.Cell(row, 13).Value = product.Weight ?? "0kg";
             worksheet.Cell(row, 14).Value = product.IsActive == true ? "Đang bán" : "Ngừng bán";
-            worksheet.Cell(row, 15).Value = product.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            worksheet.Cell(row, 15).Value = product.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
             if (row % 2 == 0)
             {
@@ -327,7 +327,7 @@ public class ProductManagementController : Controller
                 ScreenSize = product.ScreenSize,
                 Weight = product.Weight,
                 StockQuantity = product.StockQuantity,
-                IsActive = product.IsActive ?? false
+                IsActive = product.IsActive
             };
 
             return View("~/Views/Manager/UpdateProduct.cshtml", model);

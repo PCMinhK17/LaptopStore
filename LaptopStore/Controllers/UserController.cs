@@ -278,7 +278,7 @@ namespace LaptopStore.Controllers
                     phoneNumber = user.PhoneNumber,
                     address = user.Address,
                     avatarUrl = user.AvatarUrl,
-                    createdAt = user.CreatedAt?.ToString("dd/MM/yyyy")
+                    createdAt = user.CreatedAt.ToString("dd/MM/yyyy")
                 }
             });
         }

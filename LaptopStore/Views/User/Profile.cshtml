@@ -139,7 +139,7 @@
                 <div class="row py-3 mb-0">
                     <div class="col-sm-4 col-md-3 text-muted fw-medium">Ngày tạo</div>
                     <div class="col-sm-8 col-md-9 text-dark fw-medium">
-                        @(Model.CreatedAt.HasValue? Model.CreatedAt.Value.ToString("dd/MM/yyyy") : "Không có thông tin")
+                        @Model.CreatedAt.ToString("dd/MM/yyyy") 
                     </div>
                 </div>
             }
