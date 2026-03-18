@@ -2,7 +2,7 @@ html {
   font-size: 14px;
 }
 
-@@media (min-width: 768px) {
+@media (min-width: 768px) {
   html {
     font-size: 16px;
   }
@@ -17,9 +17,6 @@ html {
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
-}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -42,12 +39,12 @@ body {
 
 /* Button styles */
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4A90D9 0%, #68B8F8 100%);
   border: none;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+  background: linear-gradient(135deg, #3A7CC0 0%, #5AA0E0 100%);
 }
 
 .btn-danger {
@@ -72,7 +69,7 @@ body {
   animation: fadeIn 0.3s ease-in-out;
 }
 
-@@keyframes fadeIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -94,7 +91,7 @@ body {
   animation: spin 1s ease-in-out infinite;
 }
 
-@@keyframes spin {
+@keyframes spin {
   to {
     transform: rotate(360deg);
   }
@@ -111,7 +108,7 @@ body {
   animation: dropdownSlide 0.2s ease-out;
 }
 
-@@keyframes dropdownSlide {
+@keyframes dropdownSlide {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -134,7 +131,7 @@ body {
   animation: slideFromRight 0.4s ease-out;
 }
 
-@@keyframes slideFromRight {
+@keyframes slideFromRight {
   from {
     opacity: 0;
     transform: translateX(30px);
@@ -160,8 +157,8 @@ body {
 /* Form control focus styles */
 .form-control:focus,
 .form-select:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #4A90D9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
 }
 
 /* Badge styles */
@@ -176,7 +173,7 @@ body {
 }
 
 .nav-link:hover {
-  color: #d70018 !important;
+  color: #4A90D9 !important;
 }
 
 /* Footer styles */
@@ -187,7 +184,7 @@ body {
 }
 
 /* Responsive utilities */
-@@media (max-width: 768px) {
+@media (max-width: 768px) {
   .container {
     padding-left: 16px;
     padding-right: 16px;

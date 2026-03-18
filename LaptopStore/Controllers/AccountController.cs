@@ -91,6 +91,9 @@ namespace LaptopStore.Controllers
             // Đăng nhập thành công
             await SignInUserAsync(result.User, model.RememberMe);
 
+            // Lưu UserId vào session để sử dụng trong các controller khác nếu cần (mặc dù đã có trong claims)
+            HttpContext.Session.SetInt32("UserId", result.User.Id);
+
             TempData["ToastMessage"] = $"Đăng nhập thành công! Chào mừng {result.User.FullName ?? result.User.Email}";
             TempData["ToastType"] = "success";
 

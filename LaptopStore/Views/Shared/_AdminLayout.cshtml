@@ -16,6 +16,10 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <!-- Bootstrap (for grid system only) -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     
@@ -67,7 +71,7 @@
                 <div class="nav-item">
                     <a href="@Url.Action("Index", "CategoryManagement")" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "CategoryManagement" ? "active" : "")">
                         <i class="fas fa-layer-group"></i>
-                        <span>Phân loại</span>
+                        <span>Danh mục</span>
                     </a>
                 </div>
                 <div class="nav-item">
@@ -155,21 +159,10 @@
             </div>
             
             <div class="topbar-right">
-                <!-- Search Button -->
-                <button class="topbar-btn d-none d-md-flex" title="Tìm kiếm">
-                    <i class="fas fa-search"></i>
-                </button>
-                
                 <!-- Notifications -->
                 <button class="topbar-btn" title="Thông báo">
                     <i class="fas fa-bell"></i>
                     <span class="badge-dot"></span>
-                </button>
-                
-                <!-- Theme Toggle -->
-                <button class="topbar-btn theme-toggle" onclick="toggleTheme()" title="Chế độ sáng/tối">
-                    <i class="fas fa-moon"></i>
-                    <i class="fas fa-sun"></i>
                 </button>
                 
                 <!-- User Dropdown -->
@@ -234,6 +227,9 @@
     <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!--Number format-->
+    <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
     
     <script>
         // Sidebar Toggle
@@ -280,21 +276,6 @@
             }
         });
 
-        // Theme Toggle
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('adminTheme', newTheme);
-            
-            // Update theme icon
-            const themeIcon = document.querySelector('.theme-toggle i');
-            if (themeIcon) {
-                themeIcon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-            }
-        }
 
         // Toast Close
         function closeToast() {

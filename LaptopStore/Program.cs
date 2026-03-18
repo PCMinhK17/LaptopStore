@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using LaptopStore.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +53,11 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
+
 
 
 
@@ -71,9 +77,10 @@ app.UseRouting();
 
 app.UseStatusCodePagesWithReExecute("/Errors/Error404");
 
-app.UseAuthentication();
-app.UseAuthorization();
 app.UseSession();
+app.UseAuthentication();
+app.UseCheckBannedUser();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

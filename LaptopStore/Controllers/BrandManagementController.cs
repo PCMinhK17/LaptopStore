@@ -1,5 +1,4 @@
-﻿using LaptopStore.DTOs;
-using LaptopStore.DTOs.BrandDTOs;
+﻿using LaptopStore.DTOs.BrandDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,11 +39,21 @@ public class BrandManagementController : Controller
         if (!ModelState.IsValid)
             return View("~/Views/Manager/AddNewBrand.cshtml", request);
 
+        var exists = _context.Brands
+            .Any(b => b.Name.Trim().ToLower()
+                   == request.Name.Trim().ToLower());
+
+        if (exists)
+        {
+            ModelState.AddModelError("Name", "Tên thương hiệu đã tồn tại.");
+            return View("~/Views/Manager/AddNewBrand.cshtml", request);
+        }
+
         string logoPath = null;
 
         if (request.LogoFile != null)
         {
-            string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/brands");
+            string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/logos");
 
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
@@ -57,12 +66,12 @@ public class BrandManagementController : Controller
                 request.LogoFile.CopyTo(stream);
             }
 
-            logoPath = "/images/brands/" + fileName;
+            logoPath = "/images/logos/" + fileName;
         }
 
         var brand = new Brand
         {
-            Name = request.Name,
+            Name = request.Name.Trim(),
             Origin = request.Origin,
             LogoUrl = logoPath
         };
@@ -70,6 +79,7 @@ public class BrandManagementController : Controller
         _context.Brands.Add(brand);
         _context.SaveChanges();
 
+        TempData["Success"] = "Thêm thương hiệu thành công.";
         return RedirectToAction("Index");
     }
     public IActionResult BrandDetails(int id)
@@ -115,7 +125,16 @@ public class BrandManagementController : Controller
         brand.Name = request.Name;
         brand.Origin = request.Origin;
 
+        var exists = _context.Brands
+    .Any(b => b.Id != request.Id &&
+              b.Name.Trim().ToLower()
+              == request.Name.Trim().ToLower());
 
+        if (exists)
+        {
+            ModelState.AddModelError("Name", "Tên thương hiệu đã tồn tại.");
+            return View("~/Views/Manager/UpdateBrand.cshtml", request);
+        }
         _context.SaveChanges();
 
         return RedirectToAction("BrandDetails", new { id = brand.Id });
@@ -147,7 +166,7 @@ public class BrandManagementController : Controller
         if (brand.Products != null && brand.Products.Any())
         {
             TempData["Error"] = "Không thể xóa thương hiệu vì vẫn còn sản phẩm thuộc thương hiệu này.";
-            return RedirectToAction("BrandDetail", new { id = id });
+            return RedirectToAction("BrandDetails", new { id = id });
         }
 
         _context.Brands.Remove(brand);

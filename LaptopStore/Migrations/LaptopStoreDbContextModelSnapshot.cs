@@ -51,7 +51,7 @@ namespace LaptopStore.Migrations
                     b.HasKey("Id")
                         .HasName("PK__Brands__3213E83F1656AC90");
 
-                    b.ToTable("Brands", (string)null);
+                    b.ToTable("Brands");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.Cart", b =>
@@ -86,7 +86,7 @@ namespace LaptopStore.Migrations
                         .IsUnique()
                         .HasFilter("[user_id] IS NOT NULL");
 
-                    b.ToTable("Carts", (string)null);
+                    b.ToTable("Carts");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.CartItem", b =>
@@ -158,7 +158,7 @@ namespace LaptopStore.Migrations
                     b.HasKey("Id")
                         .HasName("PK__Categori__3213E83F8CA0BC9F");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.Coupon", b =>
@@ -227,7 +227,7 @@ namespace LaptopStore.Migrations
                     b.HasIndex(new[] { "Code" }, "UQ__Coupons__357D4CF9C4B45CC5")
                         .IsUnique();
 
-                    b.ToTable("Coupons", (string)null);
+                    b.ToTable("Coupons");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.EmailVerificationToken", b =>
@@ -408,7 +408,7 @@ namespace LaptopStore.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.Order", b =>
@@ -477,9 +477,6 @@ namespace LaptopStore.Migrations
                         .HasColumnType("varchar(15)")
                         .HasColumnName("phone_number");
 
-                    b.Property<decimal?>("ShippingFee")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Status")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
@@ -505,7 +502,7 @@ namespace LaptopStore.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.OrderDetail", b =>
@@ -654,7 +651,7 @@ namespace LaptopStore.Migrations
                         .IsUnique()
                         .HasFilter("[sku] IS NOT NULL");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.ProductImage", b =>
@@ -735,7 +732,7 @@ namespace LaptopStore.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.User", b =>
@@ -821,7 +818,69 @@ namespace LaptopStore.Migrations
                     b.HasIndex(new[] { "Email" }, "UQ__Users__AB6E6164BDF3686F")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("LaptopStore.Models.Wishlist", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[user_id] IS NOT NULL");
+
+                    b.ToTable("Wishlists");
+                });
+
+            modelBuilder.Entity("LaptopStore.Models.WishlistItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_id");
+
+                    b.Property<int?>("WishlistId")
+                        .HasColumnType("int")
+                        .HasColumnName("wishlist_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WishlistId", "ProductId")
+                        .IsUnique()
+                        .HasFilter("[wishlist_id] IS NOT NULL AND [product_id] IS NOT NULL");
+
+                    b.ToTable("Wishlist_Items", (string)null);
                 });
 
             modelBuilder.Entity("LaptopStore.Models.Cart", b =>
@@ -971,6 +1030,33 @@ namespace LaptopStore.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LaptopStore.Models.Wishlist", b =>
+                {
+                    b.HasOne("LaptopStore.Models.User", "User")
+                        .WithOne("Wishlist")
+                        .HasForeignKey("LaptopStore.Models.Wishlist", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LaptopStore.Models.WishlistItem", b =>
+                {
+                    b.HasOne("LaptopStore.Models.Product", "Product")
+                        .WithMany("WishlistItems")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("LaptopStore.Models.Wishlist", "Wishlist")
+                        .WithMany("WishlistItems")
+                        .HasForeignKey("WishlistId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Wishlist");
+                });
+
             modelBuilder.Entity("LaptopStore.Models.Brand", b =>
                 {
                     b.Navigation("Products");
@@ -1007,6 +1093,8 @@ namespace LaptopStore.Migrations
                     b.Navigation("ProductImages");
 
                     b.Navigation("Reviews");
+
+                    b.Navigation("WishlistItems");
                 });
 
             modelBuilder.Entity("LaptopStore.Models.User", b =>
@@ -1020,6 +1108,13 @@ namespace LaptopStore.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Reviews");
+
+                    b.Navigation("Wishlist");
+                });
+
+            modelBuilder.Entity("LaptopStore.Models.Wishlist", b =>
+                {
+                    b.Navigation("WishlistItems");
                 });
 #pragma warning restore 612, 618
         }

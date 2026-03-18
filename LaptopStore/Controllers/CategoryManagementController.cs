@@ -49,6 +49,16 @@ public class CategoryManagementController : Controller
         if (!ModelState.IsValid)
             return View("~/Views/Manager/AddNewCategory.cshtml", request);
 
+        var exists = _context.Categories
+            .Any(c => c.Name.Trim().ToLower()
+                   == request.Name.Trim().ToLower());
+
+        if (exists)
+        {
+            ModelState.AddModelError("Name", "Tên phân loại đã tồn tại.");
+            return View("~/Views/Manager/AddNewCategory.cshtml", request);
+        }
+
         var category = new Category
         {
             Name = request.Name.Trim(),
@@ -58,9 +68,9 @@ public class CategoryManagementController : Controller
         _context.Categories.Add(category);
         _context.SaveChanges();
 
+        TempData["Success"] = "Thêm phân loại thành công.";
         return RedirectToAction("Index");
     }
-
     // ================= UPDATE =================
     public IActionResult UpdateCategory(int id)
     {
@@ -86,6 +96,17 @@ public class CategoryManagementController : Controller
         if (!ModelState.IsValid)
             return View("~/Views/Manager/UpdateCategory.cshtml", request);
 
+        var exists = _context.Categories
+            .Any(c => c.Id != request.Id &&
+                      c.Name.Trim().ToLower()
+                   == request.Name.Trim().ToLower());
+
+        if (exists)
+        {
+            ModelState.AddModelError("Name", "Tên phân loại đã tồn tại.");
+            return View("~/Views/Manager/UpdateCategory.cshtml", request);
+        }
+
         var category = _context.Categories.Find(request.Id);
         if (category == null)
             return NotFound();
@@ -95,9 +116,9 @@ public class CategoryManagementController : Controller
 
         _context.SaveChanges();
 
+        TempData["Success"] = "Cập nhật phân loại thành công.";
         return RedirectToAction("CategoryDetails", new { id = category.Id });
     }
-
     // ================= DELETE =================
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -113,7 +134,7 @@ public class CategoryManagementController : Controller
         if (category.Products.Any())
         {
             TempData["Error"] = "Không thể xóa vì còn sản phẩm thuộc phân loại này.";
-            return RedirectToAction("CategoryDetail", new { id });
+            return RedirectToAction("CategoryDetails", new { id });
         }
 
         _context.Categories.Remove(category);

@@ -6,18 +6,15 @@
     Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<!-- Breadcrumb -->
-<div class="mb-4">
-    <a href="@Url.Action("Index")" class="btn btn-sm btn-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
-    </a>
-</div>
-
 <!-- Page Header -->
 <div class="page-header">
     <div class="page-header-left">
-        <h2>Thêm sản phẩm mới</h2>
-        <p>Điền đầy đủ thông tin để thêm sản phẩm vào hệ thống</p>
+        <h1>Thêm sản phẩm mới</h1>
+    </div>
+    <div>
+        <a href="@Url.Action("Index")" class="btn btn-sm btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+        </a>
     </div>
 </div>
 
@@ -37,14 +34,14 @@
                     <div class="row g-4">
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="Name" class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                                <label asp-for="Name" class="form-label">Tên sản phẩm <span class="text-danger">*</span> <span class="text-lowercase fw-light">(tối đa 255 ký tự)</span></label>
                                 <input asp-for="Name" class="form-control" placeholder="VD: MacBook Pro 14 inch M3 Pro" />
                                 <span asp-validation-for="Name" class="text-danger" style="font-size: 0.8rem;"></span>
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="Sku" class="form-label">Mã SKU <span class="text-danger">*</span></label>
+                                <label asp-for="Sku" class="form-label">Mã SKU <span class="text-danger">*</span> <span class="text-lowercase fw-light">(tối đa 50 ký tự)</span></label>
                                 <input asp-for="Sku" class="form-control" placeholder="VD: MBP-14-M3P-001" />
                                 <span asp-validation-for="Sku" class="text-danger" style="font-size: 0.8rem;"></span>
                             </div>
@@ -83,9 +80,9 @@
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="Price" class="form-label">Giá bán <span class="text-danger">*</span></label>
+                                <label asp-for="Price" class="form-label">Giá bán <span class="text-danger">*</span> <span class="text-lowercase fw-light">(trong khoảng 1.000 tới 1.000.000.000)</span></label>
                                 <div class="input-group">
-                                    <input asp-for="Price" class="form-control" type="number" min="0" placeholder="0" />
+                                    <input asp-for="Price" class="form-control" type="text" min="0" placeholder="0" />
                                     <span class="input-group-text">VNĐ</span>
                                 </div>
                                 <span asp-validation-for="Price" class="text-danger" style="font-size: 0.8rem;"></span>
@@ -107,43 +104,43 @@
                     <div class="row g-4">
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="Cpu" class="form-label">CPU <span class="text-danger">*</span></label>
+                                <label asp-for="Cpu" class="form-label">CPU <span class="text-danger">*</span> <span class="text-lowercase fw-light">(tối đa 100 ký tự)</span></label>
                                 <input asp-for="Cpu" class="form-control" placeholder="VD: Apple M3 Pro 11-core" />
                                 <span asp-validation-for="Cpu" class="text-danger" style="font-size: 0.8rem;"></span>
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="Ram" class="form-label">RAM <span class="text-danger">*</span></label>
+                                <label asp-for="Ram" class="form-label">RAM <span class="text-danger">*</span> <span class="text-lowercase fw-light">(tối đa 50 ký tự)</span></label>
                                 <input asp-for="Ram" class="form-control" placeholder="VD: 18GB Unified Memory" />
                                 <span asp-validation-for="Ram" class="text-danger" style="font-size: 0.8rem;"></span>
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="HardDrive" class="form-label">Ổ cứng <span class="text-danger">*</span></label>
+                                <label asp-for="HardDrive" class="form-label">Ổ cứng <span class="text-danger">*</span> <span class="text-lowercase fw-light">(tối đa 100 ký tự)</span></label>
                                 <input asp-for="HardDrive" class="form-control" placeholder="VD: 512GB SSD" />
                                 <span asp-validation-for="HardDrive" class="text-danger" style="font-size: 0.8rem;"></span>
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="Gpu" class="form-label">GPU</label>
+                                <label asp-for="Gpu" class="form-label">GPU <span class="text-lowercase fw-light">(tối đa 100 ký tự)</span></label>
                                 <input asp-for="Gpu" class="form-control" placeholder="VD: 14-core GPU" />
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="ScreenSize" class="form-label">Màn hình <span class="text-danger">*</span></label>
+                                <label asp-for="ScreenSize" class="form-label">Màn hình <span class="text-danger">*</span> <span class="text-lowercase fw-light">(tối đa 50 ký tự)</span></label>
                                 <input asp-for="ScreenSize" class="form-control" placeholder="VD: 14.2 inch Liquid Retina XDR" />
                                 <span asp-validation-for="ScreenSize" class="text-danger" style="font-size: 0.8rem;"></span>
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-group mb-0">
-                                <label asp-for="Weight" class="form-label">Trọng lượng <span class="text-danger">*</span></label>
+                                <label asp-for="Weight" class="form-label">Trọng lượng <span class="text-danger">*</span> <span class="text-lowercase fw-light">(từ 1 tới 100)</span></label>
                                 <div class="input-group">
-                                    <input asp-for="Weight" class="form-control" type="number" step="0.01" min="0" placeholder="1.6" />
+                                    <input asp-for="Weight" class="form-control" type="text" step="0.01" min="0" placeholder="1,6" />
                                     <span class="input-group-text">kg</span>
                                 </div>
                                 <span asp-validation-for="Weight" class="text-danger" style="font-size: 0.8rem;"></span>
@@ -165,7 +162,7 @@
                     <div class="row g-4">
                         <div class="col-12">
                             <div class="form-group mb-0">
-                                <label asp-for="ShortDescription" class="form-label">Mô tả ngắn</label>
+                                <label asp-for="ShortDescription" class="form-label">Mô tả ngắn <span class="text-lowercase fw-light">(tối đa 500 ký tự)</span></label>
                                 <textarea asp-for="ShortDescription" class="form-control" rows="2" 
                                           placeholder="Mô tả ngắn gọn về sản phẩm (hiển thị ở danh sách)"></textarea>
                             </div>
@@ -173,12 +170,12 @@
                         <div class="col-12">
                             <div class="form-group mb-0">
                                 <label asp-for="Description" class="form-label">Mô tả chi tiết</label>
-                                <textarea asp-for="Description" class="form-control" rows="5" 
+                                <textarea asp-for="Description" class="form-control" rows="5"
                                           placeholder="Mô tả đầy đủ về sản phẩm, tính năng, ưu điểm..."></textarea>
                             </div>
                         </div>
                     </div>
-                    <span asp-validation-for="ImageFile" class="text-danger small"></span>
+                    
                 </div>
             </div>
 
@@ -194,11 +191,11 @@
         <!-- Sidebar -->
         <div class="col-12 col-lg-4">
             <!-- Image Upload -->
-            <div class="card mb-4" style="position: sticky; top: 100px;">
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title">
                         <i class="fas fa-image"></i>
-                        Hình ảnh sản phẩm
+                        Hình ảnh sản phẩm <span class="text-danger">*</span>
                     </h5>
                 </div>
                 <div class="card-body">
@@ -218,15 +215,16 @@
                         </div>
                     </div>
                     <input asp-for="ImageFile" type="file" id="imageInput" accept="image/*" style="display: none;" onchange="previewImage(this)" />
+                    <span asp-validation-for="ImageFile" class="text-danger small"></span>
                 </div>
             </div>
 
             <!-- Tips Card -->
-            <div class="card">
+            <div class="card" style="position: sticky; top: 100px;">
                 <div class="card-header">
                     <h5 class="card-title">
-                        <i class="fas fa-lightbulb"></i>
-                        Mẹo hữu ích
+                        <i class="fas fa-triangle-exclamation"></i>
+                        Lưu ý
                     </h5>
                 </div>
                 <div class="card-body">
@@ -285,47 +283,47 @@
         align-items: center;
         justify-content: center;
     }
-    
-    .upload-area:hover {
-        border-color: var(--primary-400);
-        background: var(--primary-50);
-    }
-    
-    .upload-area.has-image {
-        padding: 0;
-        border-style: solid;
-    }
-    
+
+        .upload-area:hover {
+            border-color: var(--primary-400);
+            background: var(--primary-50);
+        }
+
+        .upload-area.has-image {
+            padding: 0;
+            border-style: solid;
+        }
+
     .upload-icon {
         font-size: 3rem;
         color: var(--text-muted);
         margin-bottom: 12px;
     }
-    
+
     .upload-text {
         font-weight: 600;
         color: var(--text-secondary);
         margin-bottom: 4px;
     }
-    
+
     .upload-hint {
         font-size: 0.8rem;
         color: var(--text-muted);
     }
-    
+
     .upload-preview {
         width: 100%;
         height: 200px;
         position: relative;
     }
-    
-    .upload-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: var(--radius-lg);
-    }
-    
+
+        .upload-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: var(--radius-lg);
+        }
+
     .remove-image {
         position: absolute;
         top: 8px;
@@ -343,30 +341,45 @@
         font-size: 0.8rem;
         transition: all var(--transition-fast);
     }
-    
-    .remove-image:hover {
-        background: var(--danger-600);
-        transform: scale(1.1);
-    }
+
+        .remove-image:hover {
+            background: var(--danger-600);
+            transform: scale(1.1);
+        }
 </style>
 
 @section Scripts {
     <script>
+
+        const priceElement = new AutoNumeric('#Price', {
+            digitGroupSeparator: '.', 
+            decimalCharacter: ',', 
+            decimalPlaces: 0,  
+            unformatOnSubmit: true 
+        });
+
+        const weightElement = new AutoNumeric('#Weight', {
+            digitGroupSeparator: '.',
+            decimalCharacter: ',',
+            decimalPlaces: 0,
+            unformatOnSubmit: true
+        });
+
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                
+
                 reader.onload = function(e) {
                     document.getElementById('previewImg').src = e.target.result;
                     document.getElementById('uploadPreview').style.display = 'block';
                     document.getElementById('uploadPlaceholder').style.display = 'none';
                     document.getElementById('uploadArea').classList.add('has-image');
                 }
-                
+
                 reader.readAsDataURL(input.files[0]);
             }
         }
-        
+
         function removeImage(event) {
             event.stopPropagation();
             document.getElementById('imageInput').value = '';
@@ -374,24 +387,24 @@
             document.getElementById('uploadPlaceholder').style.display = 'block';
             document.getElementById('uploadArea').classList.remove('has-image');
         }
-        
+
         // Drag and drop support
         const uploadArea = document.getElementById('uploadArea');
-        
+
         uploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
             this.classList.add('dragover');
         });
-        
+
         uploadArea.addEventListener('dragleave', function(e) {
             e.preventDefault();
             this.classList.remove('dragover');
         });
-        
+
         uploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
             this.classList.remove('dragover');
-            
+
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
                 const input = document.getElementById('imageInput');

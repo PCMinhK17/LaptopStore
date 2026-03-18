@@ -7,7 +7,7 @@
 
 <div class="container mt-5">
     <div class="card shadow">
-        <div class="card-header bg-black text-white">
+        <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Đơn nhập hàng mới</h5>
         </div>
         <div class="card-body">
@@ -16,6 +16,9 @@
                     <label for="input-supplier-name" class="form-label fw-bold">Nhà cung cấp <span class="text-danger">*</span></label>
                     <input id="input-supplier-name" class="form-control" placeholder="Nhập tên nhà cung cấp..."
                            oninput="this.value = this.value.substring(0, 100)" />
+                    <span id="alert-supplier" class="text-danger d-none">
+                        Vui lòng nhập tên nhà cung cấp.
+                    </span>
                 </div>
 
                 <div class="col-md-6">
@@ -30,23 +33,28 @@
                             }
                         }
                     </select>
+                    <span id="alert-staff" class="text-danger d-none">
+                        Vui lòng chọn nhân viên phụ trách.
+                    </span>
                 </div>
             </div>
 
             <hr>
 
             <div class="position-relative">
-                <div class="input-group mb-3">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" id="productInput" class="form-control form-control-lg"
-                           placeholder="Nhập tên sản phẩm để tìm kiếm..." oninput="searchProduct()" onfocus="showSearch()">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="productInput" class="form-control" placeholder="Nhập tên sản phẩm để tìm kiếm..."
+                           oninput="searchProduct()" onfocus="showSearch()">
                 </div>
                 <ul id="searchResult" class="list-group position-absolute w-100 shadow-lg d-none"
                     style="z-index: 1000; max-height: 300px; overflow-y: auto;" onmousedown="handleMouseDown()">
                 </ul>
             </div>
-
-            <div id="selectedContainer" class="row row-cols-1 g-3">
+            <span id="alert-product" class="text-danger d-none">
+                Vui lòng chọn ít nhất 1 sản phẩm.
+            </span>
+            <div id="selectedContainer" class="row row-cols-1 g-3 mt-2">
                 <div class="col-12 text-center text-muted py-5" id="emptyNote">
                     <p>Chưa có sản phẩm nào được chọn.</p>
                 </div>
@@ -102,6 +110,7 @@
     });
 
     function searchProduct() {
+        showSearch();
         const productInputValue = productInput.value.trim().toLowerCase();
 
         if (productInputValue.length < 1) {
@@ -190,7 +199,7 @@
 
                         <div class="col-md-2 text-end">
                             <button type="button" class="btn btn-outline-danger btn-lg px-4" onclick="removeItem(${item.id})">
-                                <i class="bi bi-trash"></i> xóa
+                                <i class="fa fa-trash"></i> xóa
                             </button>
                         </div>
                     </div>
@@ -218,49 +227,53 @@
     }
 
     async function submitData() {
-
-        const supplierName = document.getElementById('input-supplier-name').value.trim();
+        const supplierName = document.getElementById('input-supplier-name').value;
         const staffId = document.getElementById('input-staff-id').value;
 
+        const alertSupplier = document.getElementById('alert-supplier');
+        const alertStaff = document.getElementById('alert-staff');
+        const alertProduct = document.getElementById('alert-product');
+        alertSupplier.classList.add('d-none');
+        alertStaff.classList.add('d-none');
+        alertProduct.classList.add('d-none');
+        
+        let hasError = false;
+
         if (!supplierName) {
-            alert("Vui lòng nhập tên nhà cung cấp!");
-            return;
+            alertSupplier.classList.remove('d-none');
+            hasError = true;
         }
         if (!staffId) {
-            alert("Vui lòng chọn nhân viên phụ trách!");
-            return;
+            alertStaff.classList.remove('d-none');
+            hasError = true;
         }
         if (selectedList.length === 0) {
-            alert("Vui lòng chọn ít nhất một sản phẩm!");
-            return;
+            alertProduct.classList.remove('d-none');
+            hasError = true;
         }
 
-        const orderData = {
+        if (hasError) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/StockManagement/AddNewStockInOrder';
+
+
+        const data = {
             supplierName: supplierName,
-            staffId: parseInt(staffId),
-            items: selectedList.map(item => ({
-                productId: item.id,
-                quantity: item.quantity
-            }))
+            staffId: staffId,
+            itemsJson: JSON.stringify(selectedList)
         };
 
-        console.log("Dữ liệu gửi đi:", orderData);
-
-        try {
-            const response = await fetch('/StockManagement/AddNewStockInOrder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            });
-
-            if (response.ok) {
-                alert("Tạo đơn hàng thành công!");
-                window.location.href = "/StockManagement/Index";
-            } else {
-                alert("Có lỗi xảy ra khi tạo đơn.");
-            }
-        } catch (error) {
-            console.error("Lỗi:", error);
+        for (const key in data) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = data[key];
+            form.appendChild(input);
         }
+
+        document.body.appendChild(form);
+        form.submit(); 
     }
 </script>

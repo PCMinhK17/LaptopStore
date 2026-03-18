@@ -2,10 +2,15 @@
 
 public class StockInOrderResponse
 {
-    public int ReceiptId { get; set; }
+    public int Id { get; set; }
+
     public string SupplierName { get; set; } = "";
 
-    public string StaffName { get; set; }
+    public string StaffName { get; set; } = "Không thấy";
+
+    public string StaffAvatarUrl { get; set; } = "/images/image-not-found";
+
+    public string StaffEmail { get; set; } = "Không thấy";
 
     public string Status { get; set; } = "";
 

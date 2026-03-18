@@ -5,7 +5,7 @@
     decimal subtotal = 0;
     if (cartItems.Any())
     {
-        subtotal = cartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
+        subtotal = cartItems.Sum(ci => ci.Quantity * ci.Product.Price);
     }
     decimal shippingFee = 0;
     decimal total = subtotal + shippingFee;
@@ -191,7 +191,7 @@
                                 @foreach (var item in cartItems)
                                 {
                                     var product = item.Product;
-                                    var quantity = item.Quantity ?? 1;
+                                    var quantity = item.Quantity;
                                     var price = product?.Price ?? 0;
                                     var itemTotal = quantity * price;
                                     

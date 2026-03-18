@@ -1,11 +1,10 @@
 ﻿using LaptopStore.DTOs.ProductDTOs;
 using LaptopStore.DTOs.StockDTOs;
 using LaptopStore.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Claims;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 namespace LaptopStore.Controllers;
 
 public class StockManagementController : Controller
@@ -59,20 +58,65 @@ public class StockManagementController : Controller
             ProductImages = p.ProductImages.Select(i => new ProductImageResponse
             {
                 ImageUrl = i.ImageUrl,
-                IsThumbnail = i.IsThumbnail ?? false
+                IsThumbnail = i.IsThumbnail
             }).ToList()
         }).ToList();
         return View("~/Views/Manager/AddNewStockInOrder.cshtml");
     }
 
+    [HttpPost] 
+    public IActionResult AddNewStockInOrder(string supplierName, int staffId, string itemsJson)
+    {
+        if (string.IsNullOrEmpty(itemsJson)) return BadRequest("Danh sách trống");
+
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var items = JsonSerializer.Deserialize<List<StockInItemDto>>(itemsJson, options);
+
+
+        var model = new StockInOrderRequest
+        {
+            SupplierName = supplierName,
+            StaffId = staffId,
+            StaffName = _context.Users.Where(u => u.Id == staffId).Select(u => u.FullName).FirstOrDefault() ?? "Không thấy",
+            Items = items.Select(i => new StockInItemRequest
+            {
+                Product = new ProductResponse
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Sku = i.Sku,
+                    BrandName = i.BrandName,
+                    CategoryName = i.CategoryName,
+                    Price = i.Price,
+                    OldPrice = i.OldPrice,
+                    StockQuantity = i.StockQuantity,
+                    Description = i.Description,
+                    ShortDescription = i.ShortDescription,
+                    Cpu = i.Cpu,
+                    Ram = i.Ram,
+                    HardDrive = i.HardDrive,
+                    Gpu = i.Gpu,
+                    ScreenSize = i.ScreenSize,
+                    Weight = i.Weight,
+                    IsActive = i.IsActive,
+                    ProductImages = i.ProductImages,
+                    CreatedAt = i.CreatedAt
+                },
+                Quantity = i.Quantity
+            }).ToList()
+        };
+
+        return View("~/Views/Manager/ConfirmAddNewStockInOrder.cshtml", model);
+    }
+
     [HttpPost]
-    public IActionResult AddNewStockInOrder([FromBody] StockInOrderRequest request)
+    public IActionResult ConfirmAddNewStockInOrder(StockInOrderRequest request)
     {
         if (request == null || request.Items == null || request.Items.Count == 0)
         {
             return BadRequest("Dữ liệu đơn hàng không hợp lệ.");
         }
-
+ 
         var newImportReceipt = new ImportReceipt
         {
             SupplierName = request.SupplierName,
@@ -90,7 +134,7 @@ public class StockManagementController : Controller
             var importDetail = new ImportDetail
             {
                 ReceiptId = importReceiptId,
-                ProductId = item.ProductId,
+                ProductId = item.Product.Id,
                 RequestedQuantity = item.Quantity,
                 ActualQuantity = 0
             };
@@ -99,8 +143,9 @@ public class StockManagementController : Controller
 
         _context.SaveChanges();
 
-        return Ok(new { message = "Lưu đơn hàng thành công"});
+        return RedirectToAction("StockDetails", new { id = importReceiptId });
     }
+    
     [HttpGet]
     public IActionResult StockDetails(int id)
     {
@@ -110,10 +155,14 @@ public class StockManagementController : Controller
         }
         var orderDto = new StockInOrderResponse
         {
+            Id = id,
             SupplierName = order.SupplierName ?? "",
             StaffName = order.Staff?.FullName ?? "Không thấy",
+            StaffAvatarUrl = order.Staff?.AvatarUrl ?? "/images/image-not-found.jpg",
+            StaffEmail = order.Staff?.Email ?? "Không thấy",
             TotalCost = order.TotalCost,
-            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            CreatedAt = order.CreatedAt,
+            Status = order.Status,
             DeliveredAt = order.DeliveredAt,
             Items = order.ImportDetails.Select(d => new StockInItemResponse
             {
@@ -126,21 +175,23 @@ public class StockManagementController : Controller
             }).ToList()
         };
 
-        switch (order.Status)
-        {
-            case "pending":
-                orderDto.Status = "Đang chờ xử lý";
-                break;
-            case "success":
-                orderDto.Status = "Đã giao hàng";
-                break;
-            case "cancel":
-                orderDto.Status = "Đã hủy";
-                break;
-        }
-
         return View("~/Views/Manager/StockDetails.cshtml", orderDto);
     }
+
+    [HttpPost]
+    public IActionResult CancelPendingReceipt(int id)
+    {
+        var receipt = _context.ImportReceipts.Include(r => r.ImportDetails).FirstOrDefault(r => r.Id == id);
+        if (receipt != null)
+        {
+            _context.ImportDetails.RemoveRange(receipt.ImportDetails);
+            _context.ImportReceipts.Remove(receipt);
+            _context.SaveChanges();
+        }
+
+        return RedirectToAction("Index");
+    }
+
     [Authorize]
     public IActionResult ByStaff(int page = 1)
     {
@@ -185,10 +236,10 @@ public class StockManagementController : Controller
 
         var orderDto = new StockInOrderResponse
         {
-            ReceiptId = order.Id,
+            Id = order.Id,
             SupplierName = order.SupplierName ?? "",
             TotalCost = order.TotalCost,
-            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            CreatedAt = order.CreatedAt,
             DeliveredAt = order.DeliveredAt,
             Items = order.ImportDetails.Select(d => new StockInItemResponse
             {

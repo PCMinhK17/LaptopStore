@@ -1,6 +1,4 @@
-﻿using LaptopStore.Models;
-
-namespace LaptopStore.DTOs.ProductDTOs;
+﻿namespace LaptopStore.DTOs.ProductDTOs;
 
 public class ProductResponse
 {
