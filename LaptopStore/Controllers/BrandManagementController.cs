@@ -1,5 +1,4 @@
-﻿using LaptopStore.DTOs;
-using LaptopStore.DTOs.BrandDTOs;
+﻿using LaptopStore.DTOs.BrandDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

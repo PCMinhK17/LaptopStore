@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-using System.Security.Claims;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using LaptopStore.Extensions;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;

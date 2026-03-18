@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using LaptopStore.Models;
 using LaptopStore.Extensions;
 using Microsoft.AspNetCore.Mvc;

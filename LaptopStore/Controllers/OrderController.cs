@@ -1,10 +1,7 @@
 using LaptopStore.Extensions;
 using LaptopStore.Models;
-using LaptopStore.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
 namespace LaptopStore.Controllers
 {

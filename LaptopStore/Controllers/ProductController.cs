@@ -1,7 +1,6 @@
 ﻿using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace LaptopStore.Controllers
 {

@@ -4,9 +4,6 @@ using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 namespace LaptopStore.Controllers;
 

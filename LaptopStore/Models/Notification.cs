@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace LaptopStore.Models;
+﻿namespace LaptopStore.Models;
 
 public partial class Notification
 {
