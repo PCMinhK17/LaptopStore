@@ -213,7 +213,32 @@ namespace LaptopStore.Controllers
                 }
 
                 order.Status = status;
-                
+
+                await _context.SaveChangesAsync();
+
+                // Create notification for user if staff change status
+                var notification = new Notification();
+                notification.UserId = order.UserId.Value;
+                notification.Type = "order";
+
+                switch (status)
+                {
+                    case "confirmed":
+                        notification.Title = $"Đơn hàng #{order.Id:D6} đã được xác nhận";
+                        notification.Message = "Đơn hàng của bạn đã được xác nhận và đang được chuẩn bị để giao.";
+                        break;
+                    case "shipping":
+                        notification.Title = $"Đơn hàng #{order.Id:D6} đang được giao";
+                        notification.Message = "Đơn hàng của bạn đang được giao đến địa chỉ của bạn. Vui lòng chuẩn bị nhận hàng.";
+                        break;
+                    case "completed":
+                        notification.Title = $"Đơn hàng #{order.Id:D6} đã giao thành công";
+                        notification.Message = "Đơn hàng của bạn đã được giao thành công. Cảm ơn bạn đã mua sắm tại cửa hàng chúng tôi!";
+                        break;
+                }
+
+                await _context.Notifications.AddAsync(notification);
+
                 await _context.SaveChangesAsync();
 
                 var message = status switch

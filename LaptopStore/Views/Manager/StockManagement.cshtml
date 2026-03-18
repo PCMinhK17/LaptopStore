@@ -35,7 +35,7 @@
                         <td><a asp-controller="StockManagement" asp-action="StockDetails" asp-route-id="@stock.Id">@stock.SupplierName</a></td>
                         <td>@stock.TotalCost</td>
                         <td>@stock.CreatedAt</td>
-                        @switch (stock.Status)
+                        @switch (stock.Status.ToLower())
                         {
                             case "pending":
                                 <td><span class="badge bg-warning text-dark">Đang chờ</span></td>
