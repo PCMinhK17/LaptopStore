@@ -1,0 +1,218 @@
+@model LaptopStore.Models.Wishlist
+@using LaptopStore.Models
+
+@{
+    ViewData["Title"] = "Sản phẩm yêu thích";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <style>
+        .wishlist-header {
+            background: linear-gradient(135deg, #4A90D9 0%, #68B8F8 100%);
+            padding: 40px 0;
+            color: white;
+            margin-bottom: 32px;
+        }
+        .wishlist-header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .empty-wishlist {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        .empty-wishlist i {
+            font-size: 4rem;
+            color: #CBD5E1;
+            margin-bottom: 20px;
+        }
+        .empty-wishlist h3 {
+            color: #64748B;
+            margin-bottom: 12px;
+        }
+        .remove-wishlist-btn {
+            background: none;
+            border: none;
+            color: #EF4444;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .remove-wishlist-btn:hover {
+            background: #FEE2E2;
+        }
+    </style>
+}
+
+<section class="wishlist-header">
+    <div class="container">
+        <h1><i class="fas fa-heart me-2"></i>Sản phẩm yêu thích</h1>
+        <p style="opacity:0.9;">@(Model.WishlistItems?.Count ?? 0) sản phẩm trong danh sách yêu thích</p>
+    </div>
+</section>
+
+<div class="container" style="padding-bottom: 60px;">
+    @if (Model.WishlistItems == null || !Model.WishlistItems.Any())
+    {
+        <div class="empty-wishlist">
+            <i class="far fa-heart"></i>
+            <h3>Chưa có sản phẩm yêu thích</h3>
+            <p style="color: #94A3B8;">Hãy thêm sản phẩm vào danh sách yêu thích của bạn</p>
+            <a href="@Url.Action("Index", "Product")" class="view-all-btn" style="margin-top:16px;">
+                <i class="fas fa-shopping-bag"></i> Khám phá sản phẩm
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var item in Model.WishlistItems)
+            {
+                var product = item.Product;
+                if (product == null) continue;
+
+                var productImage = product.ProductImages?.FirstOrDefault()?.ImageUrl ?? "/images/laptop-dell-xps-13-9350-black-6.webp";
+                var hasDiscount = product.OldPrice.HasValue && product.OldPrice > product.Price;
+                var discountPercent = hasDiscount ? (int)Math.Round(100 - ((double)product.Price / (double)product.OldPrice.Value * 100)) : 0;
+                var isInStock = product.StockQuantity.HasValue && product.StockQuantity > 0;
+
+                <div class="product-card" id="wishlist-card-@product.Id">
+                    <div class="product-card-image">
+                        <a href="@Url.Action("Detail", "Product", new { id = product.Id })">
+                            <img src="@productImage" alt="@product.Name" loading="lazy" />
+                        </a>
+                        @if (hasDiscount)
+                        {
+                            <span class="product-badge">-@(discountPercent)%</span>
+                        }
+                        <button class="product-wishlist-btn active"
+                                onclick="removeFromWishlist(@product.Id)"
+                                title="Bỏ yêu thích">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="product-card-body">
+                        <span class="product-card-brand">@product.Brand?.Name</span>
+                        <h3 class="product-card-name">
+                            <a href="@Url.Action("Detail", "Product", new { id = product.Id })">@product.Name</a>
+                        </h3>
+                        <div class="product-card-price">
+                            @if (hasDiscount)
+                            {
+                                <span class="product-old-price">@String.Format("{0:N0}đ", product.OldPrice)</span>
+                            }
+                            <span class="product-current-price">@String.Format("{0:N0}đ", product.Price)</span>
+                        </div>
+                    </div>
+                    <div class="product-card-footer">
+                        <div class="d-flex gap-2">
+                            @if (isInStock)
+                            {
+                                <button class="add-to-cart-btn flex-grow-1" onclick="addToCartFromWishlist(@product.Id, this)">
+                                    <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="out-of-stock-badge flex-grow-1">
+                                    <i class="fas fa-times-circle"></i> Hết hàng
+                                </div>
+                            }
+                            <button class="remove-wishlist-btn" onclick="removeFromWishlist(@product.Id)" title="Xóa">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="home-toast" id="homeToast">
+    <i class="fas fa-check-circle"></i>
+    <span id="homeToastText"></span>
+</div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            var toast = document.getElementById('homeToast');
+            var toastText = document.getElementById('homeToastText');
+            var toastIcon = toast.querySelector('i');
+            toastText.textContent = message;
+            toast.className = 'home-toast ' + type;
+            toastIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            setTimeout(function() { toast.classList.add('show'); }, 10);
+            setTimeout(function() { toast.classList.remove('show'); }, 3000);
+        }
+
+        function removeFromWishlist(productId) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            $.ajax({
+                url: '@Url.Action("Toggle", "Wishlist")',
+                type: 'POST',
+                data: { productId: productId, __RequestVerificationToken: token },
+                success: function(response) {
+                    if (response.success && !response.isInWishlist) {
+                        var card = document.getElementById('wishlist-card-' + productId);
+                        if (card) {
+                            card.style.transition = 'opacity 0.3s, transform 0.3s';
+                            card.style.opacity = '0';
+                            card.style.transform = 'scale(0.9)';
+                            setTimeout(function() { card.remove(); }, 300);
+                        }
+                        showToast('Đã xóa khỏi yêu thích', 'success');
+                        var badge = document.getElementById('wishlistBadgeCount');
+                        if (badge) {
+                            badge.textContent = response.wishlistCount;
+                            badge.style.display = response.wishlistCount > 0 ? 'flex' : 'none';
+                        }
+                    }
+                }
+            });
+        }
+
+        function addToCartFromWishlist(productId, btn) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            var originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            $.ajax({
+                url: '@Url.Action("AddToCartAjax", "Cart")',
+                type: 'POST',
+                data: { productId: productId, quantity: 1, __RequestVerificationToken: token },
+                success: function(response) {
+                    if (response.success) {
+                        btn.innerHTML = '<i class="fas fa-check"></i> Đã thêm!';
+                        btn.classList.add('added');
+                        showToast(response.message, 'success');
+                        var badge = document.getElementById('cartBadgeCount');
+                        if (badge) {
+                            badge.textContent = response.cartItemCount;
+                            badge.style.display = response.cartItemCount > 0 ? 'flex' : 'none';
+                        }
+                        setTimeout(function() {
+                            btn.innerHTML = originalHtml;
+                            btn.classList.remove('added');
+                            btn.disabled = false;
+                        }, 2000);
+                    } else {
+                        showToast(response.message, 'error');
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                },
+                error: function() {
+                    showToast('Có lỗi xảy ra', 'error');
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            });
+        }
+    </script>
+}
