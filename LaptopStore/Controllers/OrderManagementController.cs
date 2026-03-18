@@ -134,7 +134,7 @@ namespace LaptopStore.Controllers
                 var paymentMethodText = order.PaymentMethod switch
                 {
                     "cod" => "COD",
-                    "vietqr" => "Chuyển khoản",
+                    "qr" => "Chuyển khoản",
                     "vnpay" => "VNPay",
                     _ => order.PaymentMethod ?? ""
                 };

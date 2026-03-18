@@ -28,7 +28,7 @@
 
             <div class="mb-3">
                 <strong>Phương thức thanh toán:</strong> 
-                @if (Model.PaymentMethod == "vietqr")
+                @if (Model.PaymentMethod == "qr")
                 {
                     <span>Chuyển khoản ngân hàng (SEPay)</span>
                 }
@@ -52,7 +52,7 @@
                 }
             </div>
 
-            @if (Model.PaymentMethod == "vietqr" && Model.PaymentStatus == "unpaid")
+            @if (Model.PaymentMethod == "qr" && Model.PaymentStatus == "unpaid")
             {
                 var bankId = ViewBag.SePayBankId;
                 var accountNo = ViewBag.SePayAccountNo;
