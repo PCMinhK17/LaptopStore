@@ -81,7 +81,7 @@ namespace LaptopStore.Controllers
                 if (pm == "cod" || pm == "cash" || pm.Contains("cash") || pm.Contains("cod"))
                     paymentMethod = "cod";
                 else if (pm.Contains("bank") || pm.Contains("vietqr") || pm.Contains("qr") || pm.Contains("transfer"))
-                    paymentMethod = "vietqr";
+                    paymentMethod = "qr";
                 else if (pm.Contains("vnpay"))
                     paymentMethod = "vnpay";
                 else
@@ -261,7 +261,7 @@ namespace LaptopStore.Controllers
             ViewBag.EstTo = today.AddDays(processingDays + shippingMaxDays);
 
             // Pass SePay settings if payment is by QR
-            if (order.PaymentMethod == "vietqr" && order.PaymentStatus == "unpaid")
+            if (order.PaymentMethod == "qr" && order.PaymentStatus == "unpaid")
             {
                 var sePaySection = _configuration.GetSection("SePay");
                 ViewBag.SePayBankId = sePaySection["BankId"];
