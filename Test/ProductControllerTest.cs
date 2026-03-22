@@ -23,6 +23,19 @@ public class ProductSearchTest
         return context;
     }
 
+    private Review CreateValidReview(int id, int productId, int rating)
+    {
+        return new Review
+        {
+            Id = id,
+            ProductId = productId,
+            Rating = rating,
+            Comment = "San pham dep",
+            CreatedAt = DateTime.Now,
+            UserId = 1 
+        };
+    }
+
     // Hàm hỗ trợ tạo Product với ĐẦY ĐỦ các trường bắt buộc (Tránh lỗi DbUpdateException)
     private Product CreateValidProduct(int id, decimal price, int? brandId = null)
     {
@@ -125,5 +138,69 @@ public class ProductSearchTest
 
         Assert.Single(model);
         Assert.True(model[0].Price < 10000000m);
+    }
+
+    /// Test: Sản phẩm không tồn tại
+    [Fact]
+    public void Detail_ProductNotFound_ReturnsNotFound()
+    {
+        var context = GetDbContext();
+        var loggerMock = new Mock<ILogger<ProductController>>();
+        var controller = new ProductController(loggerMock.Object, context);
+
+        // Act: Tìm ID không có trong DB
+        var result = controller.Detail(99);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    /// Test:Tính toán Rating trung bình và Thống kê sao
+    [Fact]
+    public void Detail_ValidProduct_CalculatesCorrectRatings()
+    {
+        var context = GetDbContext();
+        var product = CreateValidProduct(1, 10000000m);
+        context.Products.Add(product);
+
+        // Sử dụng hàm hỗ trợ để tránh thiếu trường 'Comment'
+        context.Reviews.AddRange(
+            CreateValidReview(1, 1, 5),
+            CreateValidReview(2, 1, 4)
+        );
+        context.SaveChanges();
+
+        var controller = new ProductController(new Mock<ILogger<ProductController>>().Object, context);
+
+        // Act
+        var result = controller.Detail(1);
+        var viewResult = Assert.IsType<ViewResult>(result);
+
+        // Assert
+        Assert.Equal(4.5, viewResult.ViewData["AvgRating"]);
+        Assert.Equal(2, viewResult.ViewData["TotalReviews"]);
+        Assert.Equal(1, (int)viewResult.ViewData["Rating5"]);
+        Assert.Equal(1, (int)viewResult.ViewData["Rating4"]);
+    }
+
+    /// Test: Sản phẩm chưa có Review nào
+    [Fact]
+    public void Detail_NoReviews_ReturnsZeroRatings()
+    {
+        var context = GetDbContext();
+        context.Products.Add(CreateValidProduct(1, 10000000m));
+        context.SaveChanges();
+
+        var controller = new ProductController(new Mock<ILogger<ProductController>>().Object, context);
+
+        // Act
+        var result = controller.Detail(1);
+        var viewResult = Assert.IsType<ViewResult>(result);
+
+        // Assert
+        Assert.Equal(0.0, viewResult.ViewData["AvgRating"]);
+        Assert.Equal(0, viewResult.ViewData["TotalReviews"]);
+        var reviews = viewResult.ViewData["Reviews"] as List<Review>;
+        Assert.Empty(reviews);
     }
 }
