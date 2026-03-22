@@ -1,3 +1,5 @@
+using LaptopStore.Models;
+
 namespace LaptopStore.Services
 {
     /// <summary>
@@ -39,5 +41,8 @@ namespace LaptopStore.Services
         /// <param name="resetLink">Link reset mật khẩu</param>
         /// <returns>True nếu gửi thành công</returns>
         Task<bool> SendPasswordResetEmailAsync(string toEmail, string userName, string resetLink);
+
+
+        Task<bool> SendOrderInformationAsync(string toEmail, string userName, Order order);
     }
 }
