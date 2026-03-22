@@ -161,12 +161,16 @@
                         <div class="order-card shadow-sm" id="order-@order.Id">
 
                             <div class="d-flex justify-content-between align-items-center"
-                                 onclick="toggleDetail(@order.Id)"
                                  style="cursor:pointer;">
 
                                 <div>
                                     <h6 class="fw-bold text-danger mb-1">
-                                        Đơn hàng #@order.Id
+                                        <a asp-controller="Order"
+                                           asp-action="Details"
+                                           asp-route-id="@order.Id"
+                                           style="color:#d70018;text-decoration:none">
+                                            Đơn hàng #@order.Id
+                                        </a>
                                     </h6>
                                     <small class="text-muted">
                                         @order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")

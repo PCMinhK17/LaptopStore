@@ -153,7 +153,8 @@ namespace LaptopStore.Controllers
                 cartItem.Quantity = quantity;
                 _context.SaveChanges();
 
-                // Tính lại tổng tiền (product đã được load ở trên)
+                // Tính lại
+                // tiền (product đã được load ở trên)
                 var itemTotal = (quantity * (product?.Price ?? 0));
 
                 // Tính tổng đơn hàng
