@@ -43,7 +43,7 @@ namespace LaptopStore.Controllers
 
             // User-specific data
             int? userId = User.GetUserId();
-            var wishlistProductIds = new List<int?>();
+            var wishlistProductIds = new List<int>();
             int cartItemCount = 0;
             int wishlistCount = 0;
 
