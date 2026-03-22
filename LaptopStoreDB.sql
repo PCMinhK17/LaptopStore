@@ -9,14 +9,14 @@ CREATE TABLE Users (
     id INT PRIMARY KEY IDENTITY(1,1),
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL, -- Lưu hash password
-    full_name NVARCHAR(100),
+    full_name NVARCHAR(100) NOT NULL,
     phone_number VARCHAR(15),
     address NVARCHAR(255),
 	  avatar_url VARCHAR(255),
-    role VARCHAR(20) DEFAULT 'customer' CHECK (role IN ('admin', 'staff', 'customer')),
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'banned', 'pending')),
+    role VARCHAR(20) NOT NULL DEFAULT 'customer' CHECK (role IN ('admin', 'staff', 'customer')),
+    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'banned', 'pending')),
     ban_reason NVARCHAR(500),
-    created_at DATETIME DEFAULT GETDATE(),
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME DEFAULT GETDATE()
 );
 
@@ -201,26 +201,6 @@ CREATE TABLE Email_Verification_Tokens (
     expires_at DATETIME NOT NULL,
     is_used BIT NOT NULL DEFAULT 0
 );
-
--- 14. Bảng Wishlists
-CREATE TABLE [Wishlists] (
-    [id] int NOT NULL IDENTITY(1,1),
-    [user_id] int NULL UNIQUE,
-    [created_at] datetime NULL DEFAULT (getdate()),
-    CONSTRAINT [PK_Wishlists] PRIMARY KEY ([id]),
-    CONSTRAINT [FK_Wishlists_Users_user_id] FOREIGN KEY ([user_id]) REFERENCES [Users] ([id]) ON DELETE CASCADE
-);
-
-CREATE TABLE [Wishlist_Items] (
-    [id] int NOT NULL IDENTITY(1,1),
-    [wishlist_id] int NULL,
-    [product_id] int NULL,
-    [created_at] datetime NULL DEFAULT (getdate()),
-    CONSTRAINT [PK_Wishlist_Items] PRIMARY KEY ([id]),
-    CONSTRAINT [FK_Wishlist_Items_Products_product_id] FOREIGN KEY ([product_id]) REFERENCES [Products] ([id]) ON DELETE CASCADE,
-    CONSTRAINT [FK_Wishlist_Items_Wishlists_wishlist_id] FOREIGN KEY ([wishlist_id]) REFERENCES [Wishlists] ([id]) ON DELETE CASCADE
-);
-GO
 
 
 USE LaptopStoreDB;

@@ -37,7 +37,7 @@ namespace LaptopStore.Controllers
             {
                 wishlist = new Wishlist
                 {
-                    UserId = userId,
+                    UserId = userId.Value,
                     CreatedAt = DateTime.UtcNow,
                     WishlistItems = new List<WishlistItem>()
                 };
