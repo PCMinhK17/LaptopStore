@@ -1,5 +1,6 @@
 using LaptopStore.Extensions;
 using LaptopStore.Models;
+using LaptopStore.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +10,14 @@ namespace LaptopStore.Controllers
     {
         private readonly LaptopStoreDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
-        public OrderController(LaptopStoreDbContext context, IConfiguration configuration)
+
+        public OrderController(LaptopStoreDbContext context, IConfiguration configuration, IEmailService emailService)
         {
             _context = context;
             _configuration = configuration;
+            _emailService = emailService;
         }
 
         // GET: /Order
@@ -191,6 +195,17 @@ namespace LaptopStore.Controllers
 
                 _context.SaveChanges();
                 transaction.Commit();
+
+                //Gửi email thông tin đơn hàng
+                var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+                if (user != null)
+                {
+                    var newOrder = _context.Orders
+                    .Include(o => o.OrderDetails)
+                        .ThenInclude(od => od.Product)
+                    .FirstOrDefault(o => o.Id == order.Id);
+                    _emailService.SendOrderInformationAsync(user.Email, user.FullName, newOrder);
+                } 
 
                 var processingDays = 1;
                 var shippingMinDays = 3;
