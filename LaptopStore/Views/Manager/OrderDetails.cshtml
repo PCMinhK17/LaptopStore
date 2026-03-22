@@ -38,30 +38,91 @@
                 }
             </div>
 
-            <h5>Sản phẩm</h5>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Giá</th>
-                        <th>Tổng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var od in Model.OrderDetails)
-                    {
+        <!-- Order Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-box"></i>
+                    Sản phẩm đặt mua
+                    <span class="badge badge-light ms-2">@Model.OrderDetails?.Count sản phẩm</span>
+                </h5>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td>
-                                @od.Product?.Name
-                            </td>
-                            <td>@od.Quantity</td>
-                            <td>@od.Price.ToString("N0") đ</td>
-                            <td>@((od.Quantity * od.Price).ToString("N0")) đ</td>
+                            <th>Sản phẩm</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @if (Model.OrderDetails != null)
+                        {
+                            foreach (var item in Model.OrderDetails)
+                            {
+                                var product = item.Product;
+                                var thumbnail = product?.ProductImages?.FirstOrDefault(i => i.IsThumbnail ?? false)?.ImageUrl ?? "/images/default-product.png";
+                                var itemTotal = item.Quantity * item.Price;
+                                
+                                <tr>
+                                    <td>
+                                        <div class="table-product">
+                                            <div class="table-product-img">
+                                                <img src="@thumbnail" alt="@product?.Name" />
+                                            </div>
+                                            <div class="table-product-info">
+                                                <div class="table-product-name">
+                                                    <a asp-controller="Product"
+                                                       asp-action="Details"
+                                                       asp-route-id="@product?.Id"
+                                                       style="color: var(--text-primary); text-decoration:none; font-weight:600;">
+                                                        @product?.Name
+                                                    </a>
+                                                </div>
+                                                <div class="table-product-sku">SKU: @product?.Sku</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-light">x@item.Quantity</span>
+                                    </td>
+                                    <td class="text-end">@item.Price.ToString("#,##0") ₫</td>
+                                    <div class="d-flex justify-content-between pt-2 border-top">
+                                        <span class="fw-bold">Total Order Amount:</span>
+                                        <span class="fw-bold text-primary" style="font-size: 1.25rem;">
+                                            @Model.TotalMoney.ToString("#,##0") ₫
+                                        </span>
+                                    </div>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <div class="row justify-content-end">
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Tạm tính:</span>
+                                <span>@Model.Subtotal?.ToString("#,##0") ₫</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Phí vận chuyển:</span>
+                                <span>Miễn phí</span>
+                            </div>
+                            <div class="d-flex justify-content-between pt-2 border-top">
+                                <span class="fw-bold">Tổng cộng:</span>
+                                <span class="fw-bold text-primary" style="font-size: 1.25rem;">@Model.TotalMoney.ToString("#,##0") ₫</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
             <div class="text-end">
                 <p>Tạm tính: <strong>@Model.Subtotal?.ToString("N0") đ</strong></p>
