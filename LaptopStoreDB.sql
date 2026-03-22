@@ -1,4 +1,5 @@
-﻿CREATE DATABASE LaptopStoreDB;
+-- 1. TẠO DATABASE
+CREATE DATABASE LaptopStoreDB;
 GO
 USE LaptopStoreDB;
 GO
@@ -7,19 +8,22 @@ GO
 CREATE TABLE Users (
     id INT PRIMARY KEY IDENTITY(1,1),
     email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    full_name NVARCHAR(100) NOT NULL,
-    phone_number VARCHAR(15) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL, -- Lưu hash password
+    full_name NVARCHAR(100),
+    phone_number VARCHAR(15),
     address NVARCHAR(255),
-    avatar_url VARCHAR(255),
-    role VARCHAR(20) NOT NULL DEFAULT 'customer' CHECK (role IN ('admin', 'staff', 'customer')),
-    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'banned', 'pending')),
-	ban_reason NVARCHAR(255),
-    created_at DATETIME NOT NULL DEFAULT GETDATE(),
-    updated_at DATETIME NOT NULL DEFAULT GETDATE()
+	  avatar_url VARCHAR(255),
+    role VARCHAR(20) DEFAULT 'customer' CHECK (role IN ('admin', 'staff', 'customer')),
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'banned', 'pending')),
+    ban_reason NVARCHAR(500),
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME DEFAULT GETDATE()
 );
 
--- 2. Bảng Categories
+-- Filtered unique index: cho phép nhiều NULL (user đăng nhập Google chưa có SĐT)
+CREATE UNIQUE INDEX UQ__Users__phone_number ON Users(phone_number) WHERE phone_number IS NOT NULL;
+
+-- Bảng Categories (Danh mục)
 CREATE TABLE Categories (
     id INT PRIMARY KEY IDENTITY(1,1),
     name NVARCHAR(100) NOT NULL,
@@ -166,6 +170,28 @@ CREATE TABLE Notifications (
     type VARCHAR(50) DEFAULT 'order' CHECK (type IN('order', 'receipt')),
     created_at DATETIME DEFAULT GETDATE()
 );
+
+-- Bảng Wishlists (Danh sách yêu thích)
+CREATE TABLE Wishlists (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    user_id INT UNIQUE NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+-- Bảng Wishlist_Items (Chi tiết yêu thích)
+CREATE TABLE Wishlist_Items (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    wishlist_id INT NOT NULL,
+    product_id INT NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT UK_Wishlist_Product UNIQUE(wishlist_id, product_id),
+    FOREIGN KEY (wishlist_id) REFERENCES Wishlists(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
+);
+
 
 CREATE TABLE Email_Verification_Tokens (
     id INT PRIMARY KEY IDENTITY(1,1),

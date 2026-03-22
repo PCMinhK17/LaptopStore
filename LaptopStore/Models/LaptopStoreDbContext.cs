@@ -49,11 +49,14 @@ public partial class LaptopStoreDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var builder = new ConfigurationBuilder()
-                       .SetBasePath(Directory.GetCurrentDirectory())
-                       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-        IConfigurationRoot configuration = builder.Build();
-        optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));
+        if (!optionsBuilder.IsConfigured)
+        {
+            var builder = new ConfigurationBuilder()
+                           .SetBasePath(Directory.GetCurrentDirectory())
+                           .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            IConfigurationRoot configuration = builder.Build();
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -454,7 +457,9 @@ public partial class LaptopStoreDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Users__3213E83F95207CE9");
 
-            entity.HasIndex(e => e.PhoneNumber, "UQ__Users__A1936A6B588DB205").IsUnique();
+            entity.HasIndex(e => e.PhoneNumber, "UQ__Users__A1936A6BB8BC7BA3")
+                .IsUnique()
+                .HasFilter("[phone_number] IS NOT NULL");
 
             entity.HasIndex(e => e.Email, "UQ__Users__AB6E616476DCDEF8").IsUnique();
 

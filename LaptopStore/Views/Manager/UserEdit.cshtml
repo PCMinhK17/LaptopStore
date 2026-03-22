@@ -146,7 +146,7 @@
                     <div class="form-group mb-0">
                         <label asp-for="Role" class="form-label">Vai trò <span class="text-danger">*</span></label>
                         <div class="row g-3">
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6">
                                 <div class="role-option">
                                     <input type="radio" asp-for="Role" value="customer" id="roleCustomer" />
                                     <label for="roleCustomer" class="role-card">
@@ -163,7 +163,7 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6">
                                 <div class="role-option">
                                     <input type="radio" asp-for="Role" value="staff" id="roleStaff" />
                                     <label for="roleStaff" class="role-card">
@@ -173,23 +173,6 @@
                                         <div class="role-info">
                                             <div class="role-name">Nhân viên</div>
                                             <div class="role-desc">Quản lý đơn hàng, sản phẩm</div>
-                                        </div>
-                                        <div class="role-check">
-                                            <i class="fas fa-check-circle"></i>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="role-option">
-                                    <input type="radio" asp-for="Role" value="admin" id="roleAdmin" />
-                                    <label for="roleAdmin" class="role-card">
-                                        <div class="role-icon" style="background: var(--primary-100); color: var(--primary-600);">
-                                            <i class="fas fa-crown"></i>
-                                        </div>
-                                        <div class="role-info">
-                                            <div class="role-name">Quản trị viên</div>
-                                            <div class="role-desc">Toàn quyền hệ thống</div>
                                         </div>
                                         <div class="role-check">
                                             <i class="fas fa-check-circle"></i>
