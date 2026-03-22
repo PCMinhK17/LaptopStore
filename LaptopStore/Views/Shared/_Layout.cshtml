@@ -564,22 +564,27 @@ confirm:hover {
                             }
 
                             <!-- Wishlist Icon -->
+                            @if (User.IsInRole("customer"))
+                            {
+                                <li class="nav-item">
+                                    <a href="@Url.Action("CartView", "Cart")" class="nav-icon-link" title="Giỏ hàng">
+                                        <i class="fas fa-shopping-cart"></i>
+                                        <span class="nav-badge" id="cartBadgeCount" style="display:none;">0</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("WishlistView", "Wishlist")" class="nav-icon-link" title="Yêu thích">
+                                        <i class="far fa-heart"></i>
+                                        <span class="nav-badge" id="wishlistBadgeCount" style="display:none;">0</span>
+                                    </a>
+                                </li>
+                            }
                             <li class="nav-item">
-                                <a href="@Url.Action("WishlistView", "Wishlist")" class="nav-icon-link" title="Yêu thích">
-                                    <i class="far fa-heart"></i>
-                                    <span class="nav-badge" id="wishlistBadgeCount" style="display:none;">0</span>
+                                <a href="@Url.Action("Index", "Notification")" class="nav-icon-link" title="Thông báo">
+                                    <i class="far fa-bell"></i>
+                                    <span class="nav-badge" id="notificationBadgeCount" style="display:none;">0</span>
                                 </a>
                             </li>
-
-                            @* 
-                            <!-- Cart Icon -->
-                            <li class="nav-item">
-                                <a href="@Url.Action("CartView", "Cart")" class="nav-icon-link" title="Giỏ hàng">
-                                    <i class="fas fa-shopping-cart"></i>
-                                    <span class="nav-badge" id="cartBadgeCount" style="display:none;">0</span>
-                                </a>
-                            </li>
-                            *@
 
                             <!-- Profile Dropdown with Greeting -->
                             <li class="nav-item profile-dropdown ms-1">
@@ -815,7 +820,7 @@ confirm:hover {
             });
         }
 
-        // Load badge counts for wishlist and cart
+        // Load badge counts for wishlist, cart and notification
         function loadBadgeCounts() {
             // Cart count
             $.ajax({
@@ -836,6 +841,19 @@ confirm:hover {
                 type: 'GET',
                 success: function(response) {
                     var badge = document.getElementById('wishlistBadgeCount');
+                    if (badge && response.count !== undefined) {
+                        badge.textContent = response.count;
+                        badge.style.display = response.count > 0 ? 'flex' : 'none';
+                    }
+                }
+            });
+
+            //Notification count
+            $.ajax({
+                url: '/Notification/GetUnreadNotificationCount',
+                type: 'GET',
+                success: function(response) {
+                    var badge = document.getElementById('notificationBadgeCount');
                     if (badge && response.count !== undefined) {
                         badge.textContent = response.count;
                         badge.style.display = response.count > 0 ? 'flex' : 'none';

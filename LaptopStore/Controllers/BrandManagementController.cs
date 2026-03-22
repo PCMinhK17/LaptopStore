@@ -1,5 +1,4 @@
-﻿using LaptopStore.DTOs;
-using LaptopStore.DTOs.BrandDTOs;
+﻿using LaptopStore.DTOs.BrandDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -54,7 +53,7 @@ public class BrandManagementController : Controller
 
         if (request.LogoFile != null)
         {
-            string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/brands");
+            string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/logos");
 
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
@@ -67,7 +66,7 @@ public class BrandManagementController : Controller
                 request.LogoFile.CopyTo(stream);
             }
 
-            logoPath = "/images/brands/" + fileName;
+            logoPath = "/images/logos/" + fileName;
         }
 
         var brand = new Brand

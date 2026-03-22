@@ -214,7 +214,7 @@
                         var paymentMethodText = order.PaymentMethod switch
                         {
                             "cod" => "COD",
-                            "vietqr" => "Chuyển khoản",
+                            "qr" => "Chuyển khoản",
                             "vnpay" => "VNPay",
                             _ => order.PaymentMethod ?? ""
                         };
@@ -238,8 +238,8 @@
                             </td>
                             <td>
                                 <div class="order-date">
-                                    <span class="date">@order.CreatedAt?.ToString("dd/MM/yyyy")</span>
-                                    <span class="time">@order.CreatedAt?.ToString("HH:mm")</span>
+                                    <span class="date">@order.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                    <span class="time">@order.CreatedAt.ToString("HH:mm")</span>
                                 </div>
                             </td>
                             <td class="text-end">

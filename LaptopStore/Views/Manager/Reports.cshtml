@@ -252,14 +252,14 @@
                         var methodName = payment.Method switch
                         {
                             "cod" => "Thanh toán khi nhận hàng (COD)",
-                            "vietqr" => "Chuyển khoản ngân hàng",
+                            "qr" => "Chuyển khoản ngân hàng",
                             "vnpay" => "Ví điện tử VNPay",
                             _ => payment.Method ?? "Khác"
                         };
                         var methodIcon = payment.Method switch
                         {
                             "cod" => "fa-money-bill-wave",
-                            "vietqr" => "fa-university",
+                            "qr" => "fa-university",
                             "vnpay" => "fa-wallet",
                             _ => "fa-credit-card"
                         };

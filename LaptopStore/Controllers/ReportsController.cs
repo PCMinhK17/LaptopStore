@@ -54,7 +54,7 @@ namespace LaptopStore.Controllers
             // Revenue by month (last 12 months)
             var revenueByMonth = await _context.Orders
                 .Where(o => o.Status == "delivered" && o.CreatedAt >= startOfYear)
-                .GroupBy(o => new { o.CreatedAt!.Value.Year, o.CreatedAt!.Value.Month })
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
                 .Select(g => new
                 {
                     Year = g.Key.Year,
@@ -69,7 +69,7 @@ namespace LaptopStore.Controllers
             // Revenue by day (last 30 days)
             var revenueByDay = await _context.Orders
                 .Where(o => o.Status == "delivered" && o.CreatedAt >= last30Days)
-                .GroupBy(o => o.CreatedAt!.Value.Date)
+                .GroupBy(o => o.CreatedAt.Date)
                 .Select(g => new
                 {
                     Date = g.Key,
@@ -262,7 +262,7 @@ namespace LaptopStore.Controllers
 
             var revenueByMonth = await _context.Orders
                 .Where(o => o.Status == "delivered" && o.CreatedAt >= startOfYear)
-                .GroupBy(o => new { o.CreatedAt!.Value.Year, o.CreatedAt!.Value.Month })
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
                 .Select(g => new
                 {
                     Year = g.Key.Year,
@@ -313,7 +313,7 @@ namespace LaptopStore.Controllers
                 var startDate = today.AddDays(-7);
                 var data = await _context.Orders
                     .Where(o => o.Status == "delivered" && o.CreatedAt >= startDate)
-                    .GroupBy(o => o.CreatedAt!.Value.Date)
+                    .GroupBy(o => o.CreatedAt!.Date)
                     .Select(g => new
                     {
                         Date = g.Key.ToString("dd/MM"),
@@ -329,7 +329,7 @@ namespace LaptopStore.Controllers
                 var startDate = today.AddDays(-30);
                 var data = await _context.Orders
                     .Where(o => o.Status == "delivered" && o.CreatedAt >= startDate)
-                    .GroupBy(o => o.CreatedAt!.Value.Date)
+                    .GroupBy(o => o.CreatedAt.Date)
                     .Select(g => new
                     {
                         Date = g.Key.ToString("dd/MM"),
@@ -345,7 +345,7 @@ namespace LaptopStore.Controllers
                 var startOfYear = new DateTime(today.Year, 1, 1);
                 var data = await _context.Orders
                     .Where(o => o.Status == "delivered" && o.CreatedAt >= startOfYear)
-                    .GroupBy(o => new { o.CreatedAt!.Value.Year, o.CreatedAt!.Value.Month })
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
                     .Select(g => new
                     {
                         Date = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(g.Key.Month),

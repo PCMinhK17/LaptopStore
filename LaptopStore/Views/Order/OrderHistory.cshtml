@@ -169,7 +169,7 @@
                                         Đơn hàng #@order.Id
                                     </h6>
                                     <small class="text-muted">
-                                        @order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                                        @order.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                                     </small>
                                     <div class="order-total mt-2">
                                         @order.TotalMoney.ToString("N0") ₫

@@ -66,7 +66,7 @@ namespace LaptopStore.Controllers
                 return RedirectToAction("Index", "Product");
             }
 
-            if (product.StockQuantity.HasValue && product.StockQuantity.Value < 1)
+            if (product.StockQuantity < 1)
             {
                 TempData["ErrorMessage"] = "Sản phẩm đã hết hàng.";
                 return RedirectToAction("Detail", "Product", new { id = productId });
@@ -80,7 +80,7 @@ namespace LaptopStore.Controllers
             {
                 cart = new Cart
                 {
-                    UserId = userId,
+                    UserId = userId.Value,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     CartItems = new List<CartItem>()
@@ -92,10 +92,10 @@ namespace LaptopStore.Controllers
             var existingItem = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == productId);
             if (existingItem != null)
             {
-                var newQuantity = (existingItem.Quantity ?? 0) + 1;
-                if (product.StockQuantity.HasValue && newQuantity > product.StockQuantity.Value)
+                var newQuantity = (existingItem.Quantity) + 1;
+                if (newQuantity > product.StockQuantity)
                 {
-                    TempData["ErrorMessage"] = $"Chỉ còn {product.StockQuantity.Value} sản phẩm trong kho.";
+                    TempData["ErrorMessage"] = $"Chỉ còn {product.StockQuantity} sản phẩm trong kho.";
                     return RedirectToAction("Detail", "Product", new { id = productId });
                 }
                 existingItem.Quantity = newQuantity;
@@ -141,12 +141,12 @@ namespace LaptopStore.Controllers
                     return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
                 }
 
-                if (product.StockQuantity.HasValue && quantity > product.StockQuantity.Value)
+                if (quantity > product.StockQuantity)
                 {
                     return Json(new { 
                         success = false, 
-                        message = $"Số lượng vượt quá tồn kho. Chỉ còn {product.StockQuantity.Value} sản phẩm",
-                        maxQuantity = product.StockQuantity.Value
+                        message = $"Số lượng vượt quá tồn kho. Chỉ còn {product.StockQuantity} sản phẩm",
+                        maxQuantity = product.StockQuantity
                     });
                 }
 
@@ -162,7 +162,7 @@ namespace LaptopStore.Controllers
                         .ThenInclude(ci => ci.Product)
                     .FirstOrDefault(c => c.Id == cartItem.CartId);
 
-                var totalAmount = cart?.CartItems?.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0)) ?? 0;
+                var totalAmount = cart?.CartItems?.Sum(ci => ci.Quantity * (ci.Product?.Price ?? 0)) ?? 0;
 
                 return Json(new 
                 { 
@@ -198,7 +198,7 @@ namespace LaptopStore.Controllers
                         .ThenInclude(ci => ci.Product)
                     .FirstOrDefault(c => c.Id == cartId);
 
-                var totalAmount = cart?.CartItems?.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0)) ?? 0;
+                var totalAmount = cart?.CartItems?.Sum(ci => ci.Quantity * (ci.Product?.Price ?? 0)) ?? 0;
 
                 return Json(new 
                 { 
@@ -230,7 +230,7 @@ namespace LaptopStore.Controllers
 
                 if (quantity < 1) quantity = 1;
 
-                if (product.StockQuantity.HasValue && product.StockQuantity.Value < 1)
+                if (product.StockQuantity < 1)
                 {
                     return Json(new { success = false, message = "Sản phẩm đã hết hàng" });
                 }
@@ -243,7 +243,7 @@ namespace LaptopStore.Controllers
                 {
                     cart = new Cart
                     {
-                        UserId = userId,
+                        UserId = userId.Value,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         CartItems = new List<CartItem>()
@@ -255,23 +255,23 @@ namespace LaptopStore.Controllers
                 var existingItem = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == productId);
                 if (existingItem != null)
                 {
-                    var newQuantity = (existingItem.Quantity ?? 0) + quantity;
-                    if (product.StockQuantity.HasValue && newQuantity > product.StockQuantity.Value)
+                    var newQuantity = existingItem.Quantity + quantity;
+                    if (newQuantity > product.StockQuantity)
                     {
                         return Json(new { 
                             success = false, 
-                            message = $"Chỉ còn {product.StockQuantity.Value} sản phẩm trong kho" 
+                            message = $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
                         });
                     }
                     existingItem.Quantity = newQuantity;
                 }
                 else
                 {
-                    if (product.StockQuantity.HasValue && quantity > product.StockQuantity.Value)
+                    if (quantity > product.StockQuantity)
                     {
                         return Json(new { 
                             success = false, 
-                            message = $"Chỉ còn {product.StockQuantity.Value} sản phẩm trong kho" 
+                            message = $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
                         });
                     }
                     cart.CartItems!.Add(new CartItem

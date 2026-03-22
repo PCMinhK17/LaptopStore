@@ -62,18 +62,18 @@
                             @string.Format("{0:N0} đ", stock.TotalCost)
                         </td>
                         <td>
-                            @stock.CreatedAt?.ToString("dd/MM/yyyy")
+                            @stock.CreatedAt.ToString("dd/MM/yyyy")
                         </td>
                         <td>
                             @stock.DeliveredAt?.ToString("dd/MM/yyyy")
                         </td>
 
                         <td>
-                            @if (stock.Status == "Success")
+                            @if (stock.Status.ToLower() == "success")
                             {
                                 <span class="badge bg-success">Hoàn thành</span>
                             }
-                            else if (stock.Status == "Pending")
+                            else if (stock.Status.ToLower() == "pending")
                             {
                                 <span class="badge bg-warning text-dark">Đang xử lý</span>
                             }
@@ -100,7 +100,7 @@
                         </td>
 
                         <td>
-                            @if (stock.Status == "Success"
+                            @if (stock.Status.ToLower() == "success"
                                                 && stock.DeliveredAt.HasValue
                                                 && stock.DeliveredAt.Value.Date == DateTime.Today)
                             {
@@ -108,7 +108,7 @@
                                    asp-controller="StockManagement"
                                    asp-route-id="@stock.Id"
                                    class="btn btn-outline-danger btn-sm">
-                                    Delete
+                                    Xóa
                                 </a>
                             }
                         </td>

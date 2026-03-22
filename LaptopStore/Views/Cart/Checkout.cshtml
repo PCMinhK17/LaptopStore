@@ -5,7 +5,7 @@
     decimal subtotal = 0;
     if (cartItems.Any())
     {
-        subtotal = cartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
+        subtotal = cartItems.Sum(ci => ci.Quantity * ci.Product.Price);
     }
     decimal shippingFee = 0;
     decimal total = subtotal + shippingFee;
@@ -169,7 +169,7 @@
     </label>
 </div>
 <div class="form-check payment-option">
-    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBank" value="vietqr">
+    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBank" value="qr">
     <label class="form-check-label" for="paymentBank">
         <strong>Chuyển khoản ngân hàng (QR Code)</strong>
         <p class="text-muted small mb-0">Quét mã QR để thanh toán nhanh chóng</p>
@@ -191,7 +191,7 @@
                                 @foreach (var item in cartItems)
                                 {
                                     var product = item.Product;
-                                    var quantity = item.Quantity ?? 1;
+                                    var quantity = item.Quantity;
                                     var price = product?.Price ?? 0;
                                     var itemTotal = quantity * price;
                                     
