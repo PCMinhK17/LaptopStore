@@ -15,10 +15,13 @@
         <h2>@ViewData["Title"]</h2>
         <p>@ViewData["Subtitle"]</p>
     </div>
-    <a href="@Url.Action("Create")" class="btn btn-primary">
-        <i class="fas fa-user-plus"></i>
-        Thêm @(isStaffList ? "nhân viên" : "người dùng") mới
-    </a>
+    @if (isStaffList)
+    {
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i>
+            Thêm nhân viên mới
+        </a>
+    }
 </div>
 
 <!-- Stats Cards -->
@@ -29,7 +32,7 @@
                 <i class="fas @(isStaffList ? "fa-user-tie" : "fa-users")"></i>
             </div>
             <div class="stat-label">Tổng số</div>
-            <div class="stat-value">@Model.TotalItems</div>
+            <div class="stat-value">@ViewBag.TotalCount</div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
@@ -38,7 +41,7 @@
                 <i class="fas fa-user-check"></i>
             </div>
             <div class="stat-label">Đang hoạt động</div>
-            <div class="stat-value">@Model.Count(u => u.Status == "active")</div>
+            <div class="stat-value">@ViewBag.ActiveCount</div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
@@ -46,8 +49,8 @@
             <div class="stat-icon">
                 <i class="fas fa-user-clock"></i>
             </div>
-            <div class="stat-label">Chờ duyệt</div>
-            <div class="stat-value">@Model.Count(u => u.Status == "pending")</div>
+            <div class="stat-label">Chờ xác thực</div>
+            <div class="stat-value">@ViewBag.PendingCount</div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
@@ -56,7 +59,7 @@
                 <i class="fas fa-user-lock"></i>
             </div>
             <div class="stat-label">Đã khóa</div>
-            <div class="stat-value">@Model.Count(u => u.Status == "locked")</div>
+            <div class="stat-value">@ViewBag.LockedCount</div>
         </div>
     </div>
 </div>
@@ -77,20 +80,11 @@
                 <select class="form-control form-select" id="statusFilter">
                     <option value="">Tất cả</option>
                     <option value="active">Hoạt động</option>
-                    <option value="pending">Chờ duyệt</option>
-                    <option value="locked">Đã khóa</option>
+                    <option value="pending">Chờ xác thực</option>
+                    <option value="banned">Đã khóa</option>
                 </select>
             </div>
-            @if (!isStaffList)
-            {
-                <div class="col-6 col-md-2 col-lg-2">
-                    <label class="form-label">Vai trò</label>
-                    <select class="form-control form-select" id="roleFilter">
-                        <option value="">Tất cả</option>
-                        <option value="customer">Khách hàng</option>
-                    </select>
-                </div>
-            }
+
             <div class="col-6 col-md-2 col-lg-2">
                 <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">
                     <i class="fas fa-redo me-1"></i> Đặt lại
@@ -106,7 +100,7 @@
         <h5 class="card-title mb-0">
             <i class="fas @(isStaffList ? "fa-user-tie" : "fa-users")"></i>
             Danh sách @(isStaffList ? "nhân viên" : "người dùng")
-            <span class="badge badge-light ms-2">@Model.TotalItems người</span>
+            <span class="badge badge-light ms-2">@ViewBag.TotalCount người</span>
         </h5>
         <div class="d-flex gap-2">
             <a href="@Url.Action("ExportExcel", new { role = isStaffList ? "staff" : "customer" })" class="btn btn-sm btn-secondary">
@@ -145,7 +139,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{ 
+                    @{
                         int stt = (Model.PageIndex - 1) * 10 + 1;
                     }
                     @foreach (var user in Model)
@@ -154,14 +148,14 @@
                         {
                             "active" => "badge-success",
                             "pending" => "badge-warning",
-                            "locked" => "badge-danger",
+                            "banned" => "badge-danger",
                             _ => "badge-light"
                         };
                         var statusText = user.Status switch
                         {
                             "active" => "Hoạt động",
-                            "pending" => "Chờ duyệt",
-                            "locked" => "Đã khóa",
+                            "pending" => "Chờ xác thực",
+                            "banned" => "Đã khóa",
                             _ => user.Status
                         };
                         var roleClass = user.Role switch
@@ -211,7 +205,7 @@
                             </td>
                             <td>
                                 <span id="status-badge-@user.Id" class="badge @statusClass">
-                                    <span class="status-dot @(user.Status == "active" ? "active" : user.Status == "pending" ? "pending" : "inactive") me-1"></span>
+                                    <span class="status-dot @(user.Status == "active" ? "active" : user.Status == "pending" ? "pending" : "banned") me-1"></span>
                                     @statusText
                                 </span>
                             </td>
@@ -227,10 +221,10 @@
                                     </a>
                                     <button type="button" 
                                             id="btn-toggle-@user.Id"
-                                            class="btn btn-icon btn-sm @(user.Status == "locked" ? "btn-outline-primary" : "btn-outline-danger")" 
-                                            title="@(user.Status == "locked" ? "Mở khóa" : "Khóa tài khoản")"
+                                            class="btn btn-icon btn-sm @(user.Status == "banned" ? "btn-outline-primary" : "btn-outline-danger")" 
+                                            title="@(user.Status == "banned" ? "Mở khóa" : "Khóa tài khoản")"
                                             onclick="toggleStatus(@user.Id)">
-                                        <i class="fas @(user.Status == "locked" ? "fa-unlock" : "fa-lock")"></i>
+                                        <i class="fas @(user.Status == "banned" ? "fa-unlock" : "fa-lock")"></i>
                                     </button>
                                 </div>
                             </td>
@@ -246,7 +240,7 @@
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div class="pagination-info">
-                    Hiển thị <strong>@Model.Count</strong> trên tổng số <strong>@Model.TotalItems</strong> @(isStaffList ? "nhân viên" : "người dùng")
+                    Hiển thị <strong>@Model.Count</strong> trên tổng số <strong>@ViewBag.TotalCount</strong> @(isStaffList ? "nhân viên" : "người dùng")
                 </div>
                 <div class="pagination">
                     @if (Model.HasPreviousPage)
@@ -261,26 +255,26 @@
                             <i class="fas fa-chevron-left"></i>
                         </span>
                     }
-                    
+
                     @for (int i = 1; i <= Model.TotalPages && i <= 5; i++)
                     {
-                        <a asp-action="@actionName" 
+                        <a asp-action="@actionName"
                            asp-route-pageNumber="@i"
                            class="pagination-btn @(i == Model.PageIndex ? "active" : "")">
                             @i
                         </a>
                     }
-                    
+
                     @if (Model.TotalPages > 5)
                     {
                         <span class="pagination-btn disabled">...</span>
-                        <a asp-action="@actionName" 
+                        <a asp-action="@actionName"
                            asp-route-pageNumber="@Model.TotalPages"
                            class="pagination-btn @(Model.TotalPages == Model.PageIndex ? "active" : "")">
                             @Model.TotalPages
                         </a>
                     }
-                    
+
                     @if (Model.HasNextPage)
                     {
                         <a asp-action="@actionName" asp-route-pageNumber="@(Model.PageIndex + 1)" class="pagination-btn">
@@ -298,6 +292,8 @@
         </div>
     }
 </div>
+
+@Html.AntiForgeryToken()
 
 @section Scripts {
     <script>
@@ -343,13 +339,60 @@
 
         // Toggle Status
         function toggleStatus(userId) {
-            if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái của người dùng này?')) return;
+            const row = document.getElementById('btn-toggle-' + userId).closest('.user-row');
+            const currentStatus = row.dataset.status;
+            const userName = row.querySelector('.table-user-name').innerText;
 
-            fetch('/UserManagement/ToggleStatus/' + userId, {
+            if (currentStatus === 'active') {
+                // Ban workflow
+                Swal.fire({
+                    title: 'Khóa tài khoản?',
+                    text: `Bạn có chắc chắn muốn vô hiệu hóa tài khoản của ${userName}? Khách hàng sẽ bị đăng xuất ngay lập tức.`,
+                    icon: 'warning',
+                    input: 'textarea',
+                    inputLabel: 'Lý do khóa tài khoản (không bắt buộc)',
+                    inputPlaceholder: 'Nhập lý do tại đây...',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Có, khóa ngay!',
+                    cancelButtonText: 'Hủy',
+                    preConfirm: (reason) => {
+                        return performToggle(userId, reason);
+                    }
+                });
+            } else {
+                // Unban workflow
+                Swal.fire({
+                    title: 'Mở khóa tài khoản?',
+                    text: `Bạn muốn kích hoạt lại tài khoản cho ${userName}?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Có, mở khóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performToggle(userId, null);
+                    }
+                });
+            }
+        }
+
+        function performToggle(userId, reason) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            return fetch(`/UserManagement/ToggleStatus/${userId}`, {
                 method: 'POST',
                 headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                }
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: new URLSearchParams({
+                    '__RequestVerificationToken': token,
+                    'reason': reason || ''
+                })
             })
             .then(response => response.json())
             .then(data => {
@@ -357,7 +400,6 @@
                     const badge = document.getElementById('status-badge-' + userId);
                     const btn = document.getElementById('btn-toggle-' + userId);
                     const icon = btn.querySelector('i');
-                    const statusDot = badge.querySelector('.status-dot');
                     
                     if (data.newStatus === 'active') {
                         badge.className = 'badge badge-success';
@@ -367,24 +409,29 @@
                         icon.className = 'fas fa-lock';
                     } else {
                         badge.className = 'badge badge-danger';
-                        badge.innerHTML = '<span class="status-dot inactive me-1"></span>Đã khóa';
+                        badge.innerHTML = '<span class="status-dot banned me-1"></span>Đã khóa';
                         btn.className = 'btn btn-icon btn-sm btn-outline-primary';
                         btn.title = 'Mở khóa';
                         icon.className = 'fas fa-unlock';
                     }
                     
-                    // Update row data attribute
                     const row = btn.closest('.user-row');
-                    if (row) {
-                        row.dataset.status = data.newStatus;
-                    }
+                    if (row) row.dataset.status = data.newStatus;
+
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: data.newStatus === 'active' ? 'Đã mở khóa tài khoản.' : 'Đã khóa tài khoản thành công.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
-                    alert(data.message || 'Có lỗi xảy ra');
+                    Swal.fire('Lỗi!', data.message || 'Có lỗi xảy ra', 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Có lỗi xảy ra khi thay đổi trạng thái');
+                Swal.fire('Lỗi!', 'Có lỗi kết nối hệ thống', 'error');
             });
         }
     </script>

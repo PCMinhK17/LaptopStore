@@ -98,17 +98,12 @@
             </div>
             
             <div class="topbar-right">
-                <!-- Notifications -->
-                <button class="topbar-btn" title="Thông báo">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge-dot"></span>
-                </button>
-                
-                <!-- Theme Toggle -->
-                <button class="topbar-btn theme-toggle" onclick="toggleTheme()" title="Chế độ sáng/tối">
-                    <i class="fas fa-moon"></i>
-                    <i class="fas fa-sun"></i>
-                </button>
+
+                <!-- Notification -->
+                <a href="@Url.Action("Index", "Notification")" class="nav-icon-link" title="Thông báo">
+                    <i class="far fa-bell"></i>
+                    <span class="nav-badge" id="notificationBadgeCount" style="display:none;">0</span>
+                </a>
                 
                 <!-- User Dropdown -->
                 <div class="user-dropdown" id="userDropdown">
@@ -209,13 +204,6 @@
             }
         });
 
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('adminTheme', newTheme);
-        }
 
         function closeToast() {
             const container = document.getElementById('toastContainer');
@@ -225,9 +213,30 @@
             }
         }
 
+        function loadBadgeCounts() {
+            //Notification count
+            $.ajax({
+                url: '/Notification/GetUnreadNotificationCount',
+                type: 'GET',
+                success: function(response) {
+                    var badge = document.getElementById('notificationBadgeCount');
+                    if (badge && response.count !== undefined) {
+                        badge.textContent = response.count;
+                        badge.style.display = response.count > 0 ? 'flex' : 'none';
+                    }
+                }
+            });
+        }
+
         setTimeout(closeToast, 5000);
 
         document.addEventListener('DOMContentLoaded', function() {
+
+            var isAuthenticated = @((User?.Identity?.IsAuthenticated ?? false).ToString().ToLower());
+            if (isAuthenticated) {
+                loadBadgeCounts();
+            }
+
             const savedTheme = localStorage.getItem('adminTheme') || 'light';
             if (savedTheme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');

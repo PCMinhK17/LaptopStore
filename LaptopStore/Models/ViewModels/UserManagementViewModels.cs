@@ -23,8 +23,11 @@ namespace LaptopStore.Models.ViewModels
         [Required(ErrorMessage = "Họ tên là bắt buộc")]
         public string FullName { get; set; }
 
-        [Required]
-        public string Role { get; set; } = "customer";
+        public string? PhoneNumber { get; set; }
+
+        public string? Address { get; set; }
+
+        public string Role { get; set; } = "staff";
     }
 
     public class EditUserViewModel

@@ -1324,10 +1324,10 @@ textarea.form-control {
     color: var(--success-600);
 }
 
-.alert-danger {
+/*.alert-danger {
     background: var(--danger-50);
     border: 1px solid rgba(239, 68, 68, 0.2);
-}
+}*/
 
 .alert-danger .alert-icon {
     background: var(--danger-500);
@@ -1684,7 +1684,7 @@ textarea.form-control {
 }
 
 .bg-primary {
-    background: var(--primary-50) !important;
+    background: var(--primary-600) !important;
 }
 
 .bg-success {
@@ -1698,6 +1698,24 @@ textarea.form-control {
 .bg-danger {
     background: var(--danger-50) !important;
 }
+
+.bg-pending {
+    background: var(--warning-500) !important;
+}
+
+.bg-processing {
+    background: var(--primary-600) !important;
+}
+
+.bg-success {
+    background: var(--success-500) !important;
+}
+
+
+.bg-fail {
+    background: var(--danger-500) !important;
+}
+
 
 .fw-bold {
     font-weight: 700 !important;

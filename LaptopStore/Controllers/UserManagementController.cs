@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using BCryptNet = BCrypt.Net.BCrypt;
 using System.Security.Claims;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LaptopStore.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class UserManagementController : Controller
     {
         private readonly LaptopStoreDbContext _context;
@@ -51,6 +53,13 @@ namespace LaptopStore.Controllers
                     CreatedAt = u.CreatedAt
                 });
 
+            // Calculate statistics from all users
+            var allUsers = await usersQuery.ToListAsync();
+            ViewBag.TotalCount = allUsers.Count;
+            ViewBag.ActiveCount = allUsers.Count(u => u.Status == "active");
+            ViewBag.PendingCount = allUsers.Count(u => u.Status == "pending");
+            ViewBag.LockedCount = allUsers.Count(u => u.Status == "locked");
+
             int pageSize = 10;
             return View("~/Views/Manager/UserList.cshtml", await PaginatedList<UserViewModel>.CreateAsync(usersQuery, pageNumber ?? 1, pageSize));
         }
@@ -71,6 +80,13 @@ namespace LaptopStore.Controllers
                     Status = u.Status,
                     CreatedAt = u.CreatedAt
                 });
+
+            // Calculate statistics from all users
+            var allUsers = await usersQuery.ToListAsync();
+            ViewBag.TotalCount = allUsers.Count;
+            ViewBag.ActiveCount = allUsers.Count(u => u.Status == "active");
+            ViewBag.PendingCount = allUsers.Count(u => u.Status == "pending");
+            ViewBag.LockedCount = allUsers.Count(u => u.Status == "locked");
 
             int pageSize = 10;
             return View("~/Views/Manager/UserList.cshtml", await PaginatedList<UserViewModel>.CreateAsync(usersQuery, pageNumber ?? 1, pageSize));
@@ -135,7 +151,7 @@ namespace LaptopStore.Controllers
                 worksheet.Cell(row, 5).Value = user.Address ?? "";
                 worksheet.Cell(row, 6).Value = roleText;
                 worksheet.Cell(row, 7).Value = statusText;
-                worksheet.Cell(row, 8).Value = user.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
+                worksheet.Cell(row, 8).Value = user.CreatedAt.ToString("dd/MM/yyyy HH:mm") ?? "";
 
                 if (row % 2 == 0)
                 {
@@ -176,7 +192,13 @@ namespace LaptopStore.Controllers
             {
                 if (await _context.Users.AnyAsync(u => u.Email == model.Email))
                 {
-                    ModelState.AddModelError("Email", "Email đã tồn tại");
+                    ModelState.AddModelError("Email", "Email đã tồn tại trong hệ thống");
+                    return View("~/Views/Manager/UserCreate.cshtml", model);
+                }
+
+                if (!string.IsNullOrEmpty(model.PhoneNumber) && await _context.Users.AnyAsync(u => u.PhoneNumber == model.PhoneNumber))
+                {
+                    ModelState.AddModelError("PhoneNumber", "Số điện thoại đã tồn tại trong hệ thống");
                     return View("~/Views/Manager/UserCreate.cshtml", model);
                 }
 
@@ -185,14 +207,24 @@ namespace LaptopStore.Controllers
                     Email = model.Email,
                     Password = BCryptNet.HashPassword(Guid.NewGuid().ToString()), // Random password initially
                     FullName = model.FullName,
-                    Role = model.Role,
+                    PhoneNumber = model.PhoneNumber,
+                    Address = model.Address,
+                    Role = "staff", // Always create as staff
                     Status = "pending", // Status pending verification
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError("Email", "Email hoặc số điện thoại đã tồn tại trong hệ thống");
+                    return View("~/Views/Manager/UserCreate.cshtml", model);
+                }
 
                 // Generate Auth Token
                 var verificationToken = await _authService.GenerateEmailVerificationTokenAsync(user.Id);
@@ -209,10 +241,7 @@ namespace LaptopStore.Controllers
                 TempData["ToastMessage"] = "Tạo người dùng và gửi email xác thực thành công";
                 TempData["ToastType"] = "success";
                 
-                if (model.Role == "staff")
-                    return RedirectToAction(nameof(StaffList));
-                else
-                    return RedirectToAction(nameof(CustomerList));
+                return RedirectToAction(nameof(StaffList));
             }
 
             return View("~/Views/Manager/UserCreate.cshtml", model);
@@ -313,7 +342,8 @@ namespace LaptopStore.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ToggleStatus(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleStatus(int id, string? reason)
         {
             var currentUserId = 0;
             if (int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var currentId))
@@ -332,13 +362,25 @@ namespace LaptopStore.Controllers
                 return Json(new { success = false, message = "User not found" });
             }
 
+            if (user.Role == "admin")
+            {
+                return Json(new { success = false, message = "Không thể khóa tài khoản tài quản trị viên" });
+            }
+
+            if (user.Status == "pending")
+            {
+                return Json(new { success = false, message = "Vui lòng xác thực email cho người dùng này trước" });
+            }
+
             if (user.Status == "active")
             {
-                user.Status = "locked";
+                user.Status = "banned";
+                user.BanReason = reason;
             }
             else
             {
                 user.Status = "active";
+                user.BanReason = null;
             }
             
             user.UpdatedAt = DateTime.Now;

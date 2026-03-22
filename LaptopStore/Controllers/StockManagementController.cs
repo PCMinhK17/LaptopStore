@@ -1,11 +1,14 @@
-﻿using LaptopStore.DTOs.ProductDTOs;
+using Azure.Core;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Office2016.Excel;
+using LaptopStore.DTOs.ProductDTOs;
 using LaptopStore.DTOs.StockDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Claims;
+using System.Text.Json;
+
 namespace LaptopStore.Controllers;
 
 public class StockManagementController : Controller
@@ -59,20 +62,65 @@ public class StockManagementController : Controller
             ProductImages = p.ProductImages.Select(i => new ProductImageResponse
             {
                 ImageUrl = i.ImageUrl,
-                IsThumbnail = i.IsThumbnail ?? false
+                IsThumbnail = i.IsThumbnail
             }).ToList()
         }).ToList();
         return View("~/Views/Manager/AddNewStockInOrder.cshtml");
     }
 
+    [HttpPost] 
+    public IActionResult AddNewStockInOrder(string supplierName, int staffId, string itemsJson)
+    {
+        if (string.IsNullOrEmpty(itemsJson)) return BadRequest("Danh sách trống");
+
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var items = JsonSerializer.Deserialize<List<StockInItemDto>>(itemsJson, options);
+
+
+        var model = new StockInOrderRequest
+        {
+            SupplierName = supplierName,
+            StaffId = staffId,
+            StaffName = _context.Users.Where(u => u.Id == staffId).Select(u => u.FullName).FirstOrDefault() ?? "Không thấy",
+            Items = items.Select(i => new StockInItemRequest
+            {
+                Product = new ProductResponse
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Sku = i.Sku,
+                    BrandName = i.BrandName,
+                    CategoryName = i.CategoryName,
+                    Price = i.Price,
+                    OldPrice = i.OldPrice,
+                    StockQuantity = i.StockQuantity,
+                    Description = i.Description,
+                    ShortDescription = i.ShortDescription,
+                    Cpu = i.Cpu,
+                    Ram = i.Ram,
+                    HardDrive = i.HardDrive,
+                    Gpu = i.Gpu,
+                    ScreenSize = i.ScreenSize,
+                    Weight = i.Weight,
+                    IsActive = i.IsActive,
+                    ProductImages = i.ProductImages,
+                    CreatedAt = i.CreatedAt
+                },
+                Quantity = i.Quantity
+            }).ToList()
+        };
+
+        return View("~/Views/Manager/ConfirmAddNewStockInOrder.cshtml", model);
+    }
+
     [HttpPost]
-    public IActionResult AddNewStockInOrder([FromBody] StockInOrderRequest request)
+    public IActionResult ConfirmAddNewStockInOrder(StockInOrderRequest request)
     {
         if (request == null || request.Items == null || request.Items.Count == 0)
         {
             return BadRequest("Dữ liệu đơn hàng không hợp lệ.");
         }
-
+ 
         var newImportReceipt = new ImportReceipt
         {
             SupplierName = request.SupplierName,
@@ -90,7 +138,7 @@ public class StockManagementController : Controller
             var importDetail = new ImportDetail
             {
                 ReceiptId = importReceiptId,
-                ProductId = item.ProductId,
+                ProductId = item.Product.Id,
                 RequestedQuantity = item.Quantity,
                 ActualQuantity = 0
             };
@@ -99,8 +147,24 @@ public class StockManagementController : Controller
 
         _context.SaveChanges();
 
-        return Ok(new { message = "Lưu đơn hàng thành công"});
+        //Create notification for staff
+        var notification = new Notification
+        {
+            UserId = request.StaffId,
+            Title = $"Bạn được giao đơn nhập hàng mới mã #{importReceiptId}",
+            Message = $"Đơn nhập hàng từ nhà cung cấp {request.SupplierName} đã được tạo. Vui lòng kiểm tra và xác nhận đơn hàng.",
+            Type = "receipt",
+            CreatedAt = DateTime.Now,
+            IsRead = false
+        };
+
+        _context.Notifications.Add(notification);
+
+        _context.SaveChanges();
+
+        return RedirectToAction("StockDetails", new { id = importReceiptId });
     }
+    
     [HttpGet]
     public IActionResult StockDetails(int id)
     {
@@ -110,10 +174,14 @@ public class StockManagementController : Controller
         }
         var orderDto = new StockInOrderResponse
         {
+            Id = id,
             SupplierName = order.SupplierName ?? "",
             StaffName = order.Staff?.FullName ?? "Không thấy",
+            StaffAvatarUrl = order.Staff?.AvatarUrl ?? "/images/image-not-found.jpg",
+            StaffEmail = order.Staff?.Email ?? "Không thấy",
             TotalCost = order.TotalCost,
-            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            CreatedAt = order.CreatedAt,
+            Status = order.Status,
             DeliveredAt = order.DeliveredAt,
             Items = order.ImportDetails.Select(d => new StockInItemResponse
             {
@@ -126,21 +194,38 @@ public class StockManagementController : Controller
             }).ToList()
         };
 
-        switch (order.Status)
-        {
-            case "pending":
-                orderDto.Status = "Đang chờ xử lý";
-                break;
-            case "success":
-                orderDto.Status = "Đã giao hàng";
-                break;
-            case "cancel":
-                orderDto.Status = "Đã hủy";
-                break;
-        }
-
         return View("~/Views/Manager/StockDetails.cshtml", orderDto);
     }
+
+    [HttpPost]
+    public IActionResult CancelPendingReceipt(int id)
+    {
+        var receipt = _context.ImportReceipts.Include(r => r.ImportDetails).Include(r => r.Staff).FirstOrDefault(r => r.Id == id);
+        if (receipt != null)
+        {
+            _context.ImportDetails.RemoveRange(receipt.ImportDetails);
+            _context.ImportReceipts.Remove(receipt);
+            _context.SaveChanges();
+        }
+
+        //Create notification for staff
+        var notification = new Notification
+        {
+            UserId = _context.Users.FirstOrDefault(u => u.Role == "admin")?.Id ?? 0,
+            Title = $"Đơn nhập hàng mã #{id} đã bị hủy",
+            Message = $" Nhân viên {receipt?.Staff?.FullName ?? "Không rõ"} đã hủy đơn nhập hàng mã #{id} từ nhà cung cấp {receipt.SupplierName}.",
+            Type = "receipt",
+            CreatedAt = DateTime.Now,
+            IsRead = false
+        };
+
+        _context.Notifications.Add(notification);
+
+        _context.SaveChanges();
+
+        return RedirectToAction("Index");
+    }
+
     [Authorize]
     public IActionResult ByStaff(int page = 1)
     {
@@ -185,10 +270,10 @@ public class StockManagementController : Controller
 
         var orderDto = new StockInOrderResponse
         {
-            ReceiptId = order.Id,
+            Id = order.Id,
             SupplierName = order.SupplierName ?? "",
             TotalCost = order.TotalCost,
-            CreatedAt = order.CreatedAt ?? DateTime.Now,
+            CreatedAt = order.CreatedAt,
             DeliveredAt = order.DeliveredAt,
             Items = order.ImportDetails.Select(d => new StockInItemResponse
             {
@@ -213,12 +298,13 @@ public class StockManagementController : Controller
 
         var receipt = await _context.ImportReceipts
             .Include(r => r.ImportDetails)
+            .Include(r => r.Staff)
             .FirstOrDefaultAsync(r => r.Id == request.StockId);
 
         if (receipt == null)
             return NotFound("Không tìm thấy đơn nhập.");
 
-        if (receipt.Status == "Success")
+        if (receipt.Status.ToLower() == "success")
             return BadRequest("Đơn đã hoàn tất.");
 
         decimal totalCost = 0;
@@ -256,8 +342,22 @@ public class StockManagementController : Controller
         // Cập nhật tổng tiền đơn
         receipt.TotalCost = totalCost;
 
-        receipt.Status = "Success";
+        receipt.Status = "success";
         receipt.DeliveredAt = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        var notification = new Notification
+        {
+            UserId = _context.Users.FirstOrDefault(u => u.Role == "admin")?.Id ?? 0,
+            Title = $"Đơn nhập hàng mã #{request.StockId} đã được xác nhận",
+            Message = $" Nhân viên {receipt?.Staff?.FullName ?? "Không rõ"} đã xác nhận đơn nhập hàng mã #{request.StockId} từ nhà cung cấp {receipt.SupplierName}.",
+            Type = "receipt",
+            CreatedAt = DateTime.Now,
+            IsRead = false
+        };
+
+        await _context.Notifications.AddAsync(notification);
 
         await _context.SaveChangesAsync();
 
@@ -276,7 +376,7 @@ public class StockManagementController : Controller
             return NotFound();
 
         // 🔒 CHECK ĐIỀU KIỆN GIỐNG DELETE
-        if (receipt.Status != "Success")
+        if (receipt.Status.ToLower() != "success")
         {
             TempData["Error"] = "Chỉ được xóa đơn đã được xác nhận!";
             return RedirectToAction("ByStaff");
@@ -314,12 +414,13 @@ public class StockManagementController : Controller
     {
         var receipt = await _context.ImportReceipts
             .Include(r => r.ImportDetails)
+            .Include(r => r.Staff)
             .FirstOrDefaultAsync(r => r.Id == id);
 
         if (receipt == null)
             return NotFound();
         // Chỉ cho xóa khi đã confirm
-        if (receipt.Status != "Success")
+        if (receipt.Status.ToLower() != "success")
         {
             TempData["Error"] = "Chỉ được xóa đơn đã được xác nhận!";
             return RedirectToAction("ByStaff");
@@ -334,7 +435,7 @@ public class StockManagementController : Controller
         }
 
         // Nếu đã hoàn tất thì kiểm tra tồn kho
-        if (receipt.Status == "Success")
+        if (receipt.Status.ToLower() == "success")
         {
             foreach (var detail in receipt.ImportDetails)
             {
@@ -368,6 +469,20 @@ public class StockManagementController : Controller
 
         _context.ImportDetails.RemoveRange(receipt.ImportDetails);
         _context.ImportReceipts.Remove(receipt);
+
+        await _context.SaveChangesAsync();
+
+        var notification = new Notification
+        {
+            UserId = _context.Users.FirstOrDefault(u => u.Role == "admin")?.Id ?? 0,
+            Title = $"Đơn nhập hàng mã #{id} đã được xóa",
+            Message = $" Nhân viên {receipt?.Staff?.FullName ?? "Không rõ"} đã xóa nhập hàng mã #{id} từ nhà cung cấp {receipt.SupplierName}.",
+            Type = "receipt",
+            CreatedAt = DateTime.Now,
+            IsRead = false
+        };
+
+        await _context.Notifications.AddAsync(notification);
 
         await _context.SaveChangesAsync();
 

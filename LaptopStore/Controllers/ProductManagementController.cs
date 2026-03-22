@@ -1,9 +1,10 @@
+using ClosedXML.Excel;
 using LaptopStore.DTOs.ProductDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ClosedXML.Excel;
 
 namespace LaptopStore.Controllers;
 
@@ -19,12 +20,52 @@ public class ProductManagementController : Controller
         _webHostEnvironment = webHostEnvironment;
     }
 
-    public async Task<IActionResult> Index(int? pageNumber)
+    public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "", int categoryId = 0, int brandId = 0, string status = "all")
     {
+        var statusList = new List<SelectListItem>
+        {
+            new SelectListItem { Value = "all", Text = "Tất cả" },
+            new SelectListItem { Value = "active", Text = "Đang bán" },
+            new SelectListItem { Value = "inactive", Text = "Ngừng bán" },
+            new SelectListItem { Value = "low quantity", Text = "Sắp hết hàng" }
+        };
+
+        ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name", categoryId);
+        ViewBag.Brands = new SelectList(_context.Brands, "Id", "Name", brandId);
+        ViewBag.SearchString = searchString.Trim();
+        ViewBag.StatusList = new SelectList(statusList, "Value", "Text", status);
+        ViewBag.TotalProducts = await _context.Products.CountAsync();
+
         var productsQuery = _context.Products
             .Include(p => p.Category)
             .Include(p => p.Brand)
             .Include(p => p.ProductImages)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            productsQuery = productsQuery.Where(p => p.Name.Contains(searchString)
+                                                  || (p.Sku != null && p.Sku.Contains(searchString)));
+        }
+
+        if (categoryId > 0)
+        {
+            productsQuery = productsQuery.Where(p => p.CategoryId == categoryId);
+        }
+
+        if (brandId > 0)
+        {
+            productsQuery = productsQuery.Where(p => p.BrandId == brandId);
+        }
+
+        if (status != "all")
+        {
+            if (status == "active") productsQuery = productsQuery.Where(p => p.IsActive == true);
+            else if (status == "inactive") productsQuery = productsQuery.Where(p => p.IsActive == false);
+            else if (status == "low quantity") productsQuery = productsQuery.Where(p => p.StockQuantity <= 5).OrderBy(p => p.StockQuantity);
+        }
+
+        var products = productsQuery
             .Select(p => new ProductResponse
             {
                 Id = p.Id,
@@ -37,14 +78,20 @@ public class ProductManagementController : Controller
                 ProductImages = p.ProductImages.Select(i => new ProductImageResponse
                 {
                     ImageUrl = i.ImageUrl,
-                    IsThumbnail = i.IsThumbnail ?? false
+                    IsThumbnail = i.IsThumbnail
                 }).ToList(),
                 IsActive = p.IsActive
-            })
-            .OrderByDescending(p => p.Id);
+            });
 
         int pageSize = 10;
-        return View("~/Views/Manager/ProductManagement.cshtml", await PaginatedList<ProductResponse>.CreateAsync(productsQuery, pageNumber ?? 1, pageSize));
+
+        return View("~/Views/Manager/ProductManagement.cshtml",
+                    await PaginatedList<ProductResponse>.CreateAsync(products, pageNumber, pageSize));
+    }
+
+    public IActionResult ResetFilter()
+    {
+        return RedirectToAction("Index");
     }
 
     // GET: /ProductManagement/ExportExcel
@@ -79,7 +126,9 @@ public class ProductManagementController : Controller
         worksheet.Cell(1, 10).Value = "Ổ cứng";
         worksheet.Cell(1, 11).Value = "GPU";
         worksheet.Cell(1, 12).Value = "Màn hình";
-        worksheet.Cell(1, 13).Value = "Trạng thái";
+        worksheet.Cell(1, 13).Value = "Cân nặng";
+        worksheet.Cell(1, 14).Value = "Trạng thái";
+        worksheet.Cell(1, 15).Value = "Ngày tạo";
 
         // Data rows
         int row = 2;
@@ -98,7 +147,9 @@ public class ProductManagementController : Controller
             worksheet.Cell(row, 10).Value = product.HardDrive ?? "";
             worksheet.Cell(row, 11).Value = product.Gpu ?? "";
             worksheet.Cell(row, 12).Value = product.ScreenSize ?? "";
-            worksheet.Cell(row, 13).Value = product.IsActive == true ? "Đang bán" : "Ngừng bán";
+            worksheet.Cell(row, 13).Value = product.Weight ?? "0kg";
+            worksheet.Cell(row, 14).Value = product.IsActive == true ? "Đang bán" : "Ngừng bán";
+            worksheet.Cell(row, 15).Value = product.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
             if (row % 2 == 0)
             {
@@ -140,7 +191,7 @@ public class ProductManagementController : Controller
         {
             if (price < 1000 || price > 1000000000)
             {
-                ModelState.AddModelError("Price", "Giá phải nằm trong khoảng 1000 đến 1000000000");
+                ModelState.AddModelError("Price", "Giá phải nằm trong khoảng 1.000 đến 1.000.000.000");
             }
         }
 
@@ -276,7 +327,7 @@ public class ProductManagementController : Controller
                 ScreenSize = product.ScreenSize,
                 Weight = product.Weight,
                 StockQuantity = product.StockQuantity,
-                IsActive = product.IsActive ?? false
+                IsActive = product.IsActive
             };
 
             return View("~/Views/Manager/UpdateProduct.cshtml", model);

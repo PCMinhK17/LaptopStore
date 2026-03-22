@@ -3,7 +3,10 @@
 
 @{
     ViewData["Title"] = "Xác nhận nhập hàng";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = User.IsInRole("staff") ? "~/Views/Shared/_StaffLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
+
+    var currentStatus = ViewBag.CurrentStatus as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
 
 <div class="container mt-5">
@@ -57,7 +60,7 @@
                 {
                     <form asp-controller="StockManagement" asp-action="UpdateAll" method="post">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="StockId" value="@Model.ReceiptId" />
+                    <input type="hidden" name="StockId" value="@Model.Id" />
 
                         @for (int i = 0; i < Model.Items.Count; i++)
                         {

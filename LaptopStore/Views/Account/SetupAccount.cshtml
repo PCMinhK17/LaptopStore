@@ -13,289 +13,493 @@
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #556270 100%);
-            --bg-base: #f8fafc;
-            --glass-bg: rgba(255, 255, 255, 0.95);
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+            --glass-bg: rgba(255, 255, 255, 0.97);
             --glass-border: 1px solid rgba(255, 255, 255, 0.5);
             --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             background: #0f172a url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
             background-size: cover;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
         }
 
         .auth-wrapper {
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 600px;
-            height: auto;
-            min-height: 500px;
-            display: flex;
-            border-radius: 30px;
+            max-width: 520px;
+            border-radius: 24px;
             background: var(--glass-bg);
             border: var(--glass-border);
             box-shadow: var(--shadow-lg);
             overflow: hidden;
             animation: slideUp 0.6s ease-out;
-            flex-direction: column;
         }
 
         .auth-header-custom {
             background: var(--primary-gradient);
-            padding: 40px;
+            padding: 36px 40px 30px;
             text-align: center;
             color: white;
         }
 
-         .laptop-icon-large {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.25));
+        .auth-header-custom h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .laptop-icon-large {
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.2));
             animation: float 6s ease-in-out infinite;
             display: block;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .auth-form-container {
-            width: 100%;
-            padding: 40px 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .auth-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: #0f172a;
-            text-align: center;
+            padding: 28px 40px 32px;
         }
 
         .auth-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: #64748b;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             text-align: center;
         }
 
-        .form-floating-custom {
+        .auth-user-info {
+            background: linear-gradient(135deg, #f0f0ff, #e8e8ff);
+            padding: 10px 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.88rem;
+            color: #475569;
+            border: 1px solid #e0e0f0;
+        }
+
+        .auth-user-info strong { color: #4f46e5; }
+
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* field-block: wrapper cho 1 field (input + message + hint) */
+        .field-block {
+            margin-bottom: 2px;
+        }
+
+        /* input-wrapper: chiều cao CỐ ĐỊNH = đúng bằng input
+           → icon tính top:50% luôn chính xác, không bị kéo bởi text bên ngoài */
+        .input-wrapper {
             position: relative;
-            margin-bottom: 22px;
+            height: 50px;
         }
 
         .form-control-custom {
+            position: absolute;
+            inset: 0;
             width: 100%;
-            height: 52px;
-            padding: 12px 16px 12px 52px;
+            height: 100%;
+            padding: 0 46px 0 48px;
             border: 2px solid #e2e8f0;
-            border-radius: 16px;
+            border-radius: 14px;
             background: #f8fafc;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             transition: all 0.2s ease;
+            font-family: inherit;
         }
 
         .form-control-custom:focus {
             background: #ffffff;
-            border-color: #556270;
-            box-shadow: 0 0 0 3px rgba(85, 98, 112, 0.18);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
             outline: none;
         }
 
+        .form-control-custom.is-invalid-custom {
+            border-color: #ef4444 !important;
+            background: #fef2f2 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        }
+
+        .form-control-custom.is-valid-custom {
+            border-color: #22c55e !important;
+            background: #f0fdf4 !important;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
+        }
+
+        /* Icon: absolute bên trong input-wrapper có height cố định
+           → luôn căn giữa đúng, không bị ảnh hưởng bởi bất kỳ thứ gì bên ngoài */
         .input-icon {
             position: absolute;
-            left: 20px;
+            left: 17px;
             top: 50%;
             transform: translateY(-50%);
             color: #94a3b8;
             pointer-events: none;
+            font-size: 0.88rem;
+            z-index: 1;
         }
-        
-         .password-toggle {
+
+        .password-toggle {
             position: absolute;
-            right: 16px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             color: #94a3b8;
             padding: 4px;
+            font-size: 0.88rem;
+            z-index: 1;
         }
 
-        .password-toggle:hover {
-            color: #64748b;
+        .password-toggle:hover { color: #64748b; }
+
+        /* validation-message: LUÔN chiếm chỗ với min-height
+           chỉ toggle visibility → KHÔNG BAO GIỜ shift layout */
+        .validation-message {
+            display: block;
+            min-height: 18px;
+            visibility: hidden;
+            color: #ef4444;
+            font-size: 0.76rem;
+            margin: 4px 0 0 4px;
+            line-height: 1.3;
         }
 
+        .form-hint {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            margin: 2px 0 8px 4px;
+            line-height: 1.3;
+        }
 
         .btn-primary-custom {
             width: 100%;
             height: 50px;
-            border-radius: 16px;
+            border-radius: 14px;
             border: none;
             background: var(--primary-gradient);
             color: #fff;
             font-weight: 600;
             font-size: 1rem;
-            margin-top: 8px;
-            box-shadow: 0 14px 30px rgba(85, 98, 112, 0.45);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            margin-top: 10px;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.35);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            cursor: pointer;
         }
 
-        .btn-primary-custom:hover {
+        .btn-primary-custom:hover:not(:disabled) {
             transform: translateY(-1px);
-            box-shadow: 0 18px 40px rgba(85, 98, 112, 0.55);
+            box-shadow: 0 14px 30px rgba(79, 70, 229, 0.45);
         }
 
-        .validation-message {
+        .btn-primary-custom:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-loading { display: inline-flex; align-items: center; }
+
+        .error-alert {
             color: #ef4444;
-            font-size: 0.78rem;
-            margin-top: 4px;
-            display: block;
-        }
-
-        .auth-user-info {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 24px;
-            font-size: 0.9rem;
-            color: #475569;
-        }
-        
-        .auth-user-info strong {
-            color: #0f172a;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            font-size: 0.84rem;
         }
 
         @@keyframes float {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            0%   { transform: translateY(0); }
+            50%  { transform: translateY(-8px); }
             100% { transform: translateY(0); }
         }
 
         @@keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @@media (max-width: 576px) {
+            .auth-form-container { padding: 22px 20px 26px; }
+            .auth-header-custom  { padding: 28px 20px 22px; }
         }
     </style>
 </head>
 <body>
     <div class="auth-wrapper">
         <div class="auth-header-custom">
-            <i class="fas fa-key laptop-icon-large"></i>
-            <h2>Thiết lập mật khẩu</h2>
+            <i class="fas fa-user-shield laptop-icon-large"></i>
+            <h2>Thiết lập tài khoản</h2>
         </div>
 
         <div class="auth-form-container">
-            <p class="auth-subtitle">Chào mừng bạn đến với LaptopStore!</p>
-            
+            <p class="auth-subtitle">Chào mừng bạn đến với LaptopStore! Hoàn tất thông tin bên dưới để kích hoạt tài khoản.</p>
+
             <div class="auth-user-info">
-                Tài khoản: <strong>@Model.Email</strong>
+                <i class="fas fa-envelope me-1"></i> Tài khoản: <strong>@Model.Email</strong>
             </div>
 
-            <form asp-action="SetupAccount" method="post">
+            <form asp-action="SetupAccount" method="post" novalidate id="setupForm">
                 <input type="hidden" asp-for="Token" />
                 <input type="hidden" asp-for="Email" />
 
                 @if (!ViewData.ModelState.IsValid)
                 {
-                    <div style="color: #ef4444; background: #fee2e2; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem;">
+                    <div class="error-alert">
                         <i class="fas fa-exclamation-circle me-1"></i>
-                        Vui lòng kiểm tra lại thông tin.
+                        Vui lòng kiểm tra lại thông tin bên dưới.
                     </div>
                 }
 
-                <div class="form-floating-custom">
-                    <input asp-for="NewPassword"
-                           type="password"
-                           id="newPass"
-                           class="form-control-custom"
-                           placeholder="Mật khẩu mới"
-                           required />
-                    <i class="fas fa-lock input-icon"></i>
-                    <i class="fas fa-eye password-toggle" onclick="togglePass('newPass', this)"></i>
-                    <span asp-validation-for="NewPassword" class="validation-message"></span>
-                    <div class="form-text text-muted small mt-1" style="font-size: 0.75rem; color: #64748b; margin-left: 4px; margin-top: 5px;">
+                <!-- ── BẢO MẬT ── -->
+                <div class="section-label">
+                    <i class="fas fa-lock me-1"></i> Bảo mật
+                </div>
+
+                <!-- Mật khẩu mới -->
+                <div class="field-block">
+                    <div class="input-wrapper">
+                        <input asp-for="NewPassword"
+                               type="password"
+                               id="newPass"
+                               class="form-control-custom"
+                               placeholder="Mật khẩu mới"
+                               autocomplete="new-password"
+                               oninput="validatePassword()" />
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye password-toggle" onclick="togglePass('newPass', this)"></i>
+                    </div>
+                    <span id="pass-error" class="validation-message"></span>
+                    <div class="form-hint">
                         <i class="fas fa-info-circle me-1"></i>Tối thiểu 8 ký tự, gồm chữ hoa, thường, số và ký tự đặc biệt.
                     </div>
                 </div>
 
-                <div class="form-floating-custom">
-                    <input asp-for="ConfirmPassword"
-                           type="password"
-                           id="confirmPass"
-                           class="form-control-custom"
-                           placeholder="Xác nhận mật khẩu"
-                           required />
-                    <i class="fas fa-shield-alt input-icon"></i>
-                    <i class="fas fa-eye password-toggle" onclick="togglePass('confirmPass', this)"></i>
-                    <span asp-validation-for="ConfirmPassword" class="validation-message"></span>
+                <!-- Xác nhận mật khẩu -->
+                <div class="field-block">
+                    <div class="input-wrapper">
+                        <input asp-for="ConfirmPassword"
+                               type="password"
+                               id="confirmPass"
+                               class="form-control-custom"
+                               placeholder="Xác nhận mật khẩu"
+                               autocomplete="new-password"
+                               oninput="validateConfirm()" />
+                        <i class="fas fa-shield-alt input-icon"></i>
+                        <i class="fas fa-eye password-toggle" onclick="togglePass('confirmPass', this)"></i>
+                    </div>
+                    <span id="confirm-error" class="validation-message"></span>
                 </div>
 
-                <button type="submit" class="btn-primary-custom" id="btnSubmit">
-                    <span class="btn-text">Kích hoạt tài khoản</span>
-                    <span class="btn-loading" style="display: none;">
+                <!-- ── THÔNG TIN CÁ NHÂN ── -->
+                <div class="section-label mt-3">
+                    <i class="fas fa-user me-1"></i> Thông tin cá nhân
+                </div>
+
+                <!-- Số điện thoại -->
+                <div class="field-block">
+                    <div class="input-wrapper">
+                        <input asp-for="PhoneNumber"
+                               type="tel"
+                               id="phoneInput"
+                               class="form-control-custom"
+                               placeholder="Số điện thoại"
+                               maxlength="10"
+                               inputmode="numeric"
+                               pattern="[0-9]*"
+                               onkeypress="return isNumberKey(event)"
+                               oninput="validatePhone()" />
+                        <i class="fas fa-phone input-icon"></i>
+                    </div>
+                    <span id="phone-error" class="validation-message"></span>
+                    <div class="form-hint">
+                        <i class="fas fa-info-circle me-1"></i>Nhập 10 chữ số, bắt đầu bằng 0.
+                    </div>
+                </div>
+
+                <!-- Địa chỉ -->
+                <div class="field-block">
+                    <div class="input-wrapper">
+                        <input asp-for="Address"
+                               type="text"
+                               id="addressInput"
+                               class="form-control-custom"
+                               placeholder="Địa chỉ"
+                               maxlength="255"
+                               oninput="validateAddress()" />
+                        <i class="fas fa-map-marker-alt input-icon"></i>
+                    </div>
+                    <span id="address-error" class="validation-message"></span>
+                </div>
+
+                <button type="submit" class="btn-primary-custom" id="btnSubmit" disabled>
+                    <span class="btn-text"><i class="fas fa-check-circle me-2"></i>Kích hoạt tài khoản</span>
+                    <span class="btn-loading" style="display:none;">
                         <i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...
                     </span>
                 </button>
             </form>
-            
-            <p class="mt-4 mb-0 text-center" style="font-size:0.85rem; color:#64748b;">
+
+            <p class="mt-3 mb-0 text-center" style="font-size:0.85rem; color:#94a3b8;">
                 Đã có tài khoản?
-                <a href="@Url.Action("Login")" style="color: #64748b; text-decoration: underline;">Đăng nhập</a>
+                <a href="@Url.Action("Login")" style="color:#6366f1; text-decoration:none; font-weight:600;">Đăng nhập</a>
             </p>
         </div>
     </div>
 
-    <script>
-        function togglePass(inputId, icon) {
-            const input = document.getElementById(inputId);
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-            if (type === 'text') {
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const btn = document.getElementById('btnSubmit');
-            const btnText = btn.querySelector('.btn-text');
-            const btnLoading = btn.querySelector('.btn-loading');
-            
-            // Basic client side check
-            const form = $(this);
-            if(form.valid && !form.valid()) return;
-
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline';
-        });
-    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        let passValid    = false;
+        let confirmValid = false;
+        let phoneValid   = false;
+        let addressValid = false;
+
+        /* ── Helpers ─────────────────────────────────────── */
+        function showErr(id, msg) {
+            const s = document.getElementById(id);
+            s.textContent = msg;
+            s.style.visibility = 'visible';
+        }
+        function hideErr(id) {
+            const s = document.getElementById(id);
+            s.textContent = '';
+            s.style.visibility = 'hidden';
+        }
+        function setValid(el)   { el.classList.remove('is-invalid-custom'); el.classList.add('is-valid-custom'); }
+        function setInvalid(el) { el.classList.remove('is-valid-custom');   el.classList.add('is-invalid-custom'); }
+        function clearSt(el)    { el.classList.remove('is-valid-custom', 'is-invalid-custom'); }
+        /* ─────────────────────────────────────────────────── */
+
+        function updateBtn() {
+            document.getElementById('btnSubmit').disabled =
+                !(passValid && confirmValid && phoneValid && addressValid);
+        }
+
+        function togglePass(inputId, icon) {
+            const input  = document.getElementById(inputId);
+            const isPass = input.type === 'password';
+            input.type = isPass ? 'text' : 'password';
+            icon.classList.toggle('fa-eye',      !isPass);
+            icon.classList.toggle('fa-eye-slash', isPass);
+        }
+
+        function isNumberKey(evt) {
+            const c = evt.which || evt.keyCode;
+            if (c > 31 && (c < 48 || c > 57)) { evt.preventDefault(); return false; }
+            return true;
+        }
+
+        /* Password */
+        function validatePassword() {
+            const el  = document.getElementById('newPass');
+            const val = el.value;
+
+            if (!val) {
+                passValid = false; hideErr('pass-error'); clearSt(el);
+                validateConfirm(); updateBtn(); return;
+            }
+
+            const ok = val.length >= 8
+                    && /[A-Z]/.test(val) && /[a-z]/.test(val)
+                    && /[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val);
+
+            if (ok) { passValid = true;  hideErr('pass-error'); setValid(el); }
+            else    { passValid = false; showErr('pass-error', 'Mật khẩu phải từ 8 ký tự, gồm chữ hoa, thường, số và ký tự đặc biệt'); setInvalid(el); }
+
+            validateConfirm(); updateBtn();
+        }
+
+        /* Confirm */
+        function validateConfirm() {
+            const el   = document.getElementById('confirmPass');
+            const conf = el.value;
+            const pass = document.getElementById('newPass').value;
+
+            if (!conf) { confirmValid = false; hideErr('confirm-error'); clearSt(el); updateBtn(); return; }
+
+            if (pass !== conf) { confirmValid = false; showErr('confirm-error', 'Mật khẩu xác nhận không khớp'); setInvalid(el); }
+            else               { confirmValid = true;  hideErr('confirm-error'); setValid(el); }
+            updateBtn();
+        }
+
+        /* Phone */
+        function validatePhone() {
+            const el    = document.getElementById('phoneInput');
+            const phone = el.value.trim();
+
+            if (!phone) { phoneValid = false; hideErr('phone-error'); clearSt(el); updateBtn(); return; }
+
+            if (phone.length !== 10) {
+                phoneValid = false; showErr('phone-error', 'Số điện thoại phải có đúng 10 chữ số.'); setInvalid(el); updateBtn(); return;
+            }
+            if (!/^0[1-9][0-9]{8}$/.test(phone)) {
+                phoneValid = false;
+                const msg = phone[0] !== '0' ? 'Số điện thoại phải bắt đầu bằng số 0.'
+                          : phone[1] === '0' ? 'Số thứ 2 phải khác 0.' : 'Số điện thoại không hợp lệ.';
+                showErr('phone-error', msg); setInvalid(el); updateBtn(); return;
+            }
+            phoneValid = true; hideErr('phone-error'); setValid(el); updateBtn();
+        }
+
+        /* Address */
+        function validateAddress() {
+            const el  = document.getElementById('addressInput');
+            const val = el.value.trim();
+
+            if (!val) { addressValid = false; hideErr('address-error'); clearSt(el); updateBtn(); return; }
+
+            if (val.length < 5)   { addressValid = false; showErr('address-error', 'Địa chỉ phải có ít nhất 5 ký tự'); setInvalid(el); }
+            else if (val.length > 255) { addressValid = false; showErr('address-error', 'Địa chỉ không được quá 255 ký tự'); setInvalid(el); }
+            else                  { addressValid = true;  hideErr('address-error'); setValid(el); }
+            updateBtn();
+        }
+
+        /* Submit */
+        document.getElementById('setupForm').addEventListener('submit', function () {
+            const btn    = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.querySelector('.btn-text').style.display    = 'none';
+            btn.querySelector('.btn-loading').style.display = 'inline-flex';
+        });
+    </script>
 </body>
 </html>

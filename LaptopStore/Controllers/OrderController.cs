@@ -1,20 +1,23 @@
-﻿using LaptopStore.Extensions;
+using LaptopStore.Extensions;
 using LaptopStore.Models;
-using LaptopStore.Models.ViewModels;
+using LaptopStore.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
 namespace LaptopStore.Controllers
 {
     public class OrderController : Controller
     {
         private readonly LaptopStoreDbContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
-        public OrderController(LaptopStoreDbContext context)
+
+        public OrderController(LaptopStoreDbContext context, IConfiguration configuration, IEmailService emailService)
         {
             _context = context;
+            _configuration = configuration;
+            _emailService = emailService;
         }
 
         // GET: /Order
@@ -79,7 +82,7 @@ namespace LaptopStore.Controllers
                 if (pm == "cod" || pm == "cash" || pm.Contains("cash") || pm.Contains("cod"))
                     paymentMethod = "cod";
                 else if (pm.Contains("bank") || pm.Contains("vietqr") || pm.Contains("qr") || pm.Contains("transfer"))
-                    paymentMethod = "vietqr";
+                    paymentMethod = "qr";
                 else if (pm.Contains("vnpay"))
                     paymentMethod = "vnpay";
                 else
@@ -126,25 +129,25 @@ namespace LaptopStore.Controllers
                 foreach (var ci in cart.CartItems)
                 {
                     var prod = ci.Product;
-                    var qty = ci.Quantity ?? 1;
+                    var qty = ci.Quantity;
                     if (prod == null)
                     {
                         return Json(new { success = false, message = $"Sản phẩm (id {ci.ProductId}) không tồn tại" });
                     }
-                    if (prod.StockQuantity.HasValue && qty > prod.StockQuantity.Value)
+                    if (qty > prod.StockQuantity)
                     {
                         return Json(new
                         {
                             success = false,
-                            message = $"Sản phẩm \"{prod.Name}\" chỉ còn {prod.StockQuantity.Value} cái",
+                            message = $"Sản phẩm \"{prod.Name}\" chỉ còn {prod.StockQuantity} cái",
                             productId = prod.Id,
-                            maxQuantity = prod.StockQuantity.Value
+                            maxQuantity = prod.StockQuantity
                         });
                     }
                 }
 
                 // Tính toán giá
-                var subtotal = cart.CartItems.Sum(ci => (ci.Quantity ?? 0) * (ci.Product?.Price ?? 0));
+                var subtotal = cart.CartItems.Sum(ci => (ci.Quantity) * (ci.Product?.Price ?? 0));
 
                 var totalMoney = subtotal;
 
@@ -173,7 +176,7 @@ namespace LaptopStore.Controllers
                 foreach (var cartItem in cart.CartItems)
                 {
                     var prod = cartItem.Product!;
-                    var qty = cartItem.Quantity ?? 1;
+                    var qty = cartItem.Quantity;
 
                     var orderDetail = new OrderDetail
                     {
@@ -184,11 +187,7 @@ namespace LaptopStore.Controllers
                     };
                     _context.OrderDetails.Add(orderDetail);
 
-                    // Cập nhật tồn kho nếu có
-                    if (prod.StockQuantity.HasValue)
-                    {
-                        prod.StockQuantity -= qty;
-                    }
+                    prod.StockQuantity -= qty;
                 }
 
                 // Xóa cart items
@@ -196,6 +195,17 @@ namespace LaptopStore.Controllers
 
                 _context.SaveChanges();
                 transaction.Commit();
+
+                //Gửi email thông tin đơn hàng
+                var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+                if (user != null)
+                {
+                    var newOrder = _context.Orders
+                    .Include(o => o.OrderDetails)
+                        .ThenInclude(od => od.Product)
+                    .FirstOrDefault(o => o.Id == order.Id);
+                    _emailService.SendOrderInformationAsync(user.Email, user.FullName, newOrder);
+                } 
 
                 var processingDays = 1;
                 var shippingMinDays = 3;
@@ -258,6 +268,15 @@ namespace LaptopStore.Controllers
             ViewBag.EstFrom = today.AddDays(processingDays + shippingMinDays);
             ViewBag.EstTo = today.AddDays(processingDays + shippingMaxDays);
 
+            // Pass SePay settings if payment is by QR
+            if (order.PaymentMethod == "qr" && order.PaymentStatus == "unpaid")
+            {
+                var sePaySection = _configuration.GetSection("SePay");
+                ViewBag.SePayBankId = sePaySection["BankId"];
+                ViewBag.SePayAccountNo = sePaySection["AccountNo"];
+                ViewBag.SePayAccountName = sePaySection["AccountName"];
+            }
+
             return View(order);
         }
         public IActionResult OrderHistory(string? status)
@@ -289,6 +308,67 @@ namespace LaptopStore.Controllers
                 .OrderByDescending(o => o.CreatedAt)
                 .ToList());
         }
+        [HttpGet]
+        public async Task<IActionResult> CheckPaymentStatus(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) return Json(new { success = false, message = "Not found" });
+            if (order.PaymentStatus == "paid") return Json(new { success = true, isPaid = true });
+
+            var sepayToken = _configuration["SePay:ApiToken"];
+            if (string.IsNullOrEmpty(sepayToken) || sepayToken == "YOUR_SEPAY_API_TOKEN")
+            {
+                // Để thuận tiện test nếu chưa có token, trả về isPaid = false
+                return Json(new { success = true, isPaid = false, message = "Missing token" });
+            }
+
+            try
+            {
+                using var client = new System.Net.Http.HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + sepayToken);
+                var response = await client.GetAsync("https://my.sepay.vn/userapi/transactions/list?limit=10");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    var data = System.Text.Json.JsonDocument.Parse(responseString);
+                    if (data.RootElement.TryGetProperty("transactions", out var transactions))
+                    {
+                        var expectedAmount = order.TotalMoney;
+                        var orderIdStr = order.Id.ToString();
+
+                        foreach (var trans in transactions.EnumerateArray())
+                        {
+                            var content = trans.GetProperty("transaction_content").GetString()?.ToLower() ?? "";
+                            
+                            // Lượng tiền vào amount_in kiểu chuỗi
+                            var amountInStr = trans.GetProperty("amount_in").GetString();
+                            decimal amountIn = 0;
+                            if (!string.IsNullOrEmpty(amountInStr))
+                            {
+                                decimal.TryParse(amountInStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out amountIn);
+                            }
+
+                            // Kiểm tra nội dung chuyển khoản có chứa ID đơn hàng và số tiền bằng hoặc lớn hơn tổng tiền
+                            if (content.Contains(orderIdStr) && amountIn >= expectedAmount)
+                            {
+                                order.PaymentStatus = "paid";
+                                await _context.SaveChangesAsync();
+                                return Json(new { success = true, isPaid = true });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi tại đây
+                return Json(new { success = false, message = ex.Message });
+            }
+
+            return Json(new { success = true, isPaid = false });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Cancel([FromBody] CancelRequest request)
         {

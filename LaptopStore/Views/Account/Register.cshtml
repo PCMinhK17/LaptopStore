@@ -113,7 +113,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .auth-form-header a {
@@ -121,9 +121,18 @@
             color: #64748b;
         }
 
+        /* === FIELD WRAPPER: giữ chỗ cố định, không bao giờ shift === */
+        .form-floating-custom {
+            margin-bottom: 2px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
         .form-control-custom {
             width: 100%;
-            height: 52px;
+            height: 48px;
             padding: 12px 46px 12px 46px;
             border-radius: 16px;
             border: 2px solid #e2e8f0;
@@ -139,11 +148,6 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
         }
 
-        .form-floating-custom {
-            position: relative;
-            margin-bottom: 18px;
-        }
-
         .input-icon {
             position: absolute;
             left: 18px;
@@ -151,6 +155,7 @@
             transform: translateY(-50%);
             color: #94a3b8;
             pointer-events: none;
+            /* Cố định theo input, không bị ảnh hưởng bởi message bên dưới */
         }
 
         .password-toggle {
@@ -189,16 +194,72 @@
             box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15) !important;
         }
 
+        /* === VALIDATION MESSAGE: luôn chiếm chỗ, chỉ toggle visibility === */
+        .validation-message {
+            color: #ef4444;
+            font-size: 0.78rem;
+            margin: 3px 0 0 4px;
+            display: block;
+            min-height: 16px;       /* giữ chỗ cố định */
+            visibility: hidden;     /* ẩn mà không shift layout */
+            line-height: 1.2;
+        }
+
+        .validation-success {
+            color: #10b981;
+            font-size: 0.78rem;
+            margin: 3px 0 0 4px;
+            display: block;
+            min-height: 16px;
+            visibility: hidden;
+            line-height: 1.2;
+        }
+
+        /* === PASSWORD RULES: dùng max-height thay display để tránh shift === */
+        .password-rules {
+            list-style: none;
+            padding-left: 0;
+            margin: 0 0 0 4px;
+            font-size: 0.78rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+        }
+
+        .password-rules.show {
+            max-height: 110px;
+        }
+
+        .password-rules li {
+            display: flex;
+            align-items: center;
+            color: #94a3b8;
+            margin-bottom: 2px;
+        }
+
+        .password-rules li i {
+            margin-right: 6px;
+        }
+
+        .password-rules li.valid {
+            color: #16a34a;
+        }
+
+        .password-rules li.invalid {
+            color: #ef4444;
+        }
+
+        /* === BUTTON === */
         .btn-primary-custom {
             width: 100%;
-            height: 52px;
+            height: 50px;
             border-radius: 16px;
             border: none;
             background: var(--primary-gradient);
             color: #fff;
             font-weight: 700;
             font-size: 1rem;
-            margin-top: 18px;
+            margin-top: 10px;
             box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
             transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
         }
@@ -217,51 +278,6 @@
         .btn-loading {
             display: inline-flex;
             align-items: center;
-        }
-
-        .validation-message {
-            color: #ef4444;
-            font-size: 0.8rem;
-            margin: 4px 0 0 4px;
-            display: block;
-        }
-
-        .validation-success {
-            color: #10b981;
-            font-size: 0.8rem;
-            margin: 4px 0 0 4px;
-            display: block;
-        }
-
-        .password-rules {
-            list-style: none;
-            padding-left: 0;
-            margin: 6px 0 0 4px;
-            font-size: 0.8rem;
-            display: none;
-        }
-
-        .password-rules li {
-            display: flex;
-            align-items: center;
-            color: #94a3b8;
-            margin-bottom: 2px;
-        }
-
-        .password-rules li i {
-            margin-right: 6px;
-        }
-
-        .password-rules li.valid {
-            color: #16a34a;
-        }
-
-        .password-rules li.valid i {
-            content: '\f00c';
-        }
-
-        .password-rules li.invalid {
-            color: #ef4444;
         }
 
         @@keyframes float {
@@ -298,104 +314,102 @@
 
                 <!-- Họ tên -->
                 <div class="form-floating-custom">
-                    <input asp-for="FullName"
-                           class="form-control-custom"
-                           placeholder="Họ và tên"
-                           required />
-                    <i class="fas fa-user input-icon"></i>
+                    <div class="input-wrapper">
+                        <input asp-for="FullName"
+                            class="form-control-custom"
+                            placeholder="Họ và tên"
+                            required />
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
                     <span asp-validation-for="FullName" class="validation-message"></span>
                 </div>
 
                 <!-- Email -->
                 <div class="form-floating-custom">
-                    <input asp-for="Email"
-                           id="regEmail"
-                           class="form-control-custom"
-                           placeholder="Email"
-                           required
-                           oninput="checkEmail()" />
-                    <i class="fas fa-envelope input-icon"></i>
-                    <span id="email-error" class="validation-message" style="display:none;"></span>
-                    <span asp-validation-for="Email" class="validation-message"></span>
+                    <div class="input-wrapper">
+                        <input asp-for="Email"
+                            id="regEmail"
+                            class="form-control-custom"
+                            placeholder="Email"
+                            required
+                            oninput="checkEmail()" />
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+                    <span id="email-error" class="validation-message"></span>
                 </div>
 
                 <!-- Phone -->
                 <div class="form-floating-custom">
-                    <input asp-for="PhoneNumber"
-                           id="regPhone"
-                           class="form-control-custom"
-                           placeholder="Số điện thoại"
-                           required
-                           maxlength="10"
-                           inputmode="numeric"
-                           pattern="[0-9]*"
-                           onkeypress="return isNumberKey(event)"
-                           oninput="checkPhone()" />
-                    <i class="fas fa-phone input-icon"></i>
-                    <span id="phone-error" class="validation-message" style="display:none;"></span>
-                    <span asp-validation-for="PhoneNumber" class="validation-message"></span>
+                    <div class="input-wrapper">
+                        <input asp-for="PhoneNumber"
+                            id="regPhone"
+                            class="form-control-custom"
+                            placeholder="Số điện thoại"
+                            required
+                            maxlength="10"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            onkeypress="return isNumberKey(event)"
+                            oninput="checkPhone()" />
+                        <i class="fas fa-phone input-icon"></i>
+                    </div>
+                    <span id="phone-error" class="validation-message"></span>
                 </div>
 
                 <!-- Address -->
                 <div class="form-floating-custom">
-                    <input asp-for="Address"
-                           id="regAddress"
-                           class="form-control-custom"
-                           placeholder="Địa chỉ"
-                           required
-                           maxlength="255"
-                           oninput="checkAddress()" />
-                    <i class="fas fa-map-marker-alt input-icon"></i>
-                    <span id="address-error" class="validation-message" style="display:none;"></span>
-                    <span asp-validation-for="Address" class="validation-message"></span>
+                    <div class="input-wrapper">
+                        <input asp-for="Address"
+                            id="regAddress"
+                            class="form-control-custom"
+                            placeholder="Địa chỉ"
+                            required
+                            maxlength="255"
+                            oninput="checkAddress()" />
+                        <i class="fas fa-map-marker-alt input-icon"></i>
+                    </div>
+                    <span id="address-error" class="validation-message"></span>
                 </div>
 
                 <!-- Password -->
                 <div class="form-floating-custom">
-                    <input asp-for="Password"
-                           type="password"
-                           id="regPass"
-                           class="form-control-custom"
-                           placeholder="Mật khẩu"
-                           required
-                           oninput="validatePassword()" />
-                    <i class="fas fa-lock input-icon"></i>
-                    <i class="fas fa-eye password-toggle" onclick="togglePass('regPass', this)"></i>
-                    <span asp-validation-for="Password" class="validation-message"></span>
+                    <div class="input-wrapper">
+                        <input asp-for="Password"
+                            type="password"
+                            id="regPass"
+                            class="form-control-custom"
+                            placeholder="Mật khẩu"
+                            required
+                            oninput="validatePassword()" />
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye password-toggle" onclick="togglePass('regPass', this)"></i>
+                    </div>
+                    <span class="validation-message" style="visibility:hidden;"></span>
                 </div>
 
-                <!-- Password rules -->
+                <!-- Password rules: nằm NGOÀI form-floating-custom, dùng max-height để không shift layout -->
                 <ul class="password-rules" id="passwordRules">
-                    <li id="rule-length" class="invalid">
-                        <i class="fas fa-circle"></i> Tối thiểu 8 ký tự
-                    </li>
-                    <li id="rule-upper" class="invalid">
-                        <i class="fas fa-circle"></i> Ít nhất 1 chữ hoa (A–Z)
-                    </li>
-                    <li id="rule-lower" class="invalid">
-                        <i class="fas fa-circle"></i> Ít nhất 1 chữ thường (a–z)
-                    </li>
-                    <li id="rule-number" class="invalid">
-                        <i class="fas fa-circle"></i> Ít nhất 1 chữ số (0–9)
-                    </li>
-                    <li id="rule-special" class="invalid">
-                        <i class="fas fa-circle"></i> Ít nhất 1 ký tự đặc biệt (!@@#$%^&*)
-                    </li>
+                    <li id="rule-length"  class="invalid"><i class="fas fa-circle"></i> Tối thiểu 8 ký tự</li>
+                    <li id="rule-upper"   class="invalid"><i class="fas fa-circle"></i> Ít nhất 1 chữ hoa (A–Z)</li>
+                    <li id="rule-lower"   class="invalid"><i class="fas fa-circle"></i> Ít nhất 1 chữ thường (a–z)</li>
+                    <li id="rule-number"  class="invalid"><i class="fas fa-circle"></i> Ít nhất 1 chữ số (0–9)</li>
+                    <li id="rule-special" class="invalid"><i class="fas fa-circle"></i> Ít nhất 1 ký tự đặc biệt (!@@#$%^&*)</li>
                 </ul>
 
                 <!-- Confirm password -->
-                <div class="form-floating-custom" style="margin-top:10px;">
-                    <input asp-for="ConfirmPassword"
-                           type="password"
-                           id="regConfirm"
-                           class="form-control-custom"
-                           placeholder="Nhập lại mật khẩu"
-                           required
-                           oninput="validateConfirmPassword()" />
-                    <i class="fas fa-check-circle input-icon"></i>
-                    <i class="fas fa-eye password-toggle" onclick="togglePass('regConfirm', this)"></i>
-                    <span id="confirm-error" class="validation-message" style="display:none;"></span>
-                    <span asp-validation-for="ConfirmPassword" class="validation-message"></span>
+                <div class="form-floating-custom">
+                    <div class="input-wrapper">
+                        <input asp-for="ConfirmPassword"
+                            type="password"
+                            id="regConfirm"
+                            class="form-control-custom"
+                            placeholder="Nhập lại mật khẩu"
+                            required
+                            oninput="validateConfirmPassword()" />
+                        <i class="fas fa-check-circle input-icon"></i>
+                        <i class="fas fa-eye password-toggle" onclick="togglePass('regConfirm', this)"></i>
+                    </div>
+                    <span id="confirm-error" class="validation-message"></span>
                 </div>
 
                 <button type="submit" class="btn-primary-custom" id="btnRegister" disabled>
@@ -405,6 +419,7 @@
                     </span>
                 </button>
             </form>
+
         </div>
     </div>
 
@@ -417,6 +432,32 @@
         let passwordValid = false;
         let confirmValid = false;
 
+        // ── Helpers ──────────────────────────────────────────────
+        function showError(span, message) {
+            span.textContent = message;
+            span.style.visibility = 'visible';
+        }
+
+        function hideError(span) {
+            span.textContent = '';
+            span.style.visibility = 'hidden';
+        }
+
+        function setInputValid(input) {
+            input.classList.remove('is-invalid-custom');
+            input.classList.add('is-valid-custom');
+        }
+
+        function setInputInvalid(input) {
+            input.classList.remove('is-valid-custom');
+            input.classList.add('is-invalid-custom');
+        }
+
+        function clearInputState(input) {
+            input.classList.remove('is-valid-custom', 'is-invalid-custom');
+        }
+        // ─────────────────────────────────────────────────────────
+
         function togglePass(inputId, icon) {
             const input = document.getElementById(inputId);
             const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -425,7 +466,6 @@
             icon.classList.toggle('fa-eye-slash');
         }
 
-        // Chỉ cho phép nhập số
         function isNumberKey(evt) {
             const charCode = (evt.which) ? evt.which : evt.keyCode;
             if (charCode > 31 && (charCode < 48 || charCode > 57)) {
@@ -440,37 +480,32 @@
             btn.disabled = !(emailValid && phoneValid && addressValid && passwordValid && confirmValid);
         }
 
-        // ADDRESS VALIDATION
+        // ADDRESS
         function checkAddress() {
             const addressInput = document.getElementById('regAddress');
             const errorSpan = document.getElementById('address-error');
             const address = addressInput.value.trim();
-            
+
             if (!address) {
                 addressValid = false;
-                errorSpan.style.display = 'none';
-                addressInput.classList.remove('is-invalid-custom', 'is-valid-custom');
+                hideError(errorSpan);
+                clearInputState(addressInput);
                 updateSubmitState();
                 return;
             }
 
             if (address.length < 5) {
                 addressValid = false;
-                errorSpan.textContent = 'Địa chỉ phải có ít nhất 5 ký tự';
-                errorSpan.style.display = 'block';
-                addressInput.classList.remove('is-valid-custom');
-                addressInput.classList.add('is-invalid-custom');
+                showError(errorSpan, 'Địa chỉ phải có ít nhất 5 ký tự');
+                setInputInvalid(addressInput);
             } else if (address.length > 255) {
                 addressValid = false;
-                errorSpan.textContent = 'Địa chỉ không được quá 255 ký tự';
-                errorSpan.style.display = 'block';
-                addressInput.classList.remove('is-valid-custom');
-                addressInput.classList.add('is-invalid-custom');
+                showError(errorSpan, 'Địa chỉ không được quá 255 ký tự');
+                setInputInvalid(addressInput);
             } else {
                 addressValid = true;
-                errorSpan.style.display = 'none';
-                addressInput.classList.remove('is-invalid-custom');
-                addressInput.classList.add('is-valid-custom');
+                hideError(errorSpan);
+                setInputValid(addressInput);
             }
 
             updateSubmitState();
@@ -481,11 +516,11 @@
             const emailInput = document.getElementById('regEmail');
             const errorSpan = document.getElementById('email-error');
             const email = emailInput.value.trim();
-            
+
             if (!email) {
                 emailValid = false;
-                errorSpan.style.display = 'none';
-                emailInput.classList.remove('is-invalid-custom', 'is-valid-custom');
+                hideError(errorSpan);
+                clearInputState(emailInput);
                 updateSubmitState();
                 return;
             }
@@ -494,10 +529,8 @@
 
             if (!emailRegex.test(email)) {
                 emailValid = false;
-                errorSpan.textContent = 'Email không hợp lệ.';
-                errorSpan.style.display = 'block';
-                emailInput.classList.remove('is-valid-custom');
-                emailInput.classList.add('is-invalid-custom');
+                showError(errorSpan, 'Email không hợp lệ.');
+                setInputInvalid(emailInput);
                 updateSubmitState();
                 return;
             }
@@ -508,20 +541,17 @@
 
                 if (data.exists) {
                     emailValid = false;
-                    errorSpan.textContent = 'Email này đã được sử dụng.';
-                    errorSpan.style.display = 'block';
-                    emailInput.classList.remove('is-valid-custom');
-                    emailInput.classList.add('is-invalid-custom');
+                    showError(errorSpan, 'Email này đã được sử dụng.');
+                    setInputInvalid(emailInput);
                 } else {
                     emailValid = true;
-                    errorSpan.style.display = 'none';
-                    emailInput.classList.remove('is-invalid-custom');
-                    emailInput.classList.add('is-valid-custom');
+                    hideError(errorSpan);
+                    setInputValid(emailInput);
                 }
             } catch (err) {
                 console.error(err);
                 emailValid = false;
-                emailInput.classList.remove('is-valid-custom');
+                clearInputState(emailInput);
             }
 
             updateSubmitState();
@@ -532,24 +562,21 @@
             const phoneInput = document.getElementById('regPhone');
             const errorSpan = document.getElementById('phone-error');
             const phone = phoneInput.value.trim();
-            
+
             if (!phone) {
                 phoneValid = false;
-                errorSpan.style.display = 'none';
-                phoneInput.classList.remove('is-invalid-custom', 'is-valid-custom');
+                hideError(errorSpan);
+                clearInputState(phoneInput);
                 updateSubmitState();
                 return;
             }
 
-            // Validate: 10 số, bắt đầu bằng 0, số thứ 2 khác 0
             const phoneRegex = /^0[1-9][0-9]{8}$/;
 
             if (phone.length !== 10) {
                 phoneValid = false;
-                errorSpan.textContent = 'Số điện thoại phải có đúng 10 chữ số.';
-                errorSpan.style.display = 'block';
-                phoneInput.classList.remove('is-valid-custom');
-                phoneInput.classList.add('is-invalid-custom');
+                showError(errorSpan, 'Số điện thoại phải có đúng 10 chữ số.');
+                setInputInvalid(phoneInput);
                 updateSubmitState();
                 return;
             }
@@ -557,15 +584,13 @@
             if (!phoneRegex.test(phone)) {
                 phoneValid = false;
                 if (phone[0] !== '0') {
-                    errorSpan.textContent = 'Số điện thoại phải bắt đầu bằng số 0.';
+                    showError(errorSpan, 'Số điện thoại phải bắt đầu bằng số 0.');
                 } else if (phone[1] === '0') {
-                    errorSpan.textContent = 'Số thứ 2 phải khác 0.';
+                    showError(errorSpan, 'Số thứ 2 phải khác 0.');
                 } else {
-                    errorSpan.textContent = 'Số điện thoại không hợp lệ.';
+                    showError(errorSpan, 'Số điện thoại không hợp lệ.');
                 }
-                errorSpan.style.display = 'block';
-                phoneInput.classList.remove('is-valid-custom');
-                phoneInput.classList.add('is-invalid-custom');
+                setInputInvalid(phoneInput);
                 updateSubmitState();
                 return;
             }
@@ -576,20 +601,17 @@
 
                 if (data.exists) {
                     phoneValid = false;
-                    errorSpan.textContent = 'Số điện thoại này đã được sử dụng.';
-                    errorSpan.style.display = 'block';
-                    phoneInput.classList.remove('is-valid-custom');
-                    phoneInput.classList.add('is-invalid-custom');
+                    showError(errorSpan, 'Số điện thoại này đã được sử dụng.');
+                    setInputInvalid(phoneInput);
                 } else {
                     phoneValid = true;
-                    errorSpan.style.display = 'none';
-                    phoneInput.classList.remove('is-invalid-custom');
-                    phoneInput.classList.add('is-valid-custom');
+                    hideError(errorSpan);
+                    setInputValid(phoneInput);
                 }
             } catch (err) {
                 console.error(err);
                 phoneValid = false;
-                phoneInput.classList.remove('is-valid-custom');
+                clearInputState(phoneInput);
             }
 
             updateSubmitState();
@@ -599,42 +621,32 @@
         function validatePassword() {
             const passInput = document.getElementById('regPass');
             const password = passInput.value;
-
-            const ruleLength = document.getElementById('rule-length');
-            const ruleUpper = document.getElementById('rule-upper');
-            const ruleLower = document.getElementById('rule-lower');
-            const ruleNumber = document.getElementById('rule-number');
-            const ruleSpecial = document.getElementById('rule-special');
             const rulesBox = document.getElementById('passwordRules');
 
-            const hasLength = password.length >= 8;
-            const hasUpper = /[A-Z]/.test(password);
-            const hasLower = /[a-z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
+            const hasLength  = password.length >= 8;
+            const hasUpper   = /[A-Z]/.test(password);
+            const hasLower   = /[a-z]/.test(password);
+            const hasNumber  = /[0-9]/.test(password);
             const hasSpecial = /[^A-Za-z0-9]/.test(password);
 
-            setRuleState(ruleLength, hasLength);
-            setRuleState(ruleUpper, hasUpper);
-            setRuleState(ruleLower, hasLower);
-            setRuleState(ruleNumber, hasNumber);
-            setRuleState(ruleSpecial, hasSpecial);
+            setRuleState(document.getElementById('rule-length'),  hasLength);
+            setRuleState(document.getElementById('rule-upper'),   hasUpper);
+            setRuleState(document.getElementById('rule-lower'),   hasLower);
+            setRuleState(document.getElementById('rule-number'),  hasNumber);
+            setRuleState(document.getElementById('rule-special'), hasSpecial);
 
             passwordValid = hasLength && hasUpper && hasLower && hasNumber && hasSpecial;
 
             if (!password) {
-                rulesBox.style.display = 'none';
-                passInput.classList.remove('is-invalid-custom', 'is-valid-custom');
+                rulesBox.classList.remove('show');
+                clearInputState(passInput);
                 passwordValid = false;
+            } else if (passwordValid) {
+                rulesBox.classList.remove('show');
+                setInputValid(passInput);
             } else {
-                if (passwordValid) {
-                    rulesBox.style.display = 'none';
-                    passInput.classList.remove('is-invalid-custom');
-                    passInput.classList.add('is-valid-custom');
-                } else {
-                    rulesBox.style.display = 'block';
-                    passInput.classList.remove('is-valid-custom');
-                    passInput.classList.add('is-invalid-custom');
-                }
+                rulesBox.classList.add('show');
+                setInputInvalid(passInput);
             }
 
             validateConfirmPassword();
@@ -650,47 +662,43 @@
 
         // CONFIRM PASSWORD
         function validateConfirmPassword() {
-            const passInput = document.getElementById('regPass');
+            const passInput    = document.getElementById('regPass');
             const confirmInput = document.getElementById('regConfirm');
-            const errorSpan = document.getElementById('confirm-error');
-
+            const errorSpan    = document.getElementById('confirm-error');
             const password = passInput.value;
-            const confirm = confirmInput.value;
+            const confirm  = confirmInput.value;
 
             if (!confirm) {
                 confirmValid = false;
-                errorSpan.style.display = 'none';
-                confirmInput.classList.remove('is-invalid-custom', 'is-valid-custom');
+                hideError(errorSpan);
+                clearInputState(confirmInput);
                 updateSubmitState();
                 return;
             }
 
             if (password !== confirm) {
                 confirmValid = false;
-                errorSpan.textContent = 'Mật khẩu xác nhận không khớp.';
-                errorSpan.style.display = 'block';
-                confirmInput.classList.remove('is-valid-custom');
-                confirmInput.classList.add('is-invalid-custom');
+                showError(errorSpan, 'Mật khẩu xác nhận không khớp.');
+                setInputInvalid(confirmInput);
             } else {
                 confirmValid = true;
-                errorSpan.style.display = 'none';
-                confirmInput.classList.remove('is-invalid-custom');
-                confirmInput.classList.add('is-valid-custom');
+                hideError(errorSpan);
+                setInputValid(confirmInput);
             }
 
             updateSubmitState();
         }
 
-        // Form submission với loading state
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const btn = document.getElementById('btnRegister');
-            const btnText = btn.querySelector('.btn-text');
+        // Form submit — loading state
+        document.querySelector('form').addEventListener('submit', function () {
+            const btn       = document.getElementById('btnRegister');
+            const btnText   = btn.querySelector('.btn-text');
             const btnLoading = btn.querySelector('.btn-loading');
-            
+
             if (!btn.disabled) {
                 btn.disabled = true;
-                btnText.style.display = 'none';
-                btnLoading.style.display = 'inline';
+                btnText.style.display   = 'none';
+                btnLoading.style.display = 'inline-flex';
             }
         });
 

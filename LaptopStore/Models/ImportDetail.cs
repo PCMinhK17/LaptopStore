@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace LaptopStore.Models;
+﻿namespace LaptopStore.Models;
 
 public partial class ImportDetail
 {
     public int Id { get; set; }
 
-    public int? ReceiptId { get; set; }
+    public int ReceiptId { get; set; }
 
     public int? ProductId { get; set; }
 
@@ -19,5 +16,5 @@ public partial class ImportDetail
 
     public virtual Product? Product { get; set; }
 
-    public virtual ImportReceipt? Receipt { get; set; }
+    public virtual ImportReceipt Receipt { get; set; } = null!;
 }

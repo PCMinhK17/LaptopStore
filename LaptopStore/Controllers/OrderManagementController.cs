@@ -44,9 +44,9 @@ namespace LaptopStore.Controllers
             // Get counts for each status
             ViewBag.AllCount = await _context.Orders.CountAsync();
             ViewBag.PendingCount = await _context.Orders.CountAsync(o => o.Status == "pending");
-            ViewBag.ProcessingCount = await _context.Orders.CountAsync(o => o.Status == "processing");
+            ViewBag.ConfirmedCount = await _context.Orders.CountAsync(o => o.Status == "confirmed");
             ViewBag.ShippingCount = await _context.Orders.CountAsync(o => o.Status == "shipping");
-            ViewBag.DeliveredCount = await _context.Orders.CountAsync(o => o.Status == "delivered");
+            ViewBag.CompletedCount = await _context.Orders.CountAsync(o => o.Status == "completed");
             ViewBag.CancelledCount = await _context.Orders.CountAsync(o => o.Status == "cancelled");
             
             ViewBag.CurrentStatus = status;
@@ -134,7 +134,7 @@ namespace LaptopStore.Controllers
                 var paymentMethodText = order.PaymentMethod switch
                 {
                     "cod" => "COD",
-                    "vietqr" => "Chuyển khoản",
+                    "qr" => "Chuyển khoản",
                     "vnpay" => "VNPay",
                     _ => order.PaymentMethod ?? ""
                 };
@@ -143,7 +143,7 @@ namespace LaptopStore.Controllers
                 worksheet.Cell(row, 2).Value = order.FullName ?? "";
                 worksheet.Cell(row, 3).Value = order.PhoneNumber ?? "";
                 worksheet.Cell(row, 4).Value = order.Address ?? "";
-                worksheet.Cell(row, 5).Value = order.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "";
+                worksheet.Cell(row, 5).Value = order.CreatedAt.ToString("dd/MM/yyyy HH:mm");
                 worksheet.Cell(row, 6).Value = order.TotalMoney;
                 worksheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0";
                 worksheet.Cell(row, 7).Value = paymentMethodText;
@@ -181,42 +181,146 @@ namespace LaptopStore.Controllers
 
         // POST: /OrderManagement/UpdateStatus
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
-            var order = await _context.Orders.FindAsync(id);
+            try
+            {
+                var order = await _context.Orders.FindAsync(id);
+                
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+                }
+
+                // Validate status transition - only allow forward flow
+                var allowedNext = order.Status switch
+                {
+                    "pending" => "confirmed",
+                    "confirmed" => "shipping",
+                    "shipping" => "completed",
+                    _ => ""
+                };
+
+                if (string.IsNullOrEmpty(allowedNext) || allowedNext != status)
+                {
+                    return Json(new { success = false, message = $"Không thể chuyển trạng thái từ '{order.Status}' sang '{status}'" });
+                }
+
+                // Update payment status if completed with COD
+                if (status == "completed" && order.PaymentMethod == "cod")
+                {
+                    order.PaymentStatus = "paid";
+                }
+
+                order.Status = status;
+
+                await _context.SaveChangesAsync();
+
+                // Create notification for user if staff change status
+                var notification = new Notification();
+                notification.UserId = order.UserId.Value;
+                notification.Type = "order";
+
+                switch (status)
+                {
+                    case "confirmed":
+                        notification.Title = $"Đơn hàng #{order.Id:D6} đã được xác nhận";
+                        notification.Message = "Đơn hàng của bạn đã được xác nhận và đang được chuẩn bị để giao.";
+                        break;
+                    case "shipping":
+                        notification.Title = $"Đơn hàng #{order.Id:D6} đang được giao";
+                        notification.Message = "Đơn hàng của bạn đang được giao đến địa chỉ của bạn. Vui lòng chuẩn bị nhận hàng.";
+                        break;
+                    case "completed":
+                        notification.Title = $"Đơn hàng #{order.Id:D6} đã giao thành công";
+                        notification.Message = "Đơn hàng của bạn đã được giao thành công. Cảm ơn bạn đã mua sắm tại cửa hàng chúng tôi!";
+                        break;
+                }
+
+                await _context.Notifications.AddAsync(notification);
+
+                await _context.SaveChangesAsync();
+
+                var message = status switch
+                {
+                    "confirmed" => "Đã xác nhận đơn hàng",
+                    "shipping" => "Đã chuyển sang giao hàng",
+                    "completed" => "Đã đánh dấu giao hàng thành công",
+                    _ => "Cập nhật trạng thái thành công"
+                };
+
+                TempData["ToastMessage"] = message;
+                TempData["ToastType"] = "success";
+
+                return Json(new { success = true, newStatus = status, message });
+            }
+            catch (Exception ex)
+            {
+                var innerMsg = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = "Lỗi: " + innerMsg });
+            }
+        }
+
+        // POST: /OrderManagement/CancelOrder
+        [HttpPost]
+        public async Task<IActionResult> CancelOrder(int id, string? cancelReason)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == id);
             
             if (order == null)
             {
                 return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
             }
 
-            // Validate status transition
-            var validStatuses = new[] { "pending", "processing", "shipping", "delivered", "cancelled" };
-            if (!validStatuses.Contains(status))
+            // Only allow cancel from pending or confirmed
+            if (order.Status != "pending" && order.Status != "confirmed")
             {
-                return Json(new { success = false, message = "Trạng thái không hợp lệ" });
+                return Json(new { success = false, message = "Chỉ có thể hủy đơn hàng ở trạng thái 'Chờ xác nhận' hoặc 'Đã xác nhận'" });
             }
 
-            // Update payment status if delivered
-            if (status == "delivered" && order.PaymentMethod == "cod")
+            // Refund stock quantity
+            if (order.OrderDetails != null)
             {
-                order.PaymentStatus = "paid";
+                foreach (var item in order.OrderDetails)
+                {
+                    if (item.Product != null)
+                    {
+                        item.Product.StockQuantity = (item.Product?.StockQuantity ?? 0) + item.Quantity;
+                    }
+                }
             }
 
-            order.Status = status;
+            // Update order status
+            order.Status = "cancelled";
+
+            // If already paid, mark as refunded
+            if (order.PaymentStatus == "paid")
+            {
+                order.PaymentStatus = "refunded";
+            }
+
+            // Save cancel reason to Note field
+            if (!string.IsNullOrWhiteSpace(cancelReason))
+            {
+                var cancelNote = $"[HỦY ĐƠN] {cancelReason}";
+                order.Note = string.IsNullOrEmpty(order.Note) 
+                    ? cancelNote 
+                    : $"{order.Note}\n{cancelNote}";
+            }
             
             await _context.SaveChangesAsync();
 
-            TempData["ToastMessage"] = "Cập nhật trạng thái thành công";
+            TempData["ToastMessage"] = "Đã hủy đơn hàng thành công";
             TempData["ToastType"] = "success";
 
-            return Json(new { success = true, newStatus = status, message = "Cập nhật trạng thái thành công" });
+            return Json(new { success = true, message = "Đã hủy đơn hàng và hoàn lại tồn kho" });
         }
 
         // POST: /OrderManagement/UpdatePaymentStatus
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdatePaymentStatus(int id, string paymentStatus)
         {
             var order = await _context.Orders.FindAsync(id);
@@ -243,4 +347,3 @@ namespace LaptopStore.Controllers
         }
     }
 }
-

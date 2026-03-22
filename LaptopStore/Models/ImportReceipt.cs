@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace LaptopStore.Models;
+﻿namespace LaptopStore.Models;
 
 public partial class ImportReceipt
 {
@@ -9,17 +6,17 @@ public partial class ImportReceipt
 
     public int? StaffId { get; set; }
 
-    public string? SupplierName { get; set; }
+    public string SupplierName { get; set; } = null!;
 
-    public decimal? TotalCost { get; set; }
+    public decimal TotalCost { get; set; }
 
-    public string? Status { get; set; }
+    public string Status { get; set; } = null!;
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public DateTime? DeliveredAt { get; set; }
 
-    public virtual User? Staff { get; set; }
-
     public virtual ICollection<ImportDetail> ImportDetails { get; set; } = new List<ImportDetail>();
+
+    public virtual User? Staff { get; set; }
 }
