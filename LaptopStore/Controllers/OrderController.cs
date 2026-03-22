@@ -372,18 +372,35 @@ namespace LaptopStore.Controllers
         [HttpPost]
         public async Task<IActionResult> Cancel([FromBody] CancelRequest request)
         {
-            var order = await _context.Orders.FindAsync(request.Id);
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.Id == request.Id);
 
             if (order == null)
-                return Json(new { success = false });
+                return Json(new { success = false, message = "Order not found" });
 
+            // ❗ tránh cancel lại nhiều lần
+            if (order.Status == "Cancelled")
+                return Json(new { success = false, message = "Order already cancelled" });
+
+            // 🔥 HOÀN LẠI STOCK
+            foreach (var item in order.OrderDetails)
+            {
+                var product = await _context.Products.FindAsync(item.ProductId);
+
+                if (product != null)
+                {
+                    product.StockQuantity += item.Quantity; // 👈 cộng lại số lượng
+                }
+            }
+
+            // update status
             order.Status = "Cancelled";
 
-            await _context.SaveChangesAsync();   // ❗ BẮT BUỘC
+            await _context.SaveChangesAsync();
 
             return Json(new { success = true });
         }
-
         public class CancelRequest
         {
             public int Id { get; set; }

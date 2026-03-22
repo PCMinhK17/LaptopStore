@@ -1,5 +1,5 @@
+@* Views/Order/Details.cshtml *@
 @model LaptopStore.Models.Order
-
 @{
     ViewData["Title"] = $"Chi tiết đơn hàng #{Model.Id:D6}";
     ViewData["Subtitle"] = "Thông tin chi tiết đơn đặt hàng";
@@ -279,44 +279,10 @@
         </div>
     </div>
 
-    <!-- Order Details Sidebar -->
-    <div class="col-12 col-lg-4">
-        <!-- Customer Info -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title">
-                    <i class="fas fa-user"></i>
-                    Thông tin khách hàng
-                </h5>
+            <div class="text-end">
+                <p>Tạm tính: <strong>@Model.Subtotal.ToString("N0") đ</strong></p>
+                <h4>Tổng thanh toán: <strong>@Model.TotalMoney.ToString("N0") đ</strong></h4>
             </div>
-            <div class="card-body">
-                <div class="d-flex flex-column gap-3">
-                    <div>
-                        <label class="form-label mb-1">Họ tên</label>
-                        <div class="fw-semibold">@Model.FullName</div>
-                    </div>
-                    <div>
-                        <label class="form-label mb-1">Số điện thoại</label>
-                        <div class="fw-semibold">
-                            <a href="tel:@Model.PhoneNumber" style="color: var(--text-primary); text-decoration: none;">
-                                <i class="fas fa-phone-alt text-muted me-2"></i>@Model.PhoneNumber
-                            </a>
-                        </div>
-                    </div>
-                    @if (Model.User != null)
-                    {
-                        <div>
-                            <label class="form-label mb-1">Email</label>
-                            <div>
-                                <a href="mailto:@Model.User.Email" style="color: var(--primary-600); text-decoration: none;">
-                                    <i class="fas fa-envelope text-muted me-2"></i>@Model.User.Email
-                                </a>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
 
         <!-- Shipping Info -->
         <div class="card mb-4">
