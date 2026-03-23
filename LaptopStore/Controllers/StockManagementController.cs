@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using LaptopStore.DTOs.ProductDTOs;

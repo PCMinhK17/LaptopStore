@@ -1,6 +1,6 @@
-@model LaptopStore.Models.ViewModels.SetupAccountViewModel
+@model LaptopStore.Models.ViewModels.GoogleSetupViewModel
 @{
-    ViewData["Title"] = "Thiết lập tài khoản";
+    ViewData["Title"] = "Bổ sung thông tin";
     Layout = null; 
 }
 
@@ -18,6 +18,7 @@
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+            --google-gradient: linear-gradient(135deg, #ea4335 0%, #fbbc05 25%, #34a853 50%, #4285f4 75%, #4f46e5 100%);
             --glass-bg: rgba(255, 255, 255, 0.97);
             --glass-border: 1px solid rgba(255, 255, 255, 0.5);
             --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -71,7 +72,7 @@
             margin-bottom: 0;
         }
 
-        .laptop-icon-large {
+        .google-icon-large {
             font-size: 2.8rem;
             margin-bottom: 12px;
             filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.2));
@@ -114,13 +115,10 @@
             border-bottom: 1px solid #f1f5f9;
         }
 
-        /* field-block: wrapper cho 1 field (input + message + hint) */
         .field-block {
             margin-bottom: 2px;
         }
 
-        /* input-wrapper: chiều cao CỐ ĐỊNH = đúng bằng input
-           → icon tính top:50% luôn chính xác, không bị kéo bởi text bên ngoài */
         .input-wrapper {
             position: relative;
             height: 50px;
@@ -159,8 +157,6 @@
             box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
         }
 
-        /* Icon: absolute bên trong input-wrapper có height cố định
-           → luôn căn giữa đúng, không bị ảnh hưởng bởi bất kỳ thứ gì bên ngoài */
         .input-icon {
             position: absolute;
             left: 17px;
@@ -186,8 +182,6 @@
 
         .password-toggle:hover { color: #64748b; }
 
-        /* validation-message: LUÔN chiếm chỗ với min-height
-           chỉ toggle visibility → KHÔNG BAO GIỜ shift layout */
         .validation-message {
             display: block;
             min-height: 18px;
@@ -264,32 +258,40 @@
 <body>
     <div class="auth-wrapper">
         <div class="auth-header-custom">
-            <i class="fas fa-user-shield laptop-icon-large"></i>
-            <h2>Thiết lập tài khoản</h2>
+            <i class="fab fa-google google-icon-large"></i>
+            <h2>Bổ sung thông tin</h2>
         </div>
 
         <div class="auth-form-container">
-            <p class="auth-subtitle">Chào mừng bạn đến với LaptopStore! Hoàn tất thông tin bên dưới để kích hoạt tài khoản.</p>
+            <p class="auth-subtitle">Bạn đã đăng nhập bằng Google thành công! Vui lòng bổ sung thông tin bên dưới để hoàn tất thiết lập tài khoản.</p>
 
             <div class="auth-user-info">
                 <i class="fas fa-envelope me-1"></i> Tài khoản: <strong>@Model.Email</strong>
+                @if (!string.IsNullOrEmpty(Model.FullName))
+                {
+                    @:<br /><i class="fas fa-user me-1"></i> Họ tên: <strong>@Model.FullName</strong>
+                }
             </div>
 
-            <form asp-action="SetupAccount" method="post" novalidate id="setupForm">
-                <input type="hidden" asp-for="Token" />
+            <form asp-action="GoogleSetup" method="post" novalidate id="setupForm">
+                <input type="hidden" asp-for="UserId" />
                 <input type="hidden" asp-for="Email" />
+                <input type="hidden" asp-for="FullName" />
 
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div class="error-alert">
                         <i class="fas fa-exclamation-circle me-1"></i>
-                        Vui lòng kiểm tra lại thông tin bên dưới.
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <span>@error.ErrorMessage</span><br />
+                        }
                     </div>
                 }
 
                 <!-- ── BẢO MẬT ── -->
                 <div class="section-label">
-                    <i class="fas fa-lock me-1"></i> Bảo mật
+                    <i class="fas fa-lock me-1"></i> Tạo mật khẩu
                 </div>
 
                 <!-- Mật khẩu mới -->
@@ -369,17 +371,12 @@
                 </div>
 
                 <button type="submit" class="btn-primary-custom" id="btnSubmit" disabled>
-                    <span class="btn-text"><i class="fas fa-check-circle me-2"></i>Kích hoạt tài khoản</span>
+                    <span class="btn-text"><i class="fas fa-check-circle me-2"></i>Hoàn tất thiết lập</span>
                     <span class="btn-loading" style="display:none;">
                         <i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...
                     </span>
                 </button>
             </form>
-
-            <p class="mt-3 mb-0 text-center" style="font-size:0.85rem; color:#94a3b8;">
-                Đã có tài khoản?
-                <a href="@Url.Action("Login")" style="color:#6366f1; text-decoration:none; font-weight:600;">Đăng nhập</a>
-            </p>
         </div>
     </div>
 
@@ -392,6 +389,7 @@
         let confirmValid = false;
         let phoneValid   = false;
         let addressValid = false;
+        let phoneCheckTimer = null;
 
         /* ── Helpers ─────────────────────────────────────── */
         function showErr(id, msg) {
@@ -461,7 +459,7 @@
             updateBtn();
         }
 
-        /* Phone */
+        /* Phone — with async uniqueness check */
         function validatePhone() {
             const el    = document.getElementById('phoneInput');
             const phone = el.value.trim();
@@ -477,7 +475,29 @@
                           : phone[1] === '0' ? 'Số thứ 2 phải khác 0.' : 'Số điện thoại không hợp lệ.';
                 showErr('phone-error', msg); setInvalid(el); updateBtn(); return;
             }
-            phoneValid = true; hideErr('phone-error'); setValid(el); updateBtn();
+
+            // Check trùng SĐT (debounce)
+            clearTimeout(phoneCheckTimer);
+            phoneCheckTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/Account/CheckPhone?phoneNumber=${phone}`);
+                    const data = await res.json();
+                    if (data.exists) {
+                        phoneValid = false;
+                        showErr('phone-error', 'Số điện thoại này đã được sử dụng.');
+                        setInvalid(el);
+                    } else {
+                        phoneValid = true;
+                        hideErr('phone-error');
+                        setValid(el);
+                    }
+                } catch {
+                    phoneValid = true;
+                    hideErr('phone-error');
+                    setValid(el);
+                }
+                updateBtn();
+            }, 400);
         }
 
         /* Address */

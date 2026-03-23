@@ -15,10 +15,13 @@
         <h2>@ViewData["Title"]</h2>
         <p>@ViewData["Subtitle"]</p>
     </div>
-    <a href="@Url.Action("Create")" class="btn btn-primary">
-        <i class="fas fa-user-plus"></i>
-        Thêm @(isStaffList ? "nhân viên" : "người dùng") mới
-    </a>
+    @if (isStaffList)
+    {
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i>
+            Thêm nhân viên mới
+        </a>
+    }
 </div>
 
 <!-- Stats Cards -->
@@ -46,7 +49,7 @@
             <div class="stat-icon">
                 <i class="fas fa-user-clock"></i>
             </div>
-            <div class="stat-label">Chờ duyệt</div>
+            <div class="stat-label">Chờ xác thực</div>
             <div class="stat-value">@ViewBag.PendingCount</div>
         </div>
     </div>
@@ -77,20 +80,11 @@
                 <select class="form-control form-select" id="statusFilter">
                     <option value="">Tất cả</option>
                     <option value="active">Hoạt động</option>
-                    <option value="pending">Chờ duyệt</option>
+                    <option value="pending">Chờ xác thực</option>
                     <option value="banned">Đã khóa</option>
                 </select>
             </div>
-            @if (!isStaffList)
-            {
-                <div class="col-6 col-md-2 col-lg-2">
-                    <label class="form-label">Vai trò</label>
-                    <select class="form-control form-select" id="roleFilter">
-                        <option value="">Tất cả</option>
-                        <option value="customer">Khách hàng</option>
-                    </select>
-                </div>
-            }
+
             <div class="col-6 col-md-2 col-lg-2">
                 <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">
                     <i class="fas fa-redo me-1"></i> Đặt lại
@@ -160,7 +154,7 @@
                         var statusText = user.Status switch
                         {
                             "active" => "Hoạt động",
-                            "pending" => "Chờ duyệt",
+                            "pending" => "Chờ xác thực",
                             "banned" => "Đã khóa",
                             _ => user.Status
                         };

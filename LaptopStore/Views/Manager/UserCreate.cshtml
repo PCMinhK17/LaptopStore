@@ -51,30 +51,25 @@
                                 <small class="text-muted mt-1 d-block">Một email xác thực sẽ được gửi đến địa chỉ này.</small>
                             </div>
                         </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-0">
+                                <label asp-for="PhoneNumber" class="form-label">Số điện thoại</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="0912000000" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size: 0.8rem;"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-0">
+                                <label asp-for="Address" class="form-label">Địa chỉ</label>
+                                <input asp-for="Address" class="form-control" placeholder="Hà Nội" />
+                                <span asp-validation-for="Address" class="text-danger" style="font-size: 0.8rem;"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Role & Permissions -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">
-                        <i class="fas fa-user-shield"></i>
-                        Vai trò & Quyền hạn
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="form-group mb-0">
-                        <label asp-for="Role" class="form-label">Vai trò <span class="text-danger">*</span></label>
-                        <select asp-for="Role" class="form-select">
-                            <!-- <option value="customer">Khách hàng - Chỉ có quyền mua hàng</option> -->
-                            <option value="staff">Nhân viên - Quản lý đơn hàng, sản phẩm</option>
-                            <!-- <option value="admin">Quản trị viên - Toàn quyền hệ thống</option> -->
-                        </select>
-                        <span asp-validation-for="Role" class="text-danger" style="font-size: 0.8rem;"></span>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Actions -->
             <div class="d-flex gap-3">

@@ -1,8 +1,10 @@
-﻿namespace LaptopStore.DTOs.StockDTOs;
+namespace LaptopStore.DTOs.StockDTOs;
 
 public class StockInOrderResponse
 {
     public int Id { get; set; }
+
+    public int ReceiptId { get; set; }
 
     public string SupplierName { get; set; } = "";
 
