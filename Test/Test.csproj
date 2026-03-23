@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LaptopStore.Tests\LaptopStore.Tests.csproj" />
     <ProjectReference Include="..\LaptopStore\LaptopStore.csproj" />
   </ItemGroup>
 
