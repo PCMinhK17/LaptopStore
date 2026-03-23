@@ -60,7 +60,7 @@ public class StockManagementControllerTests
         foreach (var detail in savedDetail)
         {
             Assert.NotNull(detail);
-            Assert.Equal(request.Items.FirstOrDefault(i => i.Product.Id == detail.Id)?.Quantity, detail.RequestedQuantity);
+            Assert.Equal(request.Items.FirstOrDefault(i => i.Product.Id == detail.ProductId)?.Quantity, detail.RequestedQuantity);
         }
 
         // 4. Kiểm tra xem Notification đã được tạo chưa
