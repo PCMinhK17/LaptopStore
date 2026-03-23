@@ -65,7 +65,7 @@
                         </p>
                         *@
                         <!-- Nút thêm vào giỏ hàng -->
-                        @* 
+                        
                         <form method="post" asp-controller="Cart" asp-action="AddToCart">
                             <input type="hidden" name="productId" value="@Model.Id" />
                             @if (Model.StockQuantity > 0)
@@ -81,7 +81,7 @@
                                 </button>
                             }
                         </form>
-                        *@
+                        
                     </div>
                     <!-- Form đánh giá -->
                     <div class="row mt-4">
