@@ -28,9 +28,20 @@ public class CartControllerTests
 
         // Giả lập HttpContext cho User
         var httpContext = new DefaultHttpContext();
+        // Giả lập HttpContext cho User
+       
         if (!string.IsNullOrEmpty(userId))
         {
-            var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId) };
+            var claims = new[]
+            {
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            
+            // BỔ SUNG THÊM CÁC DÒNG NÀY ĐỂ "BAO TRÚNG" HÀM GetUserId() CỦA BẠN:
+            new Claim(ClaimTypes.Name, userId),
+            new Claim("UserId", userId),
+            new Claim("id", userId),
+            new Claim("AccountId", userId)
+        };
             var identity = new ClaimsIdentity(claims, "mock");
             httpContext.User = new ClaimsPrincipal(identity);
         }
@@ -87,17 +98,49 @@ public class CartControllerTests
         using var context = GetInMemoryDbContext();
         var userId = 2;
 
-        // Tạo dữ liệu giả đưa vào DB In-Memory
+        // Tạo dữ liệu giả với ĐẦY ĐỦ Khóa chính (Id) và các object liên kết
         var mockCart = new Cart
         {
+            Id = 1, // Ép cứng Id
             UserId = userId,
             CartItems = new List<CartItem>
-            {
-                new CartItem { Product = new Product { Name = "Laptop ABC" } }
-            }
+    {
+        new CartItem
+{
+    Id = 1,
+    CartId = 1,
+    ProductId = 1,
+    Product = new Product
+    {
+        Id = 1,
+        Name = "Laptop ABC",
+        
+        // BỔ SUNG CÁC TRƯỜNG BẮT BUỘC Ở ĐÂY:
+        Cpu = "Intel Core i5",
+        HardDrive = "512GB SSD",
+        Ram = "8GB",
+        ScreenSize = "15.6 inch",
+        Sku = "LAPTOP-ABC-001",
+        Weight = "1,8",
+        // (Nếu nó còn báo thiếu trường nào như Price, Description... thì bạn cứ thêm đại 1 giá trị vào nhé)
+
+        ProductImages = new List<ProductImage>(),
+       Brand = new Brand
+{
+    Id = 1,
+    Name = "Mock Brand",
+    LogoUrl = "default-logo.png", // Bổ sung
+    Origin = "USA"                // Bổ sung
+}
+    }
+}
+    }
         };
+
         context.Carts.Add(mockCart);
         context.SaveChanges();
+
+        // ... (Phần Khởi tạo controller và Act, Assert bên dưới giữ nguyên)
 
         // Khởi tạo controller với userId = 2
         var controller = CreateController(context, userId: userId.ToString());
