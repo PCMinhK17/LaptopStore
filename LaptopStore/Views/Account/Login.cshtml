@@ -132,8 +132,11 @@
         }
 
         .form-floating-custom {
-            position: relative;
             margin-bottom: 22px;
+        }
+
+        .input-wrapper {
+            position: relative;
         }
 
         .form-control-custom {
@@ -317,26 +320,30 @@
                 }
 
                 <div class="form-floating-custom">
-                    <input asp-for="Input"
-                           id="loginInput"
-                           class="form-control-custom"
-                           placeholder="Email hoặc Số điện thoại"
-                           required
-                           autocomplete="username" />
-                    <i class="fas fa-user input-icon"></i>
+                    <div class="input-wrapper">
+                        <input asp-for="Input"
+                               id="loginInput"
+                               class="form-control-custom"
+                               placeholder="Email hoặc Số điện thoại"
+                               required
+                               autocomplete="username" />
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
                     <span asp-validation-for="Input" class="validation-message"></span>
                 </div>
 
                 <div class="form-floating-custom">
-                    <input asp-for="Password"
-                           type="password"
-                           id="loginPass"
-                           class="form-control-custom"
-                           placeholder="Mật khẩu"
-                           required
-                           autocomplete="current-password" />
-                    <i class="fas fa-lock input-icon"></i>
-                    <i class="fas fa-eye password-toggle" onclick="togglePass('loginPass', this)"></i>
+                    <div class="input-wrapper">
+                        <input asp-for="Password"
+                               type="password"
+                               id="loginPass"
+                               class="form-control-custom"
+                               placeholder="Mật khẩu"
+                               required
+                               autocomplete="current-password" />
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye password-toggle" onclick="togglePass('loginPass', this)"></i>
+                    </div>
                     <span asp-validation-for="Password" class="validation-message"></span>
                 </div>
 

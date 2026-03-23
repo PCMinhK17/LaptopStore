@@ -10,7 +10,7 @@ public partial class User
 
     public string FullName { get; set; } = null!;
 
-    public string PhoneNumber { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
 
     public string? Address { get; set; }
 
@@ -24,7 +24,7 @@ public partial class User
 
     public DateTime CreatedAt { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual Cart? Cart { get; set; }
 

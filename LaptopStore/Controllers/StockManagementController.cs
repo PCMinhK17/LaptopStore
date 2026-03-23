@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using LaptopStore.DTOs.ProductDTOs;
@@ -14,7 +14,7 @@ namespace LaptopStore.Controllers;
 public class StockManagementController : Controller
 {
     private readonly ILogger<StockManagementController> _logger;
-    private readonly LaptopStoreDbContext _context = new LaptopStoreDbContext();
+    private readonly LaptopStoreDbContext _context;
     
     public StockManagementController(ILogger<StockManagementController> logger, LaptopStoreDbContext context)
     {
@@ -125,7 +125,8 @@ public class StockManagementController : Controller
         {
             SupplierName = request.SupplierName,
             StaffId = request.StaffId,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.Now,
+            Status = "pending"
         };
 
         _context.ImportReceipts.Add(newImportReceipt);
