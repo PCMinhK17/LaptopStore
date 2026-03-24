@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Office2010.Excel;
 using LaptopStore.Extensions;
 using LaptopStore.Models;
 using LaptopStore.Services;
@@ -249,13 +250,13 @@ namespace LaptopStore.Controllers
         }
 
         // GET: /Order/Details/5
-        public IActionResult Details(int id)
+        public IActionResult OrderDetails(int id)
         {
             var order = _context.Orders
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                        .ThenInclude(p => p.ProductImages)
-                .FirstOrDefault(o => o.Id == id);
+.Include(o => o.OrderDetails)
+.ThenInclude(od => od.Product)
+.ThenInclude(p => p.ProductImages)
+.FirstOrDefault(o => o.Id == id);
 
             if (order == null)
                 return NotFound();
