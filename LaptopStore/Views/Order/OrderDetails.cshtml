@@ -53,12 +53,21 @@ var statusClass = Model.Status switch
             ← Quay lại
         </a>
 
-        @if (Model.Status == "pending" || Model.Status == "confirmed")
-        {
-            <button class="btn btn-danger btn-sm" onclick="cancelOrder()">
-                Hủy đơn
-            </button>
-        }
+        <div>
+            @if (Model.PaymentStatus == "unpaid")
+            {
+                <a href="/Order/Details/@Model.Id" class="btn btn-primary btn-sm me-2">
+                    Thanh toán
+                </a>
+            }
+
+            @if (Model.Status == "pending" || Model.Status == "confirmed")
+            {
+                <button class="btn btn-danger btn-sm" onclick="cancelOrder()">
+                    Hủy đơn
+                </button>
+            }
+        </div>
     </div>
 
     <div class="row">
