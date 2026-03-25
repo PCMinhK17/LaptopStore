@@ -34,8 +34,9 @@ namespace LaptopStore.Controllers
         }
 
         // GET: /Order/Checkout?userId=...
-        public IActionResult Checkout(int? userId = 2)
+        public IActionResult Checkout()
         {
+            int? userId = User.GetUserId();
             Cart? cart = null;
 
             if (userId.HasValue)
@@ -250,6 +251,39 @@ namespace LaptopStore.Controllers
         }
 
         // GET: /Order/Details/5
+        public IActionResult Details(int id)
+        {
+            var order = _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                        .ThenInclude(p => p.ProductImages)
+                .FirstOrDefault(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            // Estimated delivery same calculation
+            var processingDays = 1;
+            var shippingMinDays = 3;
+            var shippingMaxDays = 5;
+            var today = DateTime.Now.Date;
+            ViewBag.EstFrom = today.AddDays(processingDays + shippingMinDays);
+            ViewBag.EstTo = today.AddDays(processingDays + shippingMaxDays);
+
+            // Pass SePay settings if payment is by QR
+            if (order.PaymentMethod == "qr" && order.PaymentStatus == "unpaid")
+            {
+                var sePaySection = _configuration.GetSection("SePay");
+                ViewBag.SePayBankId = sePaySection["BankId"];
+                ViewBag.SePayAccountNo = sePaySection["AccountNo"];
+                ViewBag.SePayAccountName = sePaySection["AccountName"];
+            }
+
+            return View(order);
+        }
+
+
+
         public IActionResult OrderDetails(int id)
         {
             var order = _context.Orders
