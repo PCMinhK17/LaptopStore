@@ -38,7 +38,7 @@ public class StockManagementController : Controller
     [HttpGet]
     public IActionResult AddNewStockInOrder()
     {
-        ViewBag.Staffs = _context.Users.Where(u => u.Role == "staff").ToList();
+        ViewBag.Staffs = _context.Users.Where(u => u.Role == "staff" && !u.Status.Equals("banned")).ToList();
         ViewBag.Products = _context.Products.Include(p => p.ProductImages).Select(p => new ProductResponse
         {
             Id = p.Id,
