@@ -1,4 +1,4 @@
-@* Views/Order/Details.cshtml *@
+﻿@* Views/Order/Details.cshtml *@
 @model LaptopStore.Models.Order
 @{
     ViewData["Title"] = $"Chi tiết đơn hàng #{Model.Id:D6}";
@@ -241,7 +241,7 @@
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge badge-light">x@item.Quantity</span>
+                                        <span class="badge badge-light">@item.Quantity</span>
                                     </td>
                                     <td class="text-end">@item.Price.ToString("#,##0") ₫</td>
                                     <div class="d-flex justify-content-between pt-2 border-top">
