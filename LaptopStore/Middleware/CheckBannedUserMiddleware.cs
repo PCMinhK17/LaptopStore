@@ -31,7 +31,7 @@ namespace LaptopStore.Middleware
                         .Select(u => u.Status)
                         .FirstOrDefaultAsync();
 
-                    if (userStatus == "locked")
+                    if (userStatus == "banned")
                     {
                         await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                         context.Session.Clear();

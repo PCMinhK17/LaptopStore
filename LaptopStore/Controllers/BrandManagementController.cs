@@ -49,7 +49,7 @@ public class BrandManagementController : Controller
             return View("~/Views/Manager/AddNewBrand.cshtml", request);
         }
 
-        string logoPath = null;
+        string logoPath = "";
 
         if (request.LogoFile != null)
         {

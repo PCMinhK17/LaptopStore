@@ -1,5 +1,5 @@
 using DocumentFormat.OpenXml.Office2010.Excel;
-using LaptopStore.Extensions;
+using LaptopStore.Utils;
 using LaptopStore.Models;
 using LaptopStore.Services;
 using Microsoft.AspNetCore.Mvc;

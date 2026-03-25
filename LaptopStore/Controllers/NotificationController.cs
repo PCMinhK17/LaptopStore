@@ -1,4 +1,4 @@
-﻿using LaptopStore.Extensions;
+﻿using LaptopStore.Utils;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

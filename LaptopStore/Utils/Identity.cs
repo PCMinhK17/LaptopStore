@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace LaptopStore.Extensions;
+namespace LaptopStore.Utils;
 
 public static class Identity
 {

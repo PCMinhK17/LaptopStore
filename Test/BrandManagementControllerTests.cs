@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using LaptopStore.DTOs.BrandDTOs;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
+using Moq;
 
 namespace LaptopStore.Tests.Controllers
 {
@@ -40,15 +36,15 @@ namespace LaptopStore.Tests.Controllers
 
         // Helper: tạo brand nhanh
 
-        private Brand SeedBrand(string name = "Dell", string origin = "USA", bool withProduct = false)
+        private Brand SeedBrand(string name = "Dell", string origin = "USA", bool withProduct = false, string logoUrl = "")
         {
-            var brand = new Brand { Name = name, Origin = origin, LogoUrl = null };
+            var brand = new Brand { Name = name, Origin = origin, LogoUrl = logoUrl };
             _context.Brands.Add(brand);
             _context.SaveChanges();
 
             if (withProduct)
             {
-                var product = new Product { Name = "Laptop Test", BrandId = brand.Id };
+                var product = new Product { Name = "Laptop Test", BrandId = brand.Id, Cpu = "test", HardDrive = "test", Ram = "test", ScreenSize = "test", Sku = Guid.NewGuid().ToString(), Weight = "10" };
                 _context.Products.Add(product);
                 _context.SaveChanges();
             }
@@ -221,7 +217,7 @@ namespace LaptopStore.Tests.Controllers
         public void AddNewBrand_Post_TrimsNameBeforeSaving()
         {
             // Arrange
-            var request = new AddNewBrandRequest { Name = "  MSI  ", Origin = "Taiwan" };
+            var request = new AddNewBrandRequest { Name = "  MSI  ", Origin = "Taiwan"};
 
             // Act
             _controller.AddNewBrand(request);

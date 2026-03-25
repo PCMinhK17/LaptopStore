@@ -1,5 +1,5 @@
 using LaptopStore.Models;
-using LaptopStore.Extensions;
+using LaptopStore.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

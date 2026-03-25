@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using LaptopStore.Extensions;
+using LaptopStore.Utils;
 using LaptopStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

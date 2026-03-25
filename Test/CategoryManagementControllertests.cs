@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using LaptopStore.Models;
 using LaptopStore.DTOs.CategoryDTOs;
-using Xunit;
+using Moq;
 
 namespace LaptopStore.Tests.Controllers
 {
