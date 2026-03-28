@@ -27,14 +27,7 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="@Url.Action("Index", "StockManagement")" class="btn btn-secondary btn-sm">
-            <i class="fas fa-arrow-left me-1"></i> Trở về danh sách
-        </a>
         <div>
-            <button class="btn btn-primary btn-sm" onclick="window.print()">
-                <i class="fas fa-print me-1"></i> In phiếu nhập
-            </button>
-            @* Gợi ý: Nếu đơn đang pending, hiển thị nút Xác nhận nhập kho *@
             @if (Model.Status.ToLower() == "pending")
             {
                 @* <button class="btn btn-success btn-sm ms-2">
@@ -210,34 +203,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    /* CSS hỗ trợ in ấn (Chỉ giữ lại card, ẩn menu/sidebar khi nhấn Ctrl+P) */
-    @@media print {
-        body * {
-            visibility: hidden;
-        }
-
-        .invoice-card, .invoice-card * {
-            visibility: visible;
-        }
-
-        .invoice-card {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            box-shadow: none !important;
-            border: none !important;
-        }
-        /* Đảm bảo in ra được background của khối nhân viên và badge */
-        .bg-light, .badge {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-    }
-
-    .info-table td {
-        padding-bottom: 0.5rem;
-    }
-</style>

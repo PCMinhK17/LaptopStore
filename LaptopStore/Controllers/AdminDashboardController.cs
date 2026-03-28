@@ -54,6 +54,7 @@ namespace LaptopStore.Controllers
                 
                 // Low stock products
                 LowStockProducts = await _context.Products
+                    .Include(p => p.ProductImages)
                     .Where(p => p.StockQuantity <= 5)
                     .OrderBy(p => p.StockQuantity)
                     .Take(5)

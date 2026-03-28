@@ -22,9 +22,6 @@
         <a asp-action="ManageProductImages" asp-route-productId="@Model.Id" class="btn btn-info">
             <i class="fas fa-images me-1"></i> Chỉnh sửa hình ảnh
         </a>
-        <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
-            <i class="fas fa-trash me-1"></i> Xóa
-        </button>
     </div>
 </div>
 
@@ -276,30 +273,6 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal-backdrop" id="deleteModalBackdrop"></div>
-<div class="modal" id="deleteModal">
-    <div class="modal-header">
-        <h5 class="modal-title">
-            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-            Xác nhận xóa
-        </h5>
-        <button class="modal-close" onclick="closeDeleteModal()">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-    <div class="modal-body">
-        <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>@Model.Name</strong>?</p>
-        <p class="text-muted mb-0">Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan.</p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy bỏ</button>
-        <button class="btn btn-danger">
-            <i class="fas fa-trash me-1"></i> Xóa sản phẩm
-        </button>
     </div>
 </div>
 

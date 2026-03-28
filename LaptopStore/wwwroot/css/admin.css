@@ -1696,7 +1696,7 @@ textarea.form-control {
 }
 
 .bg-danger {
-    background: var(--danger-50) !important;
+    background: var(--danger-500) !important;
 }
 
 .bg-pending {

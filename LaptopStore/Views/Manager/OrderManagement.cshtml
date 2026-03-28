@@ -757,9 +757,9 @@
     <script>
         function updateStatus(orderId, newStatus) {
             const statusText = {
-                'processing': 'xác nhận',
+                'confirmed': 'xác nhận',
                 'shipping': 'chuyển sang giao hàng',
-                'delivered': 'đánh dấu đã giao'
+                'completed': 'đánh dấu đã giao'
             };
             
             if (!confirm(`Bạn có chắc chắn muốn ${statusText[newStatus]} đơn hàng #${orderId.toString().padStart(6, '0')}?`)) {

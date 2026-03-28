@@ -468,7 +468,7 @@ public class ProductManagementController : Controller
                     var image = new ProductImage
                     {
                         ProductId = product.Id,
-                        ImageUrl = "images/" + fileName,
+                        ImageUrl = "/images/" + fileName,
                         IsThumbnail = !product.ProductImages.Any(i => i.IsThumbnail == true)
                     };
 
