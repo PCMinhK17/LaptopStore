@@ -313,7 +313,7 @@ INSERT INTO Reviews (user_id, product_id, rating, comment) VALUES
 (5, 4, 5, N'Màn hình cảm ứng mượt, xoay gập tiện lợi.');
 
 -- 12. Carts & Cart Items
-INSERT INTO Carts (user_id) VALUES (5), (3), (4);
+INSERT INTO Carts (user_id) VALUES (5), (6), (4);
 
 INSERT INTO Cart_Items (cart_id, product_id, quantity) VALUES 
 (1, 1, 1), -- Giỏ của User 5 có Dell XPS
@@ -326,11 +326,6 @@ INSERT INTO Notifications (user_id, title, message, type, is_read, created_at) V
 (3, N'Đang giao hàng', N'Đơn hàng #1 đang được giao bởi Shipper.', 'order', 0, GETDATE()),
 (4, N'Cập nhật hóa đơn', N'Hóa đơn mua hàng đợt Tết.', 'order', 0, GETDATE()), 
 (5, N'Nhập kho thành công', N'Phiếu nhập #1 đã hoàn tất.', 'receipt', 0, GETDATE());
-
--- 14. BỔ SUNG: Dữ liệu mẫu cho bảng Email_Verification_Tokens
-INSERT INTO Email_Verification_Tokens (user_id, token, expires_at, is_used) VALUES 
-(3, 'token_xac_nhan_123', DATEADD(DAY, 1, GETDATE()), 1),
-(6, 'token_xac_nhan_456', DATEADD(DAY, 1, GETDATE()), 0);
 
 -- 15. BỔ SUNG: Dữ liệu mẫu cho Wishlists & Wishlist_Items
 INSERT INTO Wishlists (user_id) VALUES (4), (5), (6);

@@ -78,6 +78,7 @@
                 var productImage = product.ProductImages?.FirstOrDefault()?.ImageUrl ?? "/images/laptop-dell-xps-13-9350-black-6.webp";
                 var hasDiscount = product.OldPrice.HasValue && product.OldPrice > product.Price;
                 var discountPercent = hasDiscount ? (int)Math.Round(100 - ((double)product.Price / (double)product.OldPrice.Value * 100)) : 0;
+                var isActive = product.IsActive;
                 var isInStock = product.StockQuantity > 0;
 
                 <div class="product-card" id="wishlist-card-@product.Id">
@@ -110,7 +111,13 @@
                     </div>
                     <div class="product-card-footer">
                         <div class="d-flex gap-2">
-                            @if (isInStock)
+                            @if (!isActive)
+                            {
+                                <div class="out-of-stock-badge flex-grow-1">
+                                    <i class="fas fa-times-circle"></i> Không khả dụng
+                                </div>
+                            }
+                            else if (isInStock)
                             {
                                 <button class="add-to-cart-btn flex-grow-1" onclick="addToCartFromWishlist(@product.Id, this)">
                                     <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
