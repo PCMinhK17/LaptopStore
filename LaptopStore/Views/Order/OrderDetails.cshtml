@@ -4,7 +4,7 @@
     ViewData["Title"] = $"Chi tiết đơn hàng #{Model.Id:D6}";
 
 
-var statusClass = Model.Status switch
+var statusClass = Model.Status?.ToLower() switch
 {
     "pending" => "badge bg-warning",
     "confirmed" => "badge bg-info",
@@ -14,7 +14,7 @@ var statusClass = Model.Status switch
     _ => "badge bg-secondary"
 };
 
-    var statusText = Model.Status switch
+    var statusText = Model.Status?.ToLower() switch
     {
         "pending" => "Chờ xác nhận",
         "confirmed" => "Đã xác nhận",
@@ -54,14 +54,14 @@ var statusClass = Model.Status switch
         </a>
 
         <div>
-            @if (Model.PaymentStatus == "unpaid")
+            @if (Model.PaymentStatus == "unpaid" && Model.Status?.ToLower() != "cancelled")
             {
                 <a href="/Order/Details/@Model.Id" class="btn btn-primary btn-sm me-2">
                     Thanh toán
                 </a>
             }
 
-            @if (Model.Status == "pending" || Model.Status == "confirmed")
+            @if (Model.Status?.ToLower() == "pending" || Model.Status?.ToLower() == "confirmed")
             {
                 <button class="btn btn-danger btn-sm" onclick="cancelOrder()">
                     Hủy đơn
@@ -231,8 +231,12 @@ var statusClass = Model.Status switch
         })
         .then(res => res.json())
         .then(data => {
-            if (data.success) location.reload();
-            else alert("Lỗi!");
+            if (data.success || data.Success) location.reload();
+            else alert("Lỗi: " + (data.message || data.Message || "Không thể hủy đơn"));
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Đã xảy ra lỗi hệ thống!");
         });
     }
 </script>

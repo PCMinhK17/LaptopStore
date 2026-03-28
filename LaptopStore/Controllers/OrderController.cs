@@ -415,7 +415,7 @@ namespace LaptopStore.Controllers
                 return Json(new { success = false, message = "Order not found" });
 
             // ❗ tránh cancel lại nhiều lần
-            if (order.Status == "Cancelled")
+            if (order.Status?.ToLower() == "cancelled")
                 return Json(new { success = false, message = "Order already cancelled" });
 
             // 🔥 HOÀN LẠI STOCK
@@ -430,7 +430,7 @@ namespace LaptopStore.Controllers
             }
 
             // update status
-            order.Status = "Cancelled";
+            order.Status = "cancelled";
 
             await _context.SaveChangesAsync();
 
