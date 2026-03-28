@@ -65,22 +65,46 @@
                         </p>
                         *@
                         <!-- Nút thêm vào giỏ hàng -->
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            if (User.IsInRole("admin"))
+                            {
+                                <a asp-controller="ProductManagement"
+                                   asp-action="UpdateProduct"
+                                   asp-route-id="@Model.Id"
+                                   class="btn btn-outline-secondary w-100 mb-2">
+                                    <i class="bi bi-pencil-square"></i> Chỉnh sửa sản phẩm
+                                </a>
+                            } else if (User.IsInRole("customer"))
+                            {
+                                if (Model.IsActive)
+                                {
+                                    <form method="post" asp-controller="Cart" asp-action="AddToCart">
+                                        <input type="hidden" name="productId" value="@Model.Id" />
+                                        @if (Model.StockQuantity > 0)
+                                        {
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-secondary w-100" disabled>
+                                                <i class="bi bi-cart-x"></i> Hết hàng
+                                            </button>
+                                        }
+                                    </form>
+                                } else
+                                {
+
+                                    <button type="button" class="btn btn-secondary w-100" disabled>
+                                        <i class="bi bi-bag-x"></i> Ngừng kinh doanh
+                                    </button>
+                                }
+                            }
+                        }
+
                         
-                        <form method="post" asp-controller="Cart" asp-action="AddToCart">
-                            <input type="hidden" name="productId" value="@Model.Id" />
-                            @if (Model.StockQuantity > 0)
-                            {
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
-                                </button>
-                            }
-                            else
-                            {
-                                <button type="button" class="btn btn-secondary w-100" disabled>
-                                    <i class="bi bi-cart-x"></i> Hết hàng
-                                </button>
-                            }
-                        </form>
                         
                     </div>
                     <!-- Form đánh giá -->

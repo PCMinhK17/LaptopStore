@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LaptopStore.Models;
 using LaptopStore.Utils;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LaptopStore.Controllers
 {
+    [Authorize(Roles = "customer")]
     public class CartController : Controller
     {
         private readonly LaptopStoreDbContext _context;
